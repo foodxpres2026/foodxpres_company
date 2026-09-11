@@ -1,0 +1,4 @@
+packages:
+  - "apps/web-clientes"
+  - "apps/web-admin"
+  - "packages/*"
