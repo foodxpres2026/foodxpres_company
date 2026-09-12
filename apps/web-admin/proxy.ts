@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const PUBLIC_PATHS = ['/login', '/api/auth/login']
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   // Ignorar archivos estáticos y API pública

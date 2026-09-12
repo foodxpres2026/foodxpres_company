@@ -5,7 +5,10 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "dev:admin": "pnpm --filter @foodxpres/web-admin dev",
+  "dev:clientes": "pnpm --filter @foodxpres/web-clientes dev"
+  
   },
   "devDependencies": {
     "@neondatabase/serverless": "^1.1.0",

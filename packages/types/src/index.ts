@@ -83,3 +83,17 @@ export interface Driver {
   vehicle: string
   isActive: boolean
 }
+
+// ============================================
+// HORARIOS DE ATENCIÓN
+// ============================================
+export type DiaSemana = 'lun' | 'mar' | 'mie' | 'jue' | 'vie' | 'sab' | 'dom'
+
+export interface HorarioDia {
+  dia: DiaSemana
+  abierto: boolean           // si false, el local cierra ese día
+  hora_apertura: string | null  // "09:00"
+  hora_cierre: string | null    // "22:00"
+}
+
+export type HorariosSemana = Record<DiaSemana, HorarioDia>
