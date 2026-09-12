@@ -33,10 +33,9 @@ export default function TagsPicker({
     }
   }
 
-  async function crearTag(e: React.FormEvent) {
-    e.preventDefault()
-    const texto = nuevo.trim()
-    if (!texto) return
+    async function crearTag() {
+      const texto = nuevo.trim()
+      if (!texto) return
 
     setCreando(true)
     try {
@@ -110,22 +109,29 @@ export default function TagsPicker({
       )}
 
       {/* Crear nueva */}
-      <form onSubmit={crearTag} className="flex gap-2">
+      <div className="flex gap-2">
         <input
           type="text"
           value={nuevo}
           onChange={(e) => setNuevo(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              crearTag()
+            }
+          }}
           placeholder="Nueva etiqueta..."
           className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
         />
         <button
-          type="submit"
+          type="button"
+          onClick={crearTag}
           disabled={creando || !nuevo.trim()}
           className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
         >
           {creando ? '...' : 'Crear'}
         </button>
-      </form>
+      </div>
     </div>
   )
 }

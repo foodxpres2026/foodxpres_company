@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { sql } from '@/lib/db'
+import AccionesFila from './_components/acciones-fila'
 
 interface Restaurante {
   id: string
@@ -8,15 +9,18 @@ interface Restaurante {
   subtitulo: string | null
   celular: string | null
   direccion_fisica: string | null
+  tipo_socio: string
+  monto_minimo: string
   activo: boolean
   creado_en: string
 }
 
 async function getRestaurantes(): Promise<Restaurante[]> {
   return sql<Restaurante[]>`
-    SELECT id, slug, nombre, subtitulo, celular, direccion_fisica, activo, creado_en
+    SELECT id, slug, nombre, subtitulo, celular, direccion_fisica,
+           tipo_socio, monto_minimo, activo, creado_en
     FROM restaurantes
-    ORDER BY creado_en DESC
+    ORDER BY activo DESC, creado_en DESC
   `
 }
 
@@ -65,7 +69,16 @@ export default async function RestaurantesPage() {
                   Celular
                 </th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">
+                  Mínimo
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">
+                  Tipo
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">
                   Estado
+                </th>
+                <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">
+                  Acciones
                 </th>
               </tr>
             </thead>
@@ -91,16 +104,26 @@ export default async function RestaurantesPage() {
                   <td className="px-6 py-4 text-sm text-gray-600">
                     {r.celular || '—'}
                   </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    S/ {Number(r.monto_minimo).toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600 capitalize">
+                    {r.tipo_socio}
+                  </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                        r.activo
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}
+                    <AccionesFila
+                      id={r.id}
+                      nombre={r.nombre}
+                      activo={r.activo}
+                    />
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <Link
+                      href={`/dashboard/restaurantes/${r.id}`}
+                      className="text-xs text-blue-600 hover:underline"
                     >
-                      {r.activo ? 'Activo' : 'Inactivo'}
-                    </span>
+                      Editar →
+                    </Link>
                   </td>
                 </tr>
               ))}
