@@ -1,0 +1,21 @@
+{
+  "name": "foodxpres",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:admin": "pnpm --filter @foodxpres/web-admin dev",
+    "dev:clientes": "pnpm --filter @foodxpres/web-clientes dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "latest"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
