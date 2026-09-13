@@ -22,17 +22,16 @@ export default async function DashboardLayout({
   if (!user) redirect('/login')
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex flex-col md:flex-row">
+    <div className="min-h-screen bg-surface-dark flex flex-col md:flex-row">
       {/* SIDEBAR */}
-      <aside className="w-full md:w-60 bg-[#111] border-b md:border-b-0 md:border-r border-[#222] flex flex-col md:min-h-screen">
-        {/* LOGO */}
-        <div className="p-5 border-b border-[#222] flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#7ED321]/10 flex items-center justify-center flex-shrink-0">
+      <aside className="w-full md:w-60 bg-[#111] border-b md:border-b-0 md:border-r border-line flex flex-col md:min-h-screen">
+        <div className="p-5 border-b border-line flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center flex-shrink-0">
             <span className="text-2xl">🐯</span>
           </div>
           <div className="min-w-0">
             <h1 className="text-white font-black tracking-tight text-sm">
-              FOOD<span className="text-[#7ED321]">X</span>PRES
+              FOOD<span className="text-brand">X</span>PRES
             </h1>
             <p className="text-[10px] text-gray-500 uppercase tracking-wider">
               Admin
@@ -40,13 +39,12 @@ export default async function DashboardLayout({
           </div>
         </div>
 
-        {/* NAV */}
         <nav className="flex-1 p-3 flex md:flex-col gap-1 overflow-x-auto md:overflow-x-visible">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-colors whitespace-nowrap"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:bg-surface-light hover:text-white transition-colors whitespace-nowrap"
             >
               <span className="text-base">{item.icon}</span>
               <span>{item.label}</span>
@@ -54,9 +52,8 @@ export default async function DashboardLayout({
           ))}
         </nav>
 
-        {/* USER */}
-        <div className="p-4 border-t border-[#222] flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#7ED321]/20 flex items-center justify-center text-xs font-bold text-[#7ED321] flex-shrink-0">
+        <div className="p-4 border-t border-line flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center text-xs font-bold text-brand flex-shrink-0">
             {user.nombre.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
@@ -70,7 +67,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* MAIN */}
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto bg-surface-dark">{children}</main>
     </div>
   )
 }

@@ -4,7 +4,7 @@ export default async function DashboardPage() {
   const user = await getSessionUser()
 
   return (
-    <div className="p-5 md:p-8">
+    <div className="p-5 md:p-8 bg-surface-dark min-h-full">
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-white">
           Hola, {user?.nombre?.split(' ')[0]} 👋
@@ -21,7 +21,7 @@ export default async function DashboardPage() {
         <StatCard label="Clientes" value="0" icon="👥" />
       </div>
 
-      <div className="bg-[#151515] border border-[#222] rounded-2xl p-8 mt-6 text-center">
+      <div className="bg-surface border border-line rounded-2xl p-8 mt-6 text-center">
         <p className="text-gray-400">Bienvenido al panel de FoodXpres.</p>
         <p className="text-sm text-gray-600 mt-2">
           Pronto verás aquí los pedidos y estadísticas.
@@ -41,7 +41,7 @@ function StatCard({
   icon: string
 }) {
   return (
-    <div className="bg-[#151515] border border-[#222] rounded-2xl p-4 md:p-5">
+    <div className="bg-surface border border-line rounded-2xl p-4 md:p-5">
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs text-gray-500 uppercase tracking-wider">
           {label}
