@@ -15,6 +15,7 @@ interface Plato {
   disponible: boolean
   subcategoria_id: string | null
   subcategoria_nombre: string | null
+  num_grupos: number
 }
 
 interface Subcategoria {
@@ -170,6 +171,7 @@ export default function PlatosEditor({
                   ...p,
                   ...payload,
                   subcategoria_nombre: subNombre,
+                  num_grupos: data.grupos?.length ?? 0,
                 }
               : p
           )
@@ -187,6 +189,7 @@ export default function PlatosEditor({
             disponible: payload.disponible,
             subcategoria_id: payload.subcategoria_id,
             subcategoria_nombre: subNombre,
+            num_grupos: 0,
           },
         ])
       }
@@ -305,6 +308,14 @@ export default function PlatosEditor({
                         <h4 className="font-bold text-white text-sm md:text-base truncate flex-1">
                           {p.nombre}
                         </h4>
+                        {p.num_grupos > 0 && (
+                          <span
+                            className="text-[10px] bg-brand/10 text-brand px-2 py-0.5 rounded-full font-medium flex-shrink-0"
+                            title={`${p.num_grupos} grupo${p.num_grupos === 1 ? '' : 's'} de opciones`}
+                          >
+                            ⚙️ {p.num_grupos}
+                          </span>
+                        )}
                         {!p.disponible && (
                           <span className="text-[10px] bg-gray-800 text-gray-500 px-2 py-0.5 rounded-full font-medium flex-shrink-0">
                             No disponible

@@ -7,7 +7,12 @@ async function getData(restauranteId: string) {
     SELECT 
       p.id, p.nombre, p.descripcion, p.precio, p.imagen_url,
       p.tiempo_estimado, p.disponible, p.subcategoria_id,
-      s.nombre as subcategoria_nombre
+      s.nombre as subcategoria_nombre,
+      (
+        SELECT COUNT(*)::int
+        FROM grupos_opciones g
+        WHERE g.plato_id = p.id
+      ) as num_grupos
     FROM platos p
     LEFT JOIN subcategorias s ON s.id = p.subcategoria_id
     WHERE p.restaurante_id = ${restauranteId}

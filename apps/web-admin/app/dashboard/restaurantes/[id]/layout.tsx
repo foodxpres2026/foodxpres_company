@@ -15,6 +15,17 @@ async function getRestaurante(id: string) {
     | undefined
 }
 
+async function getCounts(id: string) {
+  const [menu, subcategorias] = await Promise.all([
+    sql`SELECT COUNT(*)::int as total FROM platos WHERE restaurante_id = ${id}`,
+    sql`SELECT COUNT(*)::int as total FROM subcategorias WHERE restaurante_id = ${id}`,
+  ])
+  return {
+    menu: menu[0].total as number,
+    subcategorias: subcategorias[0].total as number,
+  }
+}
+
 export default async function RestauranteLayout({
   children,
   params,
@@ -27,6 +38,8 @@ export default async function RestauranteLayout({
 
   if (!restaurante) notFound()
 
+  const counts = await getCounts(id)
+
   return (
     <div className="p-5 md:p-8 bg-surface-dark min-h-full">
       <div className="mb-6">
@@ -36,7 +49,7 @@ export default async function RestauranteLayout({
         >
           ← Volver a restaurantes
         </Link>
-        <div className="flex items-center gap-3 mt-2">
+        <div className="flex items-center gap-3 mt-2 flex-wrap">
           <h1 className="text-2xl md:text-3xl font-bold text-white">
             {restaurante.nombre}
           </h1>
@@ -56,7 +69,7 @@ export default async function RestauranteLayout({
       </div>
 
       <div className="mb-6">
-        <RestauranteTabs restauranteId={id} />
+        <RestauranteTabs restauranteId={id} counts={counts} />
       </div>
 
       <div className="max-w-3xl">{children}</div>

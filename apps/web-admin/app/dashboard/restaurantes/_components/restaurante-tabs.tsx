@@ -4,15 +4,22 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const TABS = [
-  { segment: '', label: 'Información', icon: 'ℹ️' },
-  { segment: '/menu', label: 'Menú', icon: '🍽️' },
-  { segment: '/subcategorias', label: 'Subcategorías', icon: '📂' },
-]
+  { segment: '', label: 'Información', icon: 'ℹ️', key: 'info' },
+  { segment: '/menu', label: 'Menú', icon: '🍽️', key: 'menu' },
+  {
+    segment: '/subcategorias',
+    label: 'Subcategorías',
+    icon: '📂',
+    key: 'subcategorias',
+  },
+] as const
 
 export default function RestauranteTabs({
   restauranteId,
+  counts,
 }: {
   restauranteId: string
+  counts?: { menu?: number; subcategorias?: number }
 }) {
   const pathname = usePathname()
   const base = `/dashboard/restaurantes/${restauranteId}`
@@ -22,9 +29,14 @@ export default function RestauranteTabs({
       {TABS.map((tab) => {
         const href = `${base}${tab.segment}`
         const active =
-          tab.segment === ''
-            ? pathname === base
-            : pathname.startsWith(href)
+          tab.segment === '' ? pathname === base : pathname.startsWith(href)
+
+        const count =
+          tab.key === 'menu'
+            ? counts?.menu
+            : tab.key === 'subcategorias'
+            ? counts?.subcategorias
+            : undefined
 
         return (
           <Link
@@ -38,6 +50,17 @@ export default function RestauranteTabs({
           >
             <span>{tab.icon}</span>
             <span>{tab.label}</span>
+            {count !== undefined && (
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                  active
+                    ? 'bg-black/20 text-black'
+                    : 'bg-surface-light text-gray-500'
+                }`}
+              >
+                {count}
+              </span>
+            )}
           </Link>
         )
       })}
