@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PlatoModal, { type PlatoFormData } from './plato-modal'
+import { type GrupoLocal } from './opciones-editor'
 
 interface Plato {
   id: string
@@ -48,7 +49,6 @@ export default function PlatosEditor({
       platos: Plato[]
     }[] = []
 
-    // Por cada subcategoría (en orden)
     for (const sub of subcategorias) {
       const platosSub = platos.filter((p) => p.subcategoria_id === sub.id)
       if (platosSub.length > 0) {
@@ -56,14 +56,9 @@ export default function PlatosEditor({
       }
     }
 
-    // Platos sin subcategoría al final
     const sinCat = platos.filter((p) => !p.subcategoria_id)
     if (sinCat.length > 0) {
-      grupos.push({
-        id: null,
-        nombre: 'Sin categoría',
-        platos: sinCat,
-      })
+      grupos.push({ id: null, nombre: 'Sin categoría', platos: sinCat })
     }
 
     return grupos
@@ -74,18 +69,38 @@ export default function PlatosEditor({
     setModalOpen(true)
   }
 
-  function openEditar(p: Plato) {
-    setEditingPlato({
-      id: p.id,
-      nombre: p.nombre,
-      descripcion: p.descripcion ?? '',
-      precio: Number(p.precio),
-      imagen_url: p.imagen_url ?? '',
-      tiempo_estimado: p.tiempo_estimado ? String(p.tiempo_estimado) : '',
-      disponible: p.disponible,
-      subcategoria_id: p.subcategoria_id,
-    })
-    setModalOpen(true)
+  async function openEditar(p: Plato) {
+    setLoading(true)
+    try {
+      // Cargar opciones del plato
+      const res = await fetch(`/api/platos/${p.id}/opciones`)
+      const data = await res.json()
+      const gruposOp: GrupoLocal[] = (data.data ?? []).map((g: any) => ({
+        titulo: g.titulo,
+        requerido: g.requerido,
+        minimo: g.minimo,
+        maximo: g.maximo,
+        choices: g.choices.map((c: any) => ({
+          nombre: c.nombre,
+          precio_extra: Number(c.precio_extra),
+        })),
+      }))
+
+      setEditingPlato({
+        id: p.id,
+        nombre: p.nombre,
+        descripcion: p.descripcion ?? '',
+        precio: Number(p.precio),
+        imagen_url: p.imagen_url ?? '',
+        tiempo_estimado: p.tiempo_estimado ? String(p.tiempo_estimado) : '',
+        disponible: p.disponible,
+        subcategoria_id: p.subcategoria_id,
+        grupos: gruposOp,
+      })
+      setModalOpen(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function handleSave(data: PlatoFormData) {
@@ -110,6 +125,7 @@ export default function PlatosEditor({
         ? `/api/platos/${data.id}`
         : `/api/restaurantes/${restauranteId}/platos`
 
+      // 1. Guardar plato
       const res = await fetch(url, {
         method: isEdit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,16 +134,34 @@ export default function PlatosEditor({
       const resData = await res.json()
 
       if (!res.ok || !resData.ok) {
-        setError(resData.error || 'Error al guardar')
+        setError(resData.error || 'Error al guardar plato')
         setLoading(false)
         return
       }
 
-      // Recargar la página para tener los datos frescos
+      const platoId = isEdit ? data.id! : resData.data.id
+
+      // 2. Guardar opciones
+      const resOpc = await fetch(`/api/platos/${platoId}/opciones`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ grupos: data.grupos ?? [] }),
+      })
+      const resOpcData = await resOpc.json()
+
+      if (!resOpc.ok || !resOpcData.ok) {
+        setError('Plato guardado, pero fallaron las opciones')
+        setLoading(false)
+        return
+      }
+
       setModalOpen(false)
       router.refresh()
 
       // Actualizar estado local
+      const subNombre =
+        subcategorias.find((s) => s.id === data.subcategoria_id)?.nombre ?? null
+
       if (isEdit) {
         setPlatos(
           platos.map((p) =>
@@ -135,22 +169,16 @@ export default function PlatosEditor({
               ? {
                   ...p,
                   ...payload,
-                  subcategoria_nombre:
-                    subcategorias.find((s) => s.id === data.subcategoria_id)
-                      ?.nombre ?? null,
+                  subcategoria_nombre: subNombre,
                 }
               : p
           )
         )
       } else {
-        // Agregar al estado local
-        const subNombre =
-          subcategorias.find((s) => s.id === data.subcategoria_id)?.nombre ??
-          null
         setPlatos([
           ...platos,
           {
-            id: resData.data.id,
+            id: platoId,
             nombre: payload.nombre,
             descripcion: payload.descripcion,
             precio: String(payload.precio),
@@ -213,7 +241,6 @@ export default function PlatosEditor({
 
   return (
     <div className="space-y-4">
-      {/* HEADER */}
       <div className="flex justify-between items-center gap-3">
         <div>
           <p className="text-sm text-gray-400">
@@ -235,7 +262,6 @@ export default function PlatosEditor({
         </div>
       )}
 
-      {/* LISTA */}
       {platos.length === 0 ? (
         <div className="bg-surface border border-line rounded-2xl p-12 text-center">
           <p className="text-4xl mb-2">🍽️</p>
@@ -261,7 +287,6 @@ export default function PlatosEditor({
                     key={p.id}
                     className="flex gap-3 p-3 md:p-4 hover:bg-surface-light transition-colors"
                   >
-                    {/* IMAGEN */}
                     <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-surface-dark border border-line flex-shrink-0 overflow-hidden flex items-center justify-center">
                       {p.imagen_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -275,7 +300,6 @@ export default function PlatosEditor({
                       )}
                     </div>
 
-                    {/* INFO */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2 mb-1">
                         <h4 className="font-bold text-white text-sm md:text-base truncate flex-1">
@@ -303,7 +327,6 @@ export default function PlatosEditor({
                         )}
                       </div>
 
-                      {/* ACCIONES */}
                       <div className="flex gap-3 mt-2 text-xs">
                         <button
                           type="button"
@@ -338,7 +361,6 @@ export default function PlatosEditor({
         </div>
       )}
 
-      {/* MODAL */}
       <PlatoModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

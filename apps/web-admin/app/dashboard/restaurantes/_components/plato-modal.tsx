@@ -1,6 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import OpcionesEditor, {
+  type GrupoLocal,
+} from './opciones-editor'
 
 export interface PlatoFormData {
   id?: string
@@ -11,6 +14,7 @@ export interface PlatoFormData {
   tiempo_estimado: string
   disponible: boolean
   subcategoria_id: string | null
+  grupos: GrupoLocal[]
 }
 
 interface Subcategoria {
@@ -33,33 +37,33 @@ export default function PlatoModal({
   subcategorias: Subcategoria[]
   loading: boolean
 }) {
-  const [form, setForm] = useState<PlatoFormData>({
-    id: initialData?.id,
-    nombre: initialData?.nombre ?? '',
-    descripcion: initialData?.descripcion ?? '',
-    precio: initialData?.precio ?? 0,
-    imagen_url: initialData?.imagen_url ?? '',
-    tiempo_estimado: initialData?.tiempo_estimado ?? '',
-    disponible: initialData?.disponible ?? true,
-    subcategoria_id: initialData?.subcategoria_id ?? null,
+  const emptyForm = (): PlatoFormData => ({
+    id: undefined,
+    nombre: '',
+    descripcion: '',
+    precio: 0,
+    imagen_url: '',
+    tiempo_estimado: '',
+    disponible: true,
+    subcategoria_id: null,
+    grupos: [],
   })
+
+  const [form, setForm] = useState<PlatoFormData>(
+    initialData ? ({ ...emptyForm(), ...initialData } as PlatoFormData) : emptyForm()
+  )
   const [error, setError] = useState<string | null>(null)
 
-  // Resetear el form cuando cambia el initialData (nuevo plato vs editar)
   useEffect(() => {
     if (open) {
-      setForm({
-        id: initialData?.id,
-        nombre: initialData?.nombre ?? '',
-        descripcion: initialData?.descripcion ?? '',
-        precio: initialData?.precio ?? 0,
-        imagen_url: initialData?.imagen_url ?? '',
-        tiempo_estimado: initialData?.tiempo_estimado ?? '',
-        disponible: initialData?.disponible ?? true,
-        subcategoria_id: initialData?.subcategoria_id ?? null,
-      })
+      setForm(
+        initialData
+          ? ({ ...emptyForm(), ...initialData } as PlatoFormData)
+          : emptyForm()
+      )
       setError(null)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialData])
 
   if (!open) return null
@@ -77,6 +81,24 @@ export default function PlatoModal({
       setError('Nombre y precio son obligatorios')
       return
     }
+
+    // Validar grupos
+    for (let i = 0; i < form.grupos.length; i++) {
+      const g = form.grupos[i]
+      if (!g.titulo.trim()) {
+        setError(`El grupo ${i + 1} necesita un título`)
+        return
+      }
+      if (g.choices.length === 0) {
+        setError(`El grupo "${g.titulo}" necesita al menos una opción`)
+        return
+      }
+      if (g.choices.some((c) => !c.nombre.trim())) {
+        setError(`Hay opciones sin nombre en "${g.titulo}"`)
+        return
+      }
+    }
+
     await onSave(form)
   }
 
@@ -209,13 +231,19 @@ export default function PlatoModal({
             </label>
           </div>
 
+          {/* OPCIONES */}
+          <OpcionesEditor
+            grupos={form.grupos}
+            onChange={(g) => update('grupos', g)}
+          />
+
           {error && (
             <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded-xl text-sm">
               {error}
             </div>
           )}
 
-          <div className="flex gap-2 pt-2">
+          <div className="flex gap-2 pt-2 sticky bottom-0 bg-surface pt-3 -mx-5 md:-mx-6 px-5 md:px-6 pb-1">
             <button
               type="submit"
               disabled={loading}
