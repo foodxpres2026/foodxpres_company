@@ -8,6 +8,7 @@ export default function LogoutButton() {
   const [loading, setLoading] = useState(false)
 
   async function handleLogout() {
+    if (!confirm('¿Cerrar sesión?')) return
     setLoading(true)
     await fetch('/api/auth/logout', { method: 'POST' })
     router.push('/login')
@@ -19,9 +20,9 @@ export default function LogoutButton() {
       onClick={handleLogout}
       disabled={loading}
       title="Cerrar sesión"
-      className="text-xs text-gray-500 hover:text-danger transition-colors p-1"
+      className="text-xs bg-surface-light hover:bg-danger/20 hover:text-danger text-gray-400 font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
     >
-      {loading ? '...' : '↪'}
+      {loading ? '...' : 'Salir'}
     </button>
   )
 }

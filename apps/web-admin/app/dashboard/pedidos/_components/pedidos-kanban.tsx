@@ -1,17 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import PedidoCard, { type Pedido } from './pedido-card'
 
-const COLUMNAS = [
+const COLUMNAS_ACTIVAS = [
   { estado: 'PENDIENTE', label: 'Pendientes', icon: '⏳' },
   { estado: 'ACEPTADO', label: 'Aceptados', icon: '✅' },
-  { estado: 'PREPARANDO', label: 'Preparando', icon: '👨‍🍳' },
   { estado: 'LISTO', label: 'Listos', icon: '🍽️' },
-  { estado: 'ASIGNADO', label: 'Asignados', icon: '📌' },
   { estado: 'EN_CAMINO', label: 'En camino', icon: '🛵' },
-  { estado: 'ENTREGADO', label: 'Entregados', icon: '🎉' },
 ] as const
 
 interface Restaurante {
@@ -24,12 +20,11 @@ export default function PedidosKanban({
 }: {
   restaurantes: Restaurante[]
 }) {
-  const router = useRouter()
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [loading, setLoading] = useState(true)
   const [restauranteFiltro, setRestauranteFiltro] = useState<string>('')
   const [autoRefresh, setAutoRefresh] = useState(true)
-  const [ultimaAct, setUltimaAct] = useState<Date>(new Date())
+  const [finalizadosAbierto, setFinalizadosAbierto] = useState(false)
 
   async function cargar() {
     try {
@@ -38,10 +33,7 @@ export default function PedidosKanban({
         : '/api/pedidos'
       const res = await fetch(url)
       const data = await res.json()
-      if (data.ok) {
-        setPedidos(data.data)
-        setUltimaAct(new Date())
-      }
+      if (data.ok) setPedidos(data.data)
     } finally {
       setLoading(false)
     }
@@ -59,19 +51,40 @@ export default function PedidosKanban({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh, restauranteFiltro])
 
-  // Agrupar por estado (sin los rechazados/cancelados)
+  // Agrupar activos por estado
   const porEstado = useMemo(() => {
     const map: Record<string, Pedido[]> = {}
-    for (const col of COLUMNAS) map[col.estado] = []
+    for (const col of COLUMNAS_ACTIVAS) map[col.estado] = []
     for (const p of pedidos) {
-      if (map[p.estado]) map[p.estado].push(p)
+      // Compatibilidad: 'ASIGNADO' se ve como 'EN_CAMINO', 'PREPARANDO' como 'ACEPTADO'
+      const estadoNormalizado =
+        p.estado === 'ASIGNADO'
+          ? 'EN_CAMINO'
+          : p.estado === 'PREPARANDO'
+          ? 'ACEPTADO'
+          : p.estado
+      if (map[estadoNormalizado]) map[estadoNormalizado].push(p)
     }
     return map
   }, [pedidos])
 
-  const totalActivos = pedidos.filter(
-    (p) => !['ENTREGADO', 'RECHAZADO', 'CANCELADO'].includes(p.estado)
-  ).length
+  // Finalizados: últimos 10, ordenados por más reciente
+  const finalizados = useMemo(() => {
+    return pedidos
+      .filter((p) =>
+        ['ENTREGADO', 'RECHAZADO', 'CANCELADO'].includes(p.estado)
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime()
+      )
+      .slice(0, 10)
+  }, [pedidos])
+
+  const totalActivos = Object.values(porEstado).reduce(
+    (sum, arr) => sum + arr.length,
+    0
+  )
 
   return (
     <div className="space-y-4">
@@ -92,8 +105,7 @@ export default function PedidosKanban({
           </select>
 
           <span className="text-xs text-gray-500">
-            {totalActivos} pedido{totalActivos === 1 ? '' : 's'} activo
-            {totalActivos === 1 ? '' : 's'}
+            {totalActivos} activo{totalActivos === 1 ? '' : 's'}
           </span>
         </div>
 
@@ -121,52 +133,93 @@ export default function PedidosKanban({
         <div className="text-center py-12 text-gray-500 text-sm">
           Cargando pedidos...
         </div>
-      ) : pedidos.length === 0 ? (
-        <div className="bg-surface border border-line rounded-2xl p-12 text-center">
-          <p className="text-4xl mb-2">📦</p>
-          <p className="text-gray-400">No hay pedidos aún</p>
-          <p className="text-xs text-gray-600 mt-1">
-            Los pedidos aparecerán aquí cuando los clientes ordenen
-          </p>
-        </div>
       ) : (
-        <div className="overflow-x-auto -mx-5 md:mx-0 px-5 md:px-0">
-          <div className="flex gap-3 min-w-max">
-            {COLUMNAS.map((col) => {
-              const items = porEstado[col.estado] || []
-              return (
-                <div
-                  key={col.estado}
-                  className="w-64 flex-shrink-0 bg-surface/50 border border-line rounded-2xl p-3"
-                >
-                  {/* HEADER COLUMNA */}
-                  <div className="flex items-center justify-between mb-3 px-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">{col.icon}</span>
-                      <h3 className="text-xs font-bold text-white uppercase tracking-wide">
-                        {col.label}
-                      </h3>
-                    </div>
-                    <span className="text-xs bg-surface-light text-gray-400 px-2 py-0.5 rounded-full font-bold">
-                      {items.length}
-                    </span>
-                  </div>
+        <>
+          {/* KANBAN ACTIVO */}
+          {totalActivos === 0 ? (
+            <div className="bg-surface border border-line rounded-2xl p-12 text-center">
+              <p className="text-4xl mb-2">📦</p>
+              <p className="text-gray-400">No hay pedidos activos</p>
+              <p className="text-xs text-gray-600 mt-1">
+                Los pedidos aparecerán aquí cuando los clientes ordenen
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto -mx-5 md:mx-0 px-5 md:px-0 pb-2">
+              <div className="flex gap-3 min-w-max">
+                {COLUMNAS_ACTIVAS.map((col) => {
+                  const items = porEstado[col.estado] || []
+                  return (
+                    <div
+                      key={col.estado}
+                      className="w-64 flex-shrink-0 bg-surface/50 border border-line rounded-2xl p-3"
+                    >
+                      <div className="flex items-center justify-between mb-3 px-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{col.icon}</span>
+                          <h3 className="text-xs font-bold text-white uppercase tracking-wide">
+                            {col.label}
+                          </h3>
+                        </div>
+                        <span className="text-xs bg-surface-light text-gray-400 px-2 py-0.5 rounded-full font-bold">
+                          {items.length}
+                        </span>
+                      </div>
 
-                  {/* CARDS */}
-                  <div className="space-y-2 max-h-[70vh] overflow-y-auto">
-                    {items.length === 0 ? (
-                      <p className="text-[10px] text-gray-600 text-center py-4 italic">
-                        Sin pedidos
-                      </p>
-                    ) : (
-                      items.map((p) => <PedidoCard key={p.id} pedido={p} />)
-                    )}
-                  </div>
+                      <div className="space-y-2 max-h-[65vh] overflow-y-auto">
+                        {items.length === 0 ? (
+                          <p className="text-[10px] text-gray-600 text-center py-4 italic">
+                            Sin pedidos
+                          </p>
+                        ) : (
+                          items.map((p) => (
+                            <PedidoCard key={p.id} pedido={p} />
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* FINALIZADOS (colapsable) */}
+          {finalizados.length > 0 && (
+            <div className="bg-surface border border-line rounded-2xl overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setFinalizadosAbierto(!finalizadosAbierto)}
+                className="w-full flex items-center justify-between px-4 md:px-5 py-3 hover:bg-surface-light transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-base">📁</span>
+                  <span className="text-sm font-bold text-white">
+                    Pedidos finalizados
+                  </span>
+                  <span className="text-xs bg-surface-light text-gray-500 px-2 py-0.5 rounded-full font-bold">
+                    Últimos {finalizados.length}
+                  </span>
                 </div>
-              )
-            })}
-          </div>
-        </div>
+                <span
+                  className={`text-gray-500 transition-transform ${
+                    finalizadosAbierto ? 'rotate-180' : ''
+                  }`}
+                >
+                  ▼
+                </span>
+              </button>
+
+              {finalizadosAbierto && (
+                <div className="border-t border-line divide-y divide-line">
+                  {finalizados.map((p) => (
+                    <PedidoCard key={p.id} pedido={p} compact />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   )

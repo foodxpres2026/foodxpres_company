@@ -50,11 +50,7 @@ export async function GET(
 
     return Response.json({
       ok: true,
-      data: {
-        ...rows[0],
-        direcciones,
-        pedidos,
-      },
+      data: { ...rows[0], direcciones, pedidos },
     })
   } catch (error) {
     console.error('GET cliente detalle error:', error)

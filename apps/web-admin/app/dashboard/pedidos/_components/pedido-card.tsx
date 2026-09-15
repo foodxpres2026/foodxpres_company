@@ -29,24 +29,85 @@ export interface Pedido {
 }
 
 const ESTADO_COLORES: Record<string, string> = {
-  PENDIENTE: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  ACEPTADO: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  PREPARANDO: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-  LISTO: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-  ASIGNADO: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
-  EN_CAMINO: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
-  ENTREGADO: 'bg-brand/15 text-brand border-brand/30',
-  RECHAZADO: 'bg-red-500/15 text-red-400 border-red-500/30',
-  CANCELADO: 'bg-gray-500/15 text-gray-400 border-gray-500/30',
+  PENDIENTE: 'bg-yellow-500/15 text-yellow-400',
+  ACEPTADO: 'bg-blue-500/15 text-blue-400',
+  PREPARANDO: 'bg-blue-500/15 text-blue-400',
+  LISTO: 'bg-cyan-500/15 text-cyan-400',
+  ASIGNADO: 'bg-orange-500/15 text-orange-400',
+  EN_CAMINO: 'bg-orange-500/15 text-orange-400',
+  ENTREGADO: 'bg-brand/15 text-brand',
+  RECHAZADO: 'bg-red-500/15 text-red-400',
+  CANCELADO: 'bg-gray-500/15 text-gray-400',
 }
 
-export default function PedidoCard({ pedido }: { pedido: Pedido }) {
+const ESTADO_LABELS: Record<string, string> = {
+  PENDIENTE: 'Pendiente',
+  ACEPTADO: 'Aceptado',
+  PREPARANDO: 'Aceptado',
+  LISTO: 'Listo',
+  ASIGNADO: 'En camino',
+  EN_CAMINO: 'En camino',
+  ENTREGADO: 'Entregado',
+  RECHAZADO: 'Rechazado',
+  CANCELADO: 'Cancelado',
+}
+
+export default function PedidoCard({
+  pedido,
+  compact = false,
+}: {
+  pedido: Pedido
+  compact?: boolean
+}) {
   const minutosDesdeCreacion = Math.floor(
     (Date.now() - new Date(pedido.creado_en).getTime()) / 60000
   )
-
   const dir = pedido.direccion_snapshot || {}
 
+  // ============================================
+  // MODO COMPACTO (para la lista de finalizados)
+  // ============================================
+  if (compact) {
+    return (
+      <Link
+        href={`/dashboard/pedidos/${pedido.id}`}
+        className="flex items-center gap-3 px-4 md:px-5 py-3 hover:bg-surface-light transition-colors"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-xs font-bold text-white">
+              {pedido.pedido_codigo}
+            </span>
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                ESTADO_COLORES[pedido.estado] || ESTADO_COLORES.PENDIENTE
+              }`}
+            >
+              {ESTADO_LABELS[pedido.estado] || pedido.estado}
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 truncate">
+            {pedido.cliente_nombre} · {pedido.restaurante_nombre}
+          </p>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <p className="text-xs font-bold text-brand">
+            S/ {Number(pedido.total).toFixed(2)}
+          </p>
+          <p className="text-[10px] text-gray-500">
+            {new Date(pedido.creado_en).toLocaleTimeString('es-PE', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </p>
+        </div>
+      </Link>
+    )
+  }
+
+  // ============================================
+  // MODO CARD (para el kanban activo)
+  // ============================================
   return (
     <Link
       href={`/dashboard/pedidos/${pedido.id}`}
@@ -91,15 +152,8 @@ export default function PedidoCard({ pedido }: { pedido: Pedido }) {
         </p>
       </div>
 
-      {/* ESTADO + DRIVER */}
+      {/* DRIVER */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span
-          className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
-            ESTADO_COLORES[pedido.estado] || ESTADO_COLORES.PENDIENTE
-          }`}
-        >
-          {pedido.estado.replace('_', ' ')}
-        </span>
         {pedido.driver_nombre ? (
           <span className="text-[10px] text-gray-400">
             🏍️ {pedido.driver_nombre}
