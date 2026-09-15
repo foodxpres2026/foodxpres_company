@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { sql } from '@/lib/db'
 import RestauranteForm, {
@@ -80,27 +79,12 @@ export default async function EditarRestaurantePage({
   }
 
   return (
-    <div className="p-5 md:p-8 max-w-3xl bg-surface-dark min-h-full">
-      <div className="mb-6">
-        <Link
-          href="/dashboard/restaurantes"
-          className="text-sm text-gray-500 hover:text-brand"
-        >
-          ← Volver
-        </Link>
-        <h1 className="text-2xl md:text-3xl font-bold text-white mt-2">
-          {restaurante.nombre}
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">Editar restaurante</p>
-      </div>
-
-      <RestauranteForm
-        mode="edit"
-        restauranteId={restaurante.id}
-        initialData={initialData}
-        initialHorarios={horarios}
-        initialCategorias={categoriaIds}
-      />
-    </div>
+    <RestauranteForm
+      mode="edit"
+      restauranteId={restaurante.id}
+      initialData={initialData}
+      initialHorarios={horarios}
+      initialCategorias={categoriaIds}
+    />
   )
 }
