@@ -51,12 +51,10 @@ export default function PedidosKanban({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh, restauranteFiltro])
 
-  // Agrupar activos por estado
   const porEstado = useMemo(() => {
     const map: Record<string, Pedido[]> = {}
     for (const col of COLUMNAS_ACTIVAS) map[col.estado] = []
     for (const p of pedidos) {
-      // Compatibilidad: 'ASIGNADO' se ve como 'EN_CAMINO', 'PREPARANDO' como 'ACEPTADO'
       const estadoNormalizado =
         p.estado === 'ASIGNADO'
           ? 'EN_CAMINO'
@@ -68,7 +66,6 @@ export default function PedidosKanban({
     return map
   }, [pedidos])
 
-  // Finalizados: últimos 10, ordenados por más reciente
   const finalizados = useMemo(() => {
     return pedidos
       .filter((p) =>
@@ -135,7 +132,6 @@ export default function PedidosKanban({
         </div>
       ) : (
         <>
-          {/* KANBAN ACTIVO */}
           {totalActivos === 0 ? (
             <div className="bg-surface border border-line rounded-2xl p-12 text-center">
               <p className="text-4xl mb-2">📦</p>
@@ -184,7 +180,6 @@ export default function PedidosKanban({
             </div>
           )}
 
-          {/* FINALIZADOS (colapsable) */}
           {finalizados.length > 0 && (
             <div className="bg-surface border border-line rounded-2xl overflow-hidden">
               <button

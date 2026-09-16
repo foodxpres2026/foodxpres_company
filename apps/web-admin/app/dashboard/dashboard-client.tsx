@@ -168,24 +168,21 @@ export default function DashboardClient() {
         />
       </div>
 
-      {/* INGRESOS + CLIENTES */}
+      {/* CLIENTES */}
       <div className="bg-surface border border-line rounded-2xl p-5 md:p-6 mb-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wider">
-              Ingresos hoy
-            </p>
-            <p className="text-3xl md:text-4xl font-bold text-brand mt-1">
-              S/ {resumen.ingresosHoy.toFixed(2)}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-gray-500 uppercase tracking-wider">
-              Clientes
-            </p>
-            <p className="text-2xl md:text-3xl font-bold text-white mt-1">
-              {resumen.clientes}
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-2xl">
+              👥
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider">
+                Clientes registrados
+              </p>
+              <p className="text-3xl md:text-4xl font-bold text-white mt-1">
+                {resumen.clientes}
+              </p>
+            </div>
           </div>
         </div>
       </div>

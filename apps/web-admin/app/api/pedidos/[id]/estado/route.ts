@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
+import { recalcularPedido } from '@/lib/pedidos-utils'
 
 const estadoSchema = z.object({
   estado: z.enum([
@@ -42,8 +43,10 @@ export async function PATCH(
 
     const { estado, notas } = parsed.data
 
-    // Verificar que existe
-    const exists = await sql`SELECT id FROM sub_pedidos WHERE id = ${id} LIMIT 1`
+    // Verificar que existe + obtener pedido_id
+    const exists = await sql`
+      SELECT id, pedido_id FROM sub_pedidos WHERE id = ${id} LIMIT 1
+    `
     if (exists.length === 0) {
       return Response.json(
         { ok: false, error: 'Pedido no encontrado' },
@@ -51,9 +54,11 @@ export async function PATCH(
       )
     }
 
+    const pedidoId = exists[0].pedido_id
+
     const now = new Date()
 
-    // Actualizar estado + timestamp correspondiente
+    // Actualizar estado + timestamp
     switch (estado) {
       case 'ACEPTADO':
         await sql`
@@ -96,6 +101,9 @@ export async function PATCH(
       INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)
       VALUES (${id}, ${estado}, ${user.id}, ${notas || null})
     `
+
+    // 🔄 RECALCULAR PEDIDO PADRE
+    await recalcularPedido(pedidoId)
 
     return Response.json({ ok: true })
   } catch (error) {

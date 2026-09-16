@@ -2,30 +2,37 @@
 
 import Link from 'next/link'
 
-export interface Pedido {
+export interface SubPedido {
   id: string
+  restaurante_id: string
+  restaurante_nombre: string
   estado: string
   subtotal: string
   costo_envio: string
+  driver_nombre: string | null
   distancia_km: string | null
-  tiempo_estimado: number | null
-  notas: string | null
-  creado_en: string
-  aceptado_en: string | null
-  entregado_en: string | null
-  direccion_snapshot: any
-  pedido_id: string
+}
+
+export interface Pedido {
+  id: string
   pedido_codigo: string
+  estado: string
+  subtotal: string
+  total_envio: string
   propina: string
   vip: boolean
   costo_vip: string
   total: string
+  notas: string | null
+  creado_en: string
   cliente_nombre: string
   cliente_celular: string
-  restaurante_id: string
-  restaurante_nombre: string
-  driver_id: string | null
+  direccion_snapshot: any
+  restaurante_principal: string
+  restaurantes_extra: string[]
+  num_locales: number
   driver_nombre: string | null
+  sub_pedidos: SubPedido[]
 }
 
 const ESTADO_COLORES: Record<string, string> = {
@@ -63,9 +70,10 @@ export default function PedidoCard({
     (Date.now() - new Date(pedido.creado_en).getTime()) / 60000
   )
   const dir = pedido.direccion_snapshot || {}
+  const esMulti = pedido.num_locales > 1
 
   // ============================================
-  // MODO COMPACTO (para la lista de finalizados)
+  // MODO COMPACTO
   // ============================================
   if (compact) {
     return (
@@ -74,7 +82,7 @@ export default function PedidoCard({
         className="flex items-center gap-3 px-4 md:px-5 py-3 hover:bg-surface-light transition-colors"
       >
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <span className="text-xs font-bold text-white">
               {pedido.pedido_codigo}
             </span>
@@ -85,9 +93,15 @@ export default function PedidoCard({
             >
               {ESTADO_LABELS[pedido.estado] || pedido.estado}
             </span>
+            {esMulti && (
+              <span className="text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-bold">
+                {pedido.num_locales} LOCALES
+              </span>
+            )}
           </div>
           <p className="text-xs text-gray-500 truncate">
-            {pedido.cliente_nombre} · {pedido.restaurante_nombre}
+            {pedido.cliente_nombre} · {pedido.restaurante_principal}
+            {esMulti && ` +${pedido.num_locales - 1}`}
           </p>
         </div>
         <div className="text-right flex-shrink-0">
@@ -106,12 +120,14 @@ export default function PedidoCard({
   }
 
   // ============================================
-  // MODO CARD (para el kanban activo)
+  // MODO CARD
   // ============================================
   return (
     <Link
       href={`/dashboard/pedidos/${pedido.id}`}
-      className="block bg-surface border border-line rounded-xl p-3 hover:border-brand/40 transition-colors"
+      className={`block bg-surface border rounded-xl p-3 hover:border-brand/40 transition-colors ${
+        esMulti ? 'border-purple-500/40' : 'border-line'
+      }`}
     >
       {/* HEADER */}
       <div className="flex justify-between items-start gap-2 mb-2">
@@ -126,7 +142,7 @@ export default function PedidoCard({
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
           {pedido.vip && (
             <span className="text-[9px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded font-bold">
-              VIP
+              ⭐ VIP
             </span>
           )}
           <span className="text-xs font-bold text-brand">
@@ -134,6 +150,13 @@ export default function PedidoCard({
           </span>
         </div>
       </div>
+
+      {/* BADGE MULTI-LOCAL */}
+      {esMulti && (
+        <div className="mb-2 inline-flex items-center gap-1 bg-purple-500/15 border border-purple-500/30 text-purple-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
+          🏪 {pedido.num_locales} LOCALES
+        </div>
+      )}
 
       {/* CLIENTE */}
       <div className="mb-2">
@@ -145,10 +168,16 @@ export default function PedidoCard({
         </p>
       </div>
 
-      {/* RESTAURANTE */}
+      {/* RESTAURANTES */}
       <div className="mb-2 pb-2 border-b border-line">
         <p className="text-[10px] text-gray-500 truncate">
-          🏪 {pedido.restaurante_nombre}
+          🏪 {pedido.restaurante_principal}
+          {esMulti && (
+            <span className="text-purple-400 font-medium">
+              {' '}
+              +{pedido.num_locales - 1} más
+            </span>
+          )}
         </p>
       </div>
 

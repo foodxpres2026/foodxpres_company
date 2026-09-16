@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
+import { recalcularPedido } from '@/lib/pedidos-utils'
 
 const driverSchema = z.object({
   driver_id: z.string().uuid().nullable(),
@@ -92,6 +93,13 @@ export async function PATCH(
       INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)
       VALUES (${id}, ${existing[0].estado}, ${user.id}, ${notaHistorial})
     `
+    // 🔄 RECALCULAR PEDIDO PADRE (por si acaso)
+    const spInfo = await sql`
+      SELECT pedido_id FROM sub_pedidos WHERE id = ${id} LIMIT 1
+    `
+    if (spInfo.length > 0) {
+      await recalcularPedido(spInfo[0].pedido_id)
+    }
 
     return Response.json({ ok: true })
   } catch (error) {

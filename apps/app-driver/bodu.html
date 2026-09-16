@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Fondo Personalizado - Foodspres FXS</title>
+    <style>
+        /* ===== VARIABLES DE COLOR (Modo Oscuro por defecto) ===== */
+        :root {
+            --color-fondo: #0F0F0F;
+            --color-superficie: #202020;
+            --color-verde-neon: #5DD62C;
+            --color-blanco: #F8F8F8;
+            --color-gris-texto: #aaaaaa;
+            /* Color de los iconos decorativos */
+            --color-decoracion: rgba(93, 214, 44, 0.08);
+            --color-decoracion-2: rgba(93, 214, 44, 0.05);
+        }
+
+        [data-theme="light"] {
+            --color-fondo: #F5F5F5;
+            --color-superficie: #FFFFFF;
+            --color-blanco: #1A1A1A;
+            --color-gris-texto: #666666;
+            /* En modo día usamos un gris oscuro sutil para que se note sobre el blanco */
+            --color-decoracion: rgba(50, 50, 50, 0.07);
+            --color-decoracion-2: rgba(50, 50, 50, 0.04);
+        }
+
+        /* ===== RESET Y BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--color-fondo);
+            color: var(--color-blanco);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* ===== CAPA DE FONDO DECORATIVA ===== */
+        .background-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        /* Degradado radial sutil para centrar la atención */
+        .background-layer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, transparent 0%, var(--color-fondo) 95%);
+            z-index: 3;
+        }
+
+        /* Iconos decorativos */
+        .bg-icon {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            fill: var(--color-decoracion);
+            stroke: var(--color-decoracion);
+            stroke-width: 1.5;
+            opacity: 1;
+            transition: fill 0.3s, stroke 0.3s;
+        }
+
+        /* Posiciones y tamaños variados */
+        .bg-icon-1 { top: 8%; left: 5%; width: 110px; height: 110px; transform: rotate(-15deg); }
+        .bg-icon-2 { top: 20%; right: 8%; width: 80px; height: 80px; transform: rotate(20deg); }
+        .bg-icon-3 { bottom: 15%; left: 10%; width: 100px; height: 100px; transform: rotate(10deg); }
+        .bg-icon-4 { bottom: 25%; right: 12%; width: 130px; height: 130px; transform: rotate(-25deg); }
+        .bg-icon-5 { top: 45%; left: 45%; width: 180px; height: 180px; transform: translate(-50%, -50%); opacity: 0.5; }
+        .bg-icon-6 { top: 70%; left: 25%; width: 70px; height: 70px; transform: rotate(45deg); }
+        .bg-icon-7 { top: 12%; right: 35%; width: 60px; height: 60px; transform: rotate(-10deg); }
+        .bg-icon-8 { bottom: 8%; right: 38%; width: 90px; height: 90px; transform: rotate(30deg); }
+
+        /* Elementos de Pucallpa */
+        .bg-pucallpa {
+            position: absolute;
+            fill: var(--color-decoracion-2);
+            stroke: var(--color-decoracion-2);
+            stroke-width: 1.5;
+        }
+
+        .bg-leaf-1 { top: 4%; left: 35%; width: 80px; height: 80px; transform: rotate(15deg); }
+        .bg-leaf-2 { bottom: 3%; left: 55%; width: 100px; height: 100px; transform: rotate(-20deg); }
+        .bg-dolphin { top: 55%; left: 3%; width: 120px; height: 120px; transform: rotate(-10deg); opacity: 0.6; }
+        .bg-river { bottom: 0; left: 0; width: 100%; height: 180px; }
+
+        /* ===== CONTENIDO DE PRUEBA ===== */
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .logo-fxs {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .x-color { color: var(--color-verde-neon); }
+
+        .content-wrapper h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--color-blanco);
+        }
+
+        .content-wrapper p {
+            font-size: 1rem;
+            color: var(--color-gris-texto);
+            max-width: 500px;
+            margin-bottom: 2rem;
+        }
+
+        .btn-toggle {
+            background-color: var(--color-verde-neon);
+            color: #0F0F0F;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn-toggle:hover {
+            background-color: #4ab822;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== CAPA DE FONDO DECORATIVA ===== -->
+    <div class="background-layer">
+        
+        <!-- Hamburguesa -->
+        <svg class="bg-icon bg-icon-1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8 2 5 5 5 9h14c0-4-3-7-7-7zM5 11v2h14v-2H5zM5 15v2h14v-2H5zM5 19h14v2H5z"/>
+        </svg>
+        
+        <!-- Pizza -->
+        <svg class="bg-icon bg-icon-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/>
+        </svg>
+        
+        <!-- Tenedor y Cuchillo -->
+        <svg class="bg-icon bg-icon-3" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 2v6H6V2H4v6H2V2H0v8c0 2 1 3 3 3v9h2v-9c2 0 3-1 3-3V2H8zm8 0v20h2v-8h2V2h-4z"/>
+        </svg>
+        
+        <!-- Moto de Delivery -->
+        <svg class="bg-icon bg-icon-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="5" cy="18" r="3"/>
+            <circle cx="19" cy="18" r="3"/>
+            <path d="M5 15l2-8h6l2 8h-6l-2-8"/>
+        </svg>
+        
+        <!-- Taza de Café -->
+        <svg class="bg-icon bg-icon-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8h1a4 4 0 010 8h-1v2H4V8h14zm0 2v4h1a2 2 0 000-4h-1zM2 20h20v2H2z"/>
+        </svg>
+
+        <!-- Sushi -->
+        <svg class="bg-icon bg-icon-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="5"/>
+        </svg>
+
+        <!-- Bolsa de Delivery -->
+        <svg class="bg-icon bg-icon-7" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 6V4a4 4 0 00-8 0v2H2v16h20V6h-6zM10 4a2 2 0 014 0v2h-4V4z"/>
+        </svg>
+
+        <!-- Helado -->
+        <svg class="bg-icon bg-icon-8" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2a6 6 0 00-6 6c0 2 1 3 2 4v8h8v-8c1-1 2-2 2-4a6 6 0 00-6-6z"/>
+        </svg>
+
+        <!-- Hojas de la selva (Pucallpa) -->
+        <svg class="bg-pucallpa bg-leaf-1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6 2 2 6 2 12s4 10 10 10 10-4 10-10S18 2 12 2zm0 18c-4 0-8-4-8-8s4-8 8-8 8 4 8 8-4 8-8 8z"/>
+            <path d="M12 6v12M8 10l4-4 4 4M8 14l4 4 4-4"/>
+        </svg>
+
+        <svg class="bg-pucallpa bg-leaf-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6 2 2 6 2 12s4 10 10 10 10-4 10-10S18 2 12 2zm0 18c-4 0-8-4-8-8s4-8 8-8 8 4 8 8-4 8-8 8z"/>
+            <path d="M12 6v12M8 10l4-4 4 4M8 14l4 4 4-4"/>
+        </svg>
+
+        <!-- Delfín rosado estilizado (Pucallpa) -->
+        <svg class="bg-pucallpa bg-dolphin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8 2 4 6 4 10c0 3 1 5 3 6l-1 4h2l1-3c1 .5 2 .5 3 0l1 3h2l-1-4c2-1 3-3 3-6 0-4-4-8-8-8z"/>
+            <circle cx="9" cy="9" r="1" fill="var(--color-fondo)"/>
+        </svg>
+
+        <!-- Río Ucayali (ondas sutiles) -->
+        <svg class="bg-pucallpa bg-river" viewBox="0 0 1440 150" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,80 C240,120 480,40 720,80 C960,120 1200,40 1440,80 L1440,150 L0,150 Z" fill="none" stroke="var(--color-decoracion-2)" stroke-width="2"/>
+            <path d="M0,100 C240,140 480,60 720,100 C960,140 1200,60 1440,100 L1440,150 L0,150 Z" fill="none" stroke="var(--color-decoracion-2)" stroke-width="1.5"/>
+            <path d="M0,120 C240,160 480,80 720,120 C960,160 1200,80 1440,120 L1440,150 L0,150 Z" fill="none" stroke="var(--color-decoracion-2)" stroke-width="1"/>
+        </svg>
+    </div>
+
+    <!-- ===== CONTENIDO DE PRUEBA ===== -->
+    <div class="content-wrapper">
+        <div class="logo-fxs">F<span class="x-color">X</span>S</div>
+        <h1>Fondo Personalizado</h1>
+        <p>Este es un ejemplo de cómo se vería el fondo con iconos de comida y elementos representativos de Pucallpa. Es sutil y elegante, sin distraer del contenido principal. Cambia el modo para ver la diferencia.</p>
+        <button class="btn-toggle" id="theme-toggle">Cambiar Modo Día/Noche</button>
+    </div>
+
+    <script>
+        // Lógica para cambiar entre modo día y noche
+        const themeToggle = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            if (currentTheme === 'light') {
+                htmlElement.removeAttribute('data-theme');
+                themeToggle.textContent = 'Cambiar Modo Día/Noche';
+            } else {
+                htmlElement.setAttribute('data-theme', 'light');
+                themeToggle.textContent = 'Volver a Modo Oscuro';
+            }
+        });
+    </script>
+
+</body>
+</html>
