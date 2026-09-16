@@ -8,53 +8,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet CSS para el mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <!-- ===== ESTILOS DEL FONDO PERSONALIZADO ===== -->
+    
+    <!-- ===== ESTILOS DEL FONDO PERSONALIZADO ===== -->
     <style>
-        /* Variables para el fondo decorativo */
         :root {
             --color-decoracion: rgba(93, 214, 44, 0.08);
             --color-decoracion-2: rgba(93, 214, 44, 0.05);
         }
-
         [data-theme="light"] {
             --color-decoracion: rgba(50, 50, 50, 0.07);
             --color-decoracion-2: rgba(50, 50, 50, 0.04);
         }
-
-        /* Capa de fondo */
         .background-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-            pointer-events: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden; pointer-events: none;
         }
-
         .background-layer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 50% 50%, transparent 0%, var(--color-fondo) 95%);
-            z-index: 3;
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, transparent 0%, var(--color-fondo) 95%); z-index: 3;
         }
-
         .bg-icon {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            fill: var(--color-decoracion);
-            stroke: var(--color-decoracion);
-            stroke-width: 1.5;
-            opacity: 1;
-            transition: fill 0.3s, stroke 0.3s;
+            position: absolute; width: 80px; height: 80px;
+            fill: var(--color-decoracion); stroke: var(--color-decoracion);
+            stroke-width: 1.5; opacity: 1; transition: fill 0.3s, stroke 0.3s;
         }
-
         .bg-icon-1 { top: 8%; left: 5%; width: 110px; height: 110px; transform: rotate(-15deg); }
         .bg-icon-2 { top: 20%; right: 8%; width: 80px; height: 80px; transform: rotate(20deg); }
         .bg-icon-3 { bottom: 15%; left: 10%; width: 100px; height: 100px; transform: rotate(10deg); }
@@ -63,14 +40,10 @@
         .bg-icon-6 { top: 70%; left: 25%; width: 70px; height: 70px; transform: rotate(45deg); }
         .bg-icon-7 { top: 12%; right: 35%; width: 60px; height: 60px; transform: rotate(-10deg); }
         .bg-icon-8 { bottom: 8%; right: 38%; width: 90px; height: 90px; transform: rotate(30deg); }
-
         .bg-pucallpa {
-            position: absolute;
-            fill: var(--color-decoracion-2);
-            stroke: var(--color-decoracion-2);
-            stroke-width: 1.5;
+            position: absolute; fill: var(--color-decoracion-2);
+            stroke: var(--color-decoracion-2); stroke-width: 1.5;
         }
-
         .bg-leaf-1 { top: 4%; left: 35%; width: 80px; height: 80px; transform: rotate(15deg); }
         .bg-leaf-2 { bottom: 3%; left: 55%; width: 100px; height: 100px; transform: rotate(-20deg); }
         .bg-dolphin { top: 55%; left: 3%; width: 120px; height: 120px; transform: rotate(-10deg); opacity: 0.6; }
@@ -78,76 +51,23 @@
     </style>
 </head>
 <body>
-        <!-- ===== CAPA DE FONDO DECORATIVA ===== -->
+
+    <!-- ===== CAPA DE FONDO DECORATIVA ===== -->
     <div class="background-layer">
-        
-        <!-- Hamburguesa -->
-        <svg class="bg-icon bg-icon-1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C8 2 5 5 5 9h14c0-4-3-7-7-7zM5 11v2h14v-2H5zM5 15v2h14v-2H5zM5 19h14v2H5z"/>
-        </svg>
-        
-        <!-- Pizza -->
-        <svg class="bg-icon bg-icon-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/>
-        </svg>
-        
-        <!-- Tenedor y Cuchillo -->
-        <svg class="bg-icon bg-icon-3" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 2v6H6V2H4v6H2V2H0v8c0 2 1 3 3 3v9h2v-9c2 0 3-1 3-3V2H8zm8 0v20h2v-8h2V2h-4z"/>
-        </svg>
-        
-        <!-- Moto de Delivery -->
-        <svg class="bg-icon bg-icon-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="5" cy="18" r="3"/>
-            <circle cx="19" cy="18" r="3"/>
-            <path d="M5 15l2-8h6l2 8h-6l-2-8"/>
-        </svg>
-        
-        <!-- Taza de Café -->
-        <svg class="bg-icon bg-icon-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 8h1a4 4 0 010 8h-1v2H4V8h14zm0 2v4h1a2 2 0 000-4h-1zM2 20h20v2H2z"/>
-        </svg>
-
-        <!-- Sushi -->
-        <svg class="bg-icon bg-icon-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10"/>
-            <circle cx="12" cy="12" r="5"/>
-        </svg>
-
-        <!-- Bolsa de Delivery -->
-        <svg class="bg-icon bg-icon-7" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M16 6V4a4 4 0 00-8 0v2H2v16h20V6h-6zM10 4a2 2 0 014 0v2h-4V4z"/>
-        </svg>
-
-        <!-- Helado -->
-        <svg class="bg-icon bg-icon-8" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2a6 6 0 00-6 6c0 2 1 3 2 4v8h8v-8c1-1 2-2 2-4a6 6 0 00-6-6z"/>
-        </svg>
-
-        <!-- Hojas de la selva (Pucallpa) -->
-        <svg class="bg-pucallpa bg-leaf-1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6 2 2 6 2 12s4 10 10 10 10-4 10-10S18 2 12 2zm0 18c-4 0-8-4-8-8s4-8 8-8 8 4 8 8-4 8-8 8z"/>
-            <path d="M12 6v12M8 10l4-4 4 4M8 14l4 4 4-4"/>
-        </svg>
-
-        <svg class="bg-pucallpa bg-leaf-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6 2 2 6 2 12s4 10 10 10 10-4 10-10S18 2 12 2zm0 18c-4 0-8-4-8-8s4-8 8-8 8 4 8 8-4 8-8 8z"/>
-            <path d="M12 6v12M8 10l4-4 4 4M8 14l4 4 4-4"/>
-        </svg>
-
-        <!-- Delfín rosado estilizado (Pucallpa) -->
-        <svg class="bg-pucallpa bg-dolphin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C8 2 4 6 4 10c0 3 1 5 3 6l-1 4h2l1-3c1 .5 2 .5 3 0l1 3h2l-1-4c2-1 3-3 3-6 0-4-4-8-8-8z"/>
-            <circle cx="9" cy="9" r="1" fill="var(--color-fondo)"/>
-        </svg>
-
-        <!-- Río Ucayali (ondas sutiles) -->
-        <svg class="bg-pucallpa bg-river" viewBox="0 0 1440 150" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0,80 C240,120 480,40 720,80 C960,120 1200,40 1440,80 L1440,150 L0,150 Z" fill="none" stroke="var(--color-decoracion-2)" stroke-width="2"/>
-            <path d="M0,100 C240,140 480,60 720,100 C960,140 1200,60 1440,100 L1440,150 L0,150 Z" fill="none" stroke="var(--color-decoracion-2)" stroke-width="1.5"/>
-            <path d="M0,120 C240,160 480,80 720,120 C960,160 1200,80 1440,120 L1440,150 L0,150 Z" fill="none" stroke="var(--color-decoracion-2)" stroke-width="1"/>
-        </svg>
+        <svg class="bg-icon bg-icon-1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8 2 5 5 5 9h14c0-4-3-7-7-7zM5 11v2h14v-2H5zM5 15v2h14v-2H5zM5 19h14v2H5z"/></svg>
+        <svg class="bg-icon bg-icon-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/></svg>
+        <svg class="bg-icon bg-icon-3" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 2v6H6V2H4v6H2V2H0v8c0 2 1 3 3 3v9h2v-9c2 0 3-1 3-3V2H8zm8 0v20h2v-8h2V2h-4z"/></svg>
+        <svg class="bg-icon bg-icon-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="18" r="3"/><circle cx="19" cy="18" r="3"/><path d="M5 15l2-8h6l2 8h-6l-2-8"/></svg>
+        <svg class="bg-icon bg-icon-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 8h1a4 4 0 010 8h-1v2H4V8h14zm0 2v4h1a2 2 0 000-4h-1zM2 20h20v2H2z"/></svg>
+        <svg class="bg-icon bg-icon-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5"/></svg>
+        <svg class="bg-icon bg-icon-7" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 6V4a4 4 0 00-8 0v2H2v16h20V6h-6zM10 4a2 2 0 014 0v2h-4V4z"/></svg>
+        <svg class="bg-icon bg-icon-8" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a6 6 0 00-6 6c0 2 1 3 2 4v8h8v-8c1-1 2-2 2-4a6 6 0 00-6-6z"/></svg>
+        <svg class="bg-pucallpa bg-leaf-1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6 2 2 6 2 12s4 10 10 10 10-4 10-10S18 2 12 2zm0 18c-4 0-8-4-8-8s4-8 8-8 8 4 8 8-4 8-8 8z"/><path d="M12 6v12M8 10l4-4 4 4M8 14l4 4 4-4"/></svg>
+        <svg class="bg-pucallpa bg-leaf-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6 2 2 6 2 12s4 10 10 10 10-4 10-10S18 2 12 2zm0 18c-4 0-8-4-8-8s4-8 8-8 8 4 8 8-4 8-8 8z"/><path d="M12 6v12M8 10l4-4 4 4M8 14l4 4 4-4"/></svg>
+        <svg class="bg-pucallpa bg-dolphin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8 2 4 6 4 10c0 3 1 5 3 6l-1 4h2l1-3c1 .5 2 .5 3 0l1 3h2l-1-4c2-1 3-3 3-6 0-4-4-8-8-8z"/><circle cx="9" cy="9" r="1" fill="var(--color-fondo)"/></svg>
+        <svg class="bg-pucallpa bg-river" viewBox="0 0 1440 150" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,80 C240,120 480,40 720,80 C960,120 1200,40 1440,80 L1440,150 L0,150 Z" fill="none" stroke="var(--color-decoracion-2)" stroke-width="2"/><path d="M0,100 C240,140 480,60 720,100 C960,140 1200,60 1440,100 L1440,150 L0,150 Z" fill="none" stroke="var(--color-decoracion-2)" stroke-width="1.5"/><path d="M0,120 C240,160 480,80 720,120 C960,160 1200,80 1440,120 L1440,150 L0,150 Z" fill="none" stroke="var(--color-decoracion-2)" stroke-width="1"/></svg>
     </div>
+
     <!-- ===== HEADER ===== -->
     <header class="header">
         <div class="header-top">
@@ -302,7 +222,7 @@
 
             <!-- Scrollable body -->
             <div class="cart-body">
-                <!-- Mapa y Dirección de entrega -->
+                <!-- Dirección de entrega compacta -->
                 <div class="delivery-address-section">
                     <div class="address-info">
                         <i class="fas fa-map-marker-alt"></i>
@@ -311,21 +231,22 @@
                             <p id="display-address">San Fernando Mz. 14 - Lt. 22</p>
                             <small id="display-reference">Ref: A espaldas del colegio</small>
                         </div>
+                        <button class="btn-edit-location" id="toggle-location-editor">
+                            <i class="fas fa-pen"></i> Editar
+                        </button>
                     </div>
                     
-                    <!-- Mapa -->
-                    <div id="map-container"></div>
-                    
-                    <!-- Controles de ubicación -->
-                    <div class="location-controls">
+                    <!-- Editor de ubicación (oculto por defecto) -->
+                    <div class="location-editor hidden" id="location-editor">
                         <div class="input-group">
                             <i class="fas fa-search"></i>
                             <input type="text" id="address-input" placeholder="Escribe tu dirección...">
                             <button id="search-address-btn" class="btn-location">Buscar</button>
                         </div>
                         <button id="current-location-btn" class="btn-location-full">
-                            <i class="fas fa-crosshairs"></i> Usar mi ubicación actual
+                            <i class="fas fa-location-arrow"></i> Usar mi ubicación actual
                         </button>
+                        <div id="map-container"></div>
                     </div>
                 </div>
 

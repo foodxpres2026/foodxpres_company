@@ -11,13 +11,27 @@
 }
 
 [data-theme="light"] {
-    --color-fondo: #EBF5EE;  /* <--- Menta Hielo */
-    --color-superficie: #FFFFFF;
-    --color-borde: #D4E6D9;  /* Borde con un toque verde suave */
-    --color-blanco: #1A1A1A;
-    --color-gris-texto: #666666;
-    --color-sombra: rgba(0,0,0,0.05);
-    --color-overlay: rgba(255,255,255,0.95);
+    /* ===== FONDO Y SUPERFICIE (Estilo bolsa kraft) ===== */
+    --color-fondo: #8B5E3C;          /* Marrón cálido de la bolsa (kraft oscuro) */
+    --color-superficie: #A87B5A;     /* Marrón más claro para tarjetas */
+    --color-borde: #C9A47E;          /* Borde beige tostado, sutil */
+    
+    /* ===== TEXTOS ===== */
+    --color-blanco: #F5F0E6;         /* Blanco roto como el logo (texto principal) */
+    --color-gris-texto: #D9C7A7;     /* Beige claro (texto secundario) */
+    
+    /* ===== SOMBRAS Y OVERLAYS ===== */
+    --color-sombra: rgba(0, 0, 0, 0.25);
+    --color-overlay: rgba(60, 35, 15, 0.85); /* Marrón oscuro para degradados */
+    
+    /* ===== ACENTOS ===== */
+    --color-verde-neon: #6CC24A;     /* Mantenemos el verde FXS como acento */
+    --color-verde-oscuro: #2B5E1A;
+    --color-pildora-inactiva: rgba(245, 240, 230, 0.1);
+    
+    /* ===== DECORACIÓN (por si la usas) ===== */
+    --color-decoracion: rgba(245, 240, 230, 0.08);
+    --color-decoracion-2: rgba(245, 240, 230, 0.05);
 }
 
 /* ===== RESET Y BASE ===== */
@@ -87,22 +101,10 @@ body { background-color: var(--color-fondo); color: var(--color-blanco); line-he
 .restaurants-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 @media (min-width: 600px) { .restaurants-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (min-width: 900px) { .restaurants-grid { grid-template-columns: repeat(4, 1fr); } }
-
-.restaurant-card {
-    position: relative; height: 180px; border-radius: 16px; overflow: hidden;
-    cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
-    background-size: cover; background-position: center;
-}
+.restaurant-card { position: relative; height: 180px; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; background-size: cover; background-position: center; }
 .restaurant-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px var(--color-sombra); }
-.restaurant-card-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
-    z-index: 1;
-}
-.restaurant-card-info {
-    position: absolute; bottom: 0; left: 0; width: 100%;
-    padding: 1rem; z-index: 2; color: #fff;
-}
+.restaurant-card-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 100%); z-index: 1; }
+.restaurant-card-info { position: absolute; bottom: 0; left: 0; width: 100%; padding: 1rem; z-index: 2; color: #fff; }
 .restaurant-card-info h3 { font-size: 1rem; margin-bottom: 0.2rem; }
 .restaurant-rating { color: #FFC107; font-size: 0.75rem; margin-bottom: 0.2rem; }
 .restaurant-meta { display: flex; justify-content: space-between; font-size: 0.7rem; color: #ddd; }
@@ -116,51 +118,76 @@ body { background-color: var(--color-fondo); color: var(--color-blanco); line-he
 .back-btn:hover { color: var(--color-verde-neon); }
 #restaurant-title { font-size: 1.4rem; }
 
-/* ===== SUBCATEGORÍAS TIPO PÍLDORA ===== */
-.subcategories-tabs { display: flex; gap: 0.8rem; overflow-x: auto; padding-bottom: 1rem; margin-bottom: 1.5rem; scrollbar-width: none; -ms-overflow-style: none; }
+/* ===== SUBCATEGORÍAS TIPO PÍLDORA (Estilo exacto) ===== */
+.subcategories-tabs { 
+    display: flex; 
+    gap: 0.8rem; 
+    overflow-x: auto; 
+    padding-bottom: 1rem; 
+    margin-bottom: 1.5rem; 
+    scrollbar-width: none; 
+    -ms-overflow-style: none; 
+}
 .subcategories-tabs::-webkit-scrollbar { display: none; }
-.subcategory-tab { display: flex; align-items: center; gap: 8px; background-color: var(--color-superficie); border: 1px solid var(--color-borde); color: var(--color-gris-texto); font-size: 0.85rem; font-weight: 600; padding: 8px 16px; border-radius: 25px; cursor: pointer; white-space: nowrap; transition: all 0.3s; }
-.subcategory-tab:hover { border-color: var(--color-verde-neon); color: var(--color-blanco); }
-.subcategory-tab.active { background-color: rgba(93, 214, 44, 0.15); border-color: var(--color-verde-neon); color: var(--color-verde-neon); }
-.subcategory-tab .tab-count { background-color: #FFFFFF; color: #1A1A1A; font-size: 0.7rem; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
-.subcategory-tab.active .tab-count { background-color: var(--color-verde-neon); color: #0F0F0F; }
+
+.subcategory-tab {
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
+    background-color: var(--color-superficie); /* Fondo oscuro/claro según el tema */
+    border: 2px solid transparent; 
+    color: var(--color-gris-texto); 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    padding: 10px 20px; 
+    border-radius: 30px; 
+    cursor: pointer; 
+    white-space: nowrap; 
+    transition: all 0.3s ease;
+}
+
+.subcategory-tab:hover {
+    background-color: var(--color-borde);
+    color: var(--color-blanco);
+}
+
+/* Estilo para la categoría ACTIVA */
+.subcategory-tab.active { 
+    background-color: rgba(93, 214, 44, 0.1); /* Fondo verde muy sutil */
+    border: 2px solid var(--color-verde-neon); /* Borde verde neón */
+    color: var(--color-verde-neon); /* Texto verde neón */
+}
+
+/* Círculo con el número de platos (solo en la activa) */
+.subcategory-tab .tab-count {
+    background-color: var(--color-verde-neon); 
+    color: #0F0F0F; 
+    font-size: 0.7rem; 
+    font-weight: bold;
+    width: 24px; 
+    height: 24px; 
+    border-radius: 50%;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    margin-left: 4px;
+}
+
 
 /* ===== PLATOS (Imagen completa con texto encima) ===== */
 .dishes-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-.dish-card {
-    position: relative; height: 200px; border-radius: 16px; overflow: hidden;
-    cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
-    background-size: cover; background-position: center;
-    display: flex; flex-direction: column; justify-content: flex-end;
-}
+.dish-card { position: relative; height: 200px; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: flex-end; }
 .dish-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px var(--color-sombra); }
-.dish-card-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
-    z-index: 1;
-}
-.dish-card-content {
-    position: relative; z-index: 2; padding: 1rem; color: #fff; width: 100%;
-}
-.dish-card-category {
-    font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px;
-    background-color: var(--color-verde-neon); color: #0F0F0F;
-    padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 0.3rem;
-    font-weight: bold;
-}
+.dish-card-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 60%, transparent 100%); z-index: 1; }
+.dish-card-content { position: relative; z-index: 2; padding: 1rem; color: #fff; width: 100%; }
+.dish-card-category { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; background-color: var(--color-verde-neon); color: #0F0F0F; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 0.3rem; font-weight: bold; }
 .dish-card-content h4 { font-size: 0.95rem; margin-bottom: 0.2rem; }
 .dish-card-content p { font-size: 0.7rem; color: #ddd; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .dish-card-bottom { display: flex; justify-content: space-between; align-items: center; }
 .dish-card-price { font-weight: 700; color: var(--color-verde-neon); font-size: 1.1rem; }
 
 /* Botón de agregar en la tarjeta (Web) */
-.btn-add-web {
-    background: var(--color-verde-neon); color: #0F0F0F;
-    border: none; padding: 6px 14px; border-radius: 20px;
-    font-weight: 700; font-size: 0.8rem; cursor: pointer;
-    transition: all 0.3s;
-}
+.btn-add-web { background: var(--color-verde-neon); color: #0F0F0F; border: none; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.3s; }
 .btn-add-web:hover { background-color: #4ab822; transform: scale(1.05); }
 
 /* Controles cuando ya está en el carrito (Web) */
@@ -172,7 +199,7 @@ body { background-color: var(--color-fondo); color: var(--color-blanco); line-he
 .btn-remove-web { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 30px; height: 30px; border-radius: 50%; font-size: 0.7rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s; }
 .btn-remove-web:hover { background-color: #ff4444; border-color: #ff4444; }
 
-/* Ajustes para MÓVIL (Estilo Horizontal - Imagen completa también) */
+/* Ajustes para MÓVIL en platos */
 @media (max-width: 599px) {
     .dishes-list { grid-template-columns: 1fr; gap: 0.8rem; }
     .dish-card { height: 160px; }
@@ -212,17 +239,18 @@ body { background-color: var(--color-fondo); color: var(--color-blanco); line-he
 
 .cart-body { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
 
-/* Dirección y Mapa */
+/* Dirección de entrega compacta */
 .delivery-address-section { background-color: var(--color-fondo); padding: 1rem; border-radius: 12px; border: 1px solid var(--color-borde); display: flex; flex-direction: column; gap: 1rem; }
-.address-info { display: flex; gap: 10px; }
+.address-info { display: flex; gap: 10px; align-items: flex-start; }
 .address-info i { color: var(--color-verde-neon); font-size: 1.2rem; margin-top: 3px; }
 .address-info strong { font-size: 0.9rem; display: block; }
 .address-info p { font-size: 0.8rem; color: var(--color-gris-texto); margin: 0; }
 .address-info small { font-size: 0.7rem; color: var(--color-gris-texto); }
+.btn-edit-location { background: none; border: 1px solid var(--color-borde); color: var(--color-blanco); padding: 4px 10px; border-radius: 15px; font-size: 0.7rem; cursor: pointer; margin-left: auto; display: flex; align-items: center; gap: 4px; transition: all 0.2s; }
+.btn-edit-location:hover { border-color: var(--color-verde-neon); color: var(--color-verde-neon); }
 
-#map-container { width: 100%; height: 180px; border-radius: 8px; overflow: hidden; border: 1px solid var(--color-borde); }
-
-.location-controls { display: flex; flex-direction: column; gap: 8px; }
+/* Editor de ubicación (oculto por defecto) */
+.location-editor { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--color-borde); }
 .input-group { display: flex; align-items: center; background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 8px; padding: 0 10px; }
 .input-group i { color: var(--color-gris-texto); margin-right: 8px; }
 .input-group input { flex: 1; background: none; border: none; color: var(--color-blanco); padding: 10px 0; outline: none; font-size: 0.85rem; }
@@ -230,6 +258,7 @@ body { background-color: var(--color-fondo); color: var(--color-blanco); line-he
 .btn-location:hover { background-color: #4ab822; }
 .btn-location-full { background: none; border: 1px solid var(--color-verde-neon); color: var(--color-verde-neon); padding: 8px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .btn-location-full:hover { background-color: var(--color-verde-neon); color: #0F0F0F; }
+#map-container { width: 100%; height: 180px; border-radius: 8px; overflow: hidden; border: 1px solid var(--color-borde); }
 
 /* Lista de productos en el carrito */
 .cart-items { display: flex; flex-direction: column; gap: 1.5rem; }
@@ -237,7 +266,6 @@ body { background-color: var(--color-fondo); color: var(--color-blanco); line-he
 .cart-restaurant-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-borde); }
 .cart-restaurant-header h4 { font-size: 0.95rem; color: var(--color-verde-neon); }
 .cart-restaurant-header span { font-size: 0.75rem; color: var(--color-gris-texto); }
-
 .cart-item { display: flex; align-items: center; gap: 12px; }
 .cart-item-img { width: 50px; height: 50px; border-radius: 8px; background-size: cover; background-position: center; flex-shrink: 0; }
 .cart-item-info { flex: 1; }
@@ -257,11 +285,9 @@ body { background-color: var(--color-fondo); color: var(--color-blanco); line-he
 .tip-options { display: flex; gap: 8px; flex-wrap: wrap; }
 .tip-btn { background: none; border: 1px solid var(--color-borde); color: var(--color-blanco); padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
 .tip-btn.active { background-color: var(--color-verde-neon); color: #0F0F0F; border-color: var(--color-verde-neon); font-weight: 600; }
-
 .vip-checkbox { display: flex; align-items: flex-start; gap: 10px; font-size: 0.8rem; color: var(--color-gris-texto); cursor: pointer; }
 .vip-checkbox input { width: 18px; height: 18px; accent-color: var(--color-verde-neon); cursor: pointer; margin-top: 2px; }
 .vip-checkbox strong { color: var(--color-blanco); }
-
 .order-note { width: 100%; background-color: var(--color-fondo); border: 1px solid var(--color-borde); color: var(--color-blanco); padding: 10px; border-radius: 12px; font-size: 0.85rem; resize: none; outline: none; transition: border-color 0.3s; }
 .order-note:focus { border-color: var(--color-verde-neon); }
 
@@ -311,5 +337,33 @@ body { background-color: var(--color-fondo); color: var(--color-blanco); line-he
     .cart-btn { padding: 0.4rem 0.6rem; gap: 5px; }
     .login-btn { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
     .logo-text { font-size: 1.3rem; }
+    
+    /* Ajustes para MÓVIL: Achicar el carrito */
     .cart-panel-content { max-width: 100%; }
+    .cart-body { padding: 1rem; gap: 1rem; }
+    .cart-header { padding: 1rem; }
+    .cart-header h2 { font-size: 1.1rem; }
+    .cart-summary { padding: 1rem; }
+    .cart-item-img { width: 40px; height: 40px; }
+    .cart-item-info h5 { font-size: 0.8rem; }
+    .cart-item-info p { font-size: 0.7rem; }
+    .cart-restaurant-header h4 { font-size: 0.85rem; }
+    .cart-restaurant-header span { font-size: 0.7rem; }
+    .extras-title { font-size: 0.8rem; }
+    .tip-btn { padding: 4px 10px; font-size: 0.7rem; }
+    .vip-checkbox { font-size: 0.75rem; }
+    .order-note { font-size: 0.8rem; }
+    .summary-row { font-size: 0.85rem; }
+    .total-row { font-size: 1rem; }
+    .btn-realizar-pedido { padding: 12px; font-size: 0.9rem; }
+    .delivery-address-section { padding: 0.8rem; }
+    .address-info strong { font-size: 0.85rem; }
+    .address-info p { font-size: 0.75rem; }
+    .address-info small { font-size: 0.65rem; }
+}
+/* Ajustes para MÓVIL: Hacer las píldoras un poco más pequeñas */
+@media (max-width: 767px) {
+    .subcategories-tabs { gap: 0.5rem; padding-bottom: 0.8rem; margin-bottom: 1rem; }
+    .subcategory-tab { padding: 8px 14px; font-size: 0.75rem; gap: 5px; }
+    .subcategory-tab .tab-count { width: 20px; height: 20px; font-size: 0.6rem; margin-left: 2px; }
 }

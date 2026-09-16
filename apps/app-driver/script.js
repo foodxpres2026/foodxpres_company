@@ -273,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
             card.classList.add('dish-card');
             card.style.backgroundImage = `url('${dish.image}')`;
             
-            // Contenido de la tarjeta (común para web y móvil)
             let bottomContent = '';
             if (!isAdded) {
                 bottomContent = `<button class="btn-add-web" id="add-${dish.name.replace(/\s/g, '')}">+ Agregar</button>`;
@@ -305,7 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             
-            // Lógica de agregar
             const addBtn = card.querySelector(`#add-${dish.name.replace(/\s/g, '')}`);
             if (addBtn) {
                 addBtn.addEventListener('click', () => {
@@ -318,7 +316,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // Lógica de controles de cantidad y eliminar
             const minusBtn = card.querySelector('.minus');
             const plusBtn = card.querySelector('.plus');
             const removeBtn = card.querySelector('.btn-remove-web');
@@ -475,10 +472,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartPanel = document.getElementById('cart-panel');
     const cartItemsContainer = document.getElementById('cart-items');
 
+    // Lógica para mostrar/ocultar el editor de ubicación
+    const toggleLocationBtn = document.getElementById('toggle-location-editor');
+    const locationEditor = document.getElementById('location-editor');
+
+    toggleLocationBtn.addEventListener('click', () => {
+        locationEditor.classList.toggle('hidden');
+        if (!locationEditor.classList.contains('hidden')) {
+            // Si se muestra el editor, inicializar el mapa
+            setTimeout(initMap, 100);
+        }
+    });
+
     openCartBtn.addEventListener('click', () => {
         renderCartModal();
         cartPanel.classList.add('active');
-        setTimeout(initMap, 300); // Inicializar mapa cuando el panel esté visible
     });
     closeCartBtn.addEventListener('click', () => cartPanel.classList.remove('active'));
     cartPanel.addEventListener('click', (e) => { if (e.target === cartPanel) cartPanel.classList.remove('active'); });
@@ -651,16 +659,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Coordenadas iniciales (Pucallpa, Perú - según tu footer)
         const initialCoords = [-8.3791, -74.5539];
-        
         map = L.map('map-container').setView(initialCoords, 14);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        // Marcador arrastrable
         marker = L.marker(initialCoords, { draggable: true }).addTo(map);
         
         marker.on('dragend', function(e) {
@@ -668,13 +673,11 @@ document.addEventListener('DOMContentLoaded', () => {
             reverseGeocode(position.lat, position.lng);
         });
 
-        // Buscar dirección
         document.getElementById('search-address-btn').addEventListener('click', () => {
             const query = document.getElementById('address-input').value;
             if (query) geocodeAddress(query);
         });
 
-        // Usar ubicación actual
         document.getElementById('current-location-btn').addEventListener('click', () => {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
