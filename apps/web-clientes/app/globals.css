@@ -1,25 +1,73 @@
 @import "tailwindcss";
 
 @theme {
+  /* ============================================
+     PALETA FOODXPRES (basada en el logo)
+     ============================================ */
   --color-brand: #7ED321;
-  --color-brand-dark: #6BB81A;
+  --color-brand-dark: #5FBF3A;
+  --color-brand-darker: #4A9A2C;
   --color-brand-light: #A0E85A;
+
+  /* Fondos */
   --color-surface: #151515;
   --color-surface-dark: #0A0A0A;
-  --color-surface-light: #1a1a1a;
+  --color-surface-light: #1F1F1F;
+
+  /* Bordes */
   --color-line: #222222;
   --color-line-light: #2a2a2a;
+
+  /* Estados */
   --color-danger: #EF4444;
   --color-danger-dark: #DC2626;
-  --color-warning: #F59E0B;
-  --color-success: #7ED321;
+  --color-warning: #F5C518;
+  --color-info: #3B82F6;
+
+  /* Extras */
+  --color-jaguar: #F5C518;
+  --color-tucan: #FF6B35;
 }
 
 :root {
   color-scheme: dark;
 }
 
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   background-color: var(--color-surface-dark);
   color: #fff;
+  overscroll-behavior-y: none;
+}
+
+/* Scrollbar sutil */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+/* Utilidades mobile-first */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Animación skeleton */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+}
+.skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  background-color: #1F1F1F;
+  border-radius: 8px;
 }
