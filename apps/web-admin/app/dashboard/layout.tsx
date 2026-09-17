@@ -9,11 +9,11 @@ const NAV_ITEMS = [
   { href: '/dashboard/pedidos', label: 'Pedidos', icon: '📦' },
   { href: '/dashboard/drivers', label: 'Drivers', icon: '🏍️' },
   { href: '/dashboard/clientes', label: 'Clientes', icon: '👥' },
-  { href: '/dashboard/solicitudes', label: 'Solicitudes', icon: '🔑' }, // ← NUEVO
+  { href: '/dashboard/promociones', label: 'Promociones', icon: '🎨' }, // ← NUEVO
+  { href: '/dashboard/solicitudes', label: 'Solicitudes', icon: '🔑' },
   { href: '/dashboard/admins', label: 'Admins', icon: '🔐' },
   { href: '/dashboard/configuracion', label: 'Configuración', icon: '⚙️' },
 ]
-
 export default async function DashboardLayout({
   children,
 }: {
