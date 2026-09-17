@@ -14,10 +14,13 @@ export interface RestauranteCardData {
   tiempo_estimado: string | null
   monto_minimo: string
   abierto: boolean
+  // Envío (calculado dinámicamente)
+  envio_costo?: number | null
+  envio_km?: number | null
 }
 
 // ============================================
-// HERO (tarjeta grande para "Abierto ahora")
+// HERO
 // ============================================
 export function RestauranteHero({
   restaurante,
@@ -52,6 +55,13 @@ export function RestauranteHero({
         <div className="absolute top-3 left-3 bg-brand text-black text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
           <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
           Abierto ahora
+        </div>
+      )}
+
+      {/* ENVÍO (esquina superior derecha) */}
+      {restaurante.envio_costo != null && (
+        <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+          🛵 S/ {restaurante.envio_costo.toFixed(2)}
         </div>
       )}
 
@@ -95,7 +105,7 @@ export function RestauranteHero({
             <span>⏱ {restaurante.tiempo_estimado}</span>
           )}
           <span className="text-brand font-bold ml-auto">
-            S/ {Number(restaurante.monto_minimo).toFixed(2)}
+            Mín. S/ {Number(restaurante.monto_minimo).toFixed(2)}
           </span>
         </div>
       </div>
@@ -104,7 +114,7 @@ export function RestauranteHero({
 }
 
 // ============================================
-// GRID (tarjeta pequeña para listas)
+// GRID
 // ============================================
 export function RestauranteGrid({
   restaurante,
@@ -116,7 +126,6 @@ export function RestauranteGrid({
       href={`/restaurante/${restaurante.slug}`}
       className="block bg-surface border border-line rounded-2xl overflow-hidden hover:border-brand/40 transition-colors group"
     >
-      {/* IMAGEN */}
       <div className="relative h-32 md:h-36 overflow-hidden">
         {restaurante.banner_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -143,7 +152,13 @@ export function RestauranteGrid({
           </div>
         )}
 
-        {/* LOGO pequeño */}
+        {/* ENVÍO */}
+        {restaurante.envio_costo != null && (
+          <div className="absolute top-2 right-2 bg-black/80 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded-full">
+            🛵 S/ {restaurante.envio_costo.toFixed(2)}
+          </div>
+        )}
+
         {restaurante.logo_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -154,7 +169,6 @@ export function RestauranteGrid({
         )}
       </div>
 
-      {/* INFO */}
       <div className="p-3">
         <h3 className="text-sm font-bold text-white truncate">
           {restaurante.nombre}
