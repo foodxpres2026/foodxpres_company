@@ -40,6 +40,7 @@ interface SubPedido {
   driver_id: string | null
   driver_nombre: string | null
   driver_celular: string | null
+  propina_vip_monto: string | number | null
   items: Item[]
   historial: Historial[]
 }
@@ -267,7 +268,7 @@ export default function PedidoDetalleMulti({
           </div>
         </div>
 
-        {/* RESUMEN POR LOCAL (si es multi) */}
+        {/* RESUMEN POR LOCAL */}
         {esMulti && (
           <div className="px-5 md:px-6 py-4 bg-surface-dark border-t border-line">
             <div className="flex items-center gap-2 mb-3">
@@ -370,8 +371,8 @@ export default function PedidoDetalleMulti({
               </span>
             </div>
 
-            {/* Costes específicos de este local */}
-            <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-line">
+            {/* Costes específicos de este local + cuánto cobra el driver */}
+            <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-line">
               <div>
                 <p className="text-[10px] text-gray-500 uppercase">Subtotal</p>
                 <p className="text-sm text-white font-medium">
@@ -385,12 +386,31 @@ export default function PedidoDetalleMulti({
                 <p className="text-sm text-white font-medium">
                   S/ {Number(spActual.costo_envio).toFixed(2)}
                   {spActual.distancia_km && (
-                    <span className="text-gray-500 text-xs ml-1">
-                      ({Number(spActual.distancia_km).toFixed(1)} km)
+                    <span className="text-gray-500 text-[10px] ml-1 block">
+                      {Number(spActual.distancia_km).toFixed(1)} km
                     </span>
                   )}
                 </p>
               </div>
+              {spActual.driver_id && (
+                <div className="bg-brand/5 border border-brand/20 rounded-lg px-2 py-1">
+                  <p className="text-[10px] text-brand uppercase font-bold">
+                    💰 Cobra driver
+                  </p>
+                  <p className="text-base text-brand font-black leading-tight">
+                    S/{' '}
+                    {(
+                      Number(spActual.costo_envio) +
+                      Number(spActual.propina_vip_monto || 0)
+                    ).toFixed(2)}
+                  </p>
+                  {Number(spActual.propina_vip_monto) > 0 && (
+                    <p className="text-[9px] text-gray-500">
+                      incl. propina + VIP
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {spActual.motivo_rechazo && (
@@ -414,6 +434,8 @@ export default function PedidoDetalleMulti({
                   }
                 : null
             }
+            costoEnvio={Number(spActual.costo_envio)}
+            propinaVipMonto={Number(spActual.propina_vip_monto || 0)}
           />
 
           {/* Items */}

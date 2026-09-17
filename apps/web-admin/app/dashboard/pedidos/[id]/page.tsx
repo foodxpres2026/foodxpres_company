@@ -21,7 +21,18 @@ async function getPedido(pedidoId: string) {
   // Sub-pedidos con restaurante y driver
   const subs = await sql`
     SELECT 
-      sp.*,
+      sp.id,
+      sp.pedido_id,
+      sp.restaurante_id,
+      sp.driver_id,
+      sp.estado,
+      sp.subtotal,
+      sp.costo_envio,
+      sp.distancia_km,
+      sp.tiempo_estimado,
+      sp.direccion_snapshot,
+      sp.creado_en,
+      sp.propina_vip_monto,
       r.nombre as restaurante_nombre,
       r.celular as restaurante_celular,
       d.id as driver_id,
@@ -32,7 +43,7 @@ async function getPedido(pedidoId: string) {
     LEFT JOIN usuarios d ON d.id = sp.driver_id
     WHERE sp.pedido_id = ${pedidoId}
     ORDER BY sp.creado_en ASC
-  `
+  ` 
 
   // Items por sub-pedido
   const subsConItems = await Promise.all(

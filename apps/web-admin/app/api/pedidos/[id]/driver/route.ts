@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
 import { recalcularPedido } from '@/lib/pedidos-utils'
+import { asignarPropinaAlDriver } from '@/lib/pedidos/propinas'
 
 const driverSchema = z.object({
   driver_id: z.string().uuid().nullable(),
@@ -75,7 +76,10 @@ export async function PATCH(
       SET driver_id = ${driver_id}
       WHERE id = ${id}
     `
-
+    // 🎁 Asignar propina al primer driver que tome un pedido
+    if (driver_id) {
+      await asignarPropinaAlDriver(id)
+    }
     // Registrar en historial
     let notaHistorial = notas || ''
     if (driverAnterior !== driver_id) {

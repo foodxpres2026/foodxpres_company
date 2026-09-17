@@ -11,24 +11,32 @@ interface Driver {
   pedidos_activos: number
 }
 
+interface Props {
+  pedidoId: string
+  driverActual: { id: string; nombre: string } | null
+  costoEnvio?: number | null
+  propinaVipMonto?: number | null
+}
+
 export default function DriverSelector({
   pedidoId,
   driverActual,
-}: {
-  pedidoId: string
-  driverActual: { id: string; nombre: string } | null
-}) {
+  costoEnvio = null,
+  propinaVipMonto = null,
+}: Props) {
   const router = useRouter()
   const [drivers, setDrivers] = useState<Driver[]>([])
   const [loading, setLoading] = useState(false)
   const [abierto, setAbierto] = useState(false)
+
+  // Total que cobra el driver de este sub_pedido
+  const totalCobra = Number(costoEnvio || 0) + Number(propinaVipMonto || 0)
 
   useEffect(() => {
     fetch('/api/drivers')
       .then((r) => r.json())
       .then((data) => {
         if (data.ok) {
-          // Solo drivers activos
           setDrivers(data.data.filter((d: any) => d.activo))
         }
       })
@@ -76,20 +84,38 @@ export default function DriverSelector({
 
       {driverActual ? (
         <div className="flex items-center gap-3 p-3 bg-surface-dark rounded-xl">
-          <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center text-brand font-bold">
+          <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center text-brand font-bold flex-shrink-0">
             {driverActual.nombre.charAt(0).toUpperCase()}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-white truncate">
               {driverActual.nombre}
             </p>
             <p className="text-xs text-gray-500">Repartidor asignado</p>
           </div>
+          {costoEnvio != null && (
+            <div className="text-right flex-shrink-0">
+              <p className="text-[10px] text-gray-500 uppercase">Cobra</p>
+              <p className="text-base font-black text-brand">
+                S/ {totalCobra.toFixed(2)}
+              </p>
+              {Number(propinaVipMonto || 0) > 0 && (
+                <p className="text-[9px] text-gray-500">incl. propina</p>
+              )}
+            </div>
+          )}
         </div>
       ) : (
-        <p className="text-sm text-gray-500 italic p-3 bg-surface-dark rounded-xl">
-          Sin driver asignado
-        </p>
+        <div className="p-3 bg-surface-dark rounded-xl">
+          <p className="text-sm text-gray-500 italic">
+            Sin driver asignado
+          </p>
+          {costoEnvio != null && costoEnvio > 0 && (
+            <p className="text-xs text-gray-600 mt-1">
+              Al asignar, cobrará <strong className="text-brand">S/ {totalCobra.toFixed(2)}</strong> (envío + propina)
+            </p>
+          )}
+        </div>
       )}
 
       {/* DROPDOWN */}
@@ -137,9 +163,15 @@ export default function DriverSelector({
                       )}
                     </p>
                   </div>
-                  {activo && (
-                    <span className="text-[10px] font-bold">ACTUAL</span>
-                  )}
+                  {activo ? (
+                    <span className="text-[10px] font-bold flex-shrink-0">
+                      ACTUAL
+                    </span>
+                  ) : costoEnvio != null && costoEnvio > 0 ? (
+                    <span className="text-[10px] text-brand font-bold flex-shrink-0">
+                      +S/ {totalCobra.toFixed(2)}
+                    </span>
+                  ) : null}
                 </button>
               )
             })
