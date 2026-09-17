@@ -75,6 +75,9 @@ export default function OpcionesModal({
 
   if (!open || !plato) return null
 
+  // ⚡ Capturamos una referencia no-null para que TypeScript no se confunda
+  const platoActual: Plato = plato
+
   function toggleChoice(grupo: GrupoOpcion, choice: Choice) {
     const actuales = selecciones[grupo.id] || []
     const yaElegido = actuales.find((c) => c.id === choice.id)
@@ -87,7 +90,6 @@ export default function OpcionesModal({
       return
     }
 
-    // Si máximo = 1 → reemplazar
     if (grupo.maximo === 1) {
       setSelecciones({
         ...selecciones,
@@ -96,7 +98,6 @@ export default function OpcionesModal({
       return
     }
 
-    // Si ya alcanzó el máximo → no agregar
     if (actuales.length >= grupo.maximo) return
 
     setSelecciones({
@@ -105,7 +106,7 @@ export default function OpcionesModal({
     })
   }
 
-  // Validar que todos los grupos requeridos estén completos
+  // Validar
   const gruposCompletos = grupos.every((g) => {
     if (!g.requerido && (selecciones[g.id]?.length || 0) === 0) return true
     const n = selecciones[g.id]?.length || 0
@@ -113,8 +114,8 @@ export default function OpcionesModal({
     return n >= g.minimo && n <= g.maximo
   })
 
-  // Calcular precio total
-  const precioBase = Number(plato.precio)
+  // Calcular precio
+  const precioBase = Number(platoActual.precio)
   const extraPorUnidad = Object.values(selecciones)
     .flat()
     .reduce((sum, c) => sum + Number(c.precio_extra), 0)
@@ -124,7 +125,6 @@ export default function OpcionesModal({
   function handleAgregar() {
     if (!gruposCompletos) return
 
-    // Aplanar opciones elegidas
     const opcionesElegidas: OpcionElegida[] = []
     for (const grupo of grupos) {
       const choices = selecciones[grupo.id] || []
@@ -138,9 +138,9 @@ export default function OpcionesModal({
     }
 
     agregar({
-      plato_id: plato.id,
-      plato_nombre: plato.nombre,
-      plato_imagen: plato.imagen_url,
+      plato_id: platoActual.id,
+      plato_nombre: platoActual.nombre,
+      plato_imagen: platoActual.imagen_url,
       restaurante_id: restaurante.id,
       restaurante_slug: restaurante.slug,
       restaurante_nombre: restaurante.nombre,
@@ -171,11 +171,11 @@ export default function OpcionesModal({
         <div className="flex items-start justify-between gap-3 p-4 md:p-5 border-b border-line">
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-bold text-white leading-tight">
-              {plato.nombre}
+              {platoActual.nombre}
             </h2>
-            {plato.descripcion && (
+            {platoActual.descripcion && (
               <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                {plato.descripcion}
+                {platoActual.descripcion}
               </p>
             )}
           </div>
@@ -300,9 +300,9 @@ export default function OpcionesModal({
 
         {/* Footer sticky */}
         <div className="p-4 md:p-5 border-t border-line bg-surface flex items-center gap-3">
-          {/* Cantidad */}
           <div className="flex items-center gap-1 bg-surface-dark border border-line rounded-xl p-1">
-            <button              type="button"
+            <button
+              type="button"
               onClick={() => setCantidad(Math.max(1, cantidad - 1))}
               disabled={cantidad <= 1}
               className="w-9 h-9 rounded-lg text-white font-bold disabled:opacity-30 hover:bg-surface-light transition-colors"
@@ -321,7 +321,6 @@ export default function OpcionesModal({
             </button>
           </div>
 
-          {/* Botón agregar */}
           <button
             type="button"
             onClick={handleAgregar}
