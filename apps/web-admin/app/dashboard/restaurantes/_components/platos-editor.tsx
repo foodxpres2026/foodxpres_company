@@ -44,7 +44,7 @@ export default function PlatosEditor({
 
   // Agrupar por subcategoría
   const grupos = useMemo(() => {
-    const grupos: {
+    const gruposArr: {
       id: string | null
       nombre: string
       platos: Plato[]
@@ -53,16 +53,16 @@ export default function PlatosEditor({
     for (const sub of subcategorias) {
       const platosSub = platos.filter((p) => p.subcategoria_id === sub.id)
       if (platosSub.length > 0) {
-        grupos.push({ id: sub.id, nombre: sub.nombre, platos: platosSub })
+        gruposArr.push({ id: sub.id, nombre: sub.nombre, platos: platosSub })
       }
     }
 
     const sinCat = platos.filter((p) => !p.subcategoria_id)
     if (sinCat.length > 0) {
-      grupos.push({ id: null, nombre: 'Sin categoría', platos: sinCat })
+      gruposArr.push({ id: null, nombre: 'Sin categoría', platos: sinCat })
     }
 
-    return grupos
+    return gruposArr
   }, [platos, subcategorias])
 
   function openNuevo() {
@@ -169,7 +169,13 @@ export default function PlatosEditor({
             p.id === data.id
               ? {
                   ...p,
-                  ...payload,
+                  nombre: payload.nombre,
+                  descripcion: payload.descripcion,
+                  precio: String(payload.precio),
+                  imagen_url: payload.imagen_url,
+                  tiempo_estimado: payload.tiempo_estimado,
+                  disponible: payload.disponible,
+                  subcategoria_id: payload.subcategoria_id,
                   subcategoria_nombre: subNombre,
                   num_grupos: data.grupos?.length ?? 0,
                 }
@@ -177,21 +183,19 @@ export default function PlatosEditor({
           )
         )
       } else {
-        setPlatos([
-          ...platos,
-          {
-            id: platoId,
-            nombre: payload.nombre,
-            descripcion: payload.descripcion,
-            precio: String(payload.precio),
-            imagen_url: payload.imagen_url,
-            tiempo_estimado: payload.tiempo_estimado,
-            disponible: payload.disponible,
-            subcategoria_id: payload.subcategoria_id,
-            subcategoria_nombre: subNombre,
-            num_grupos: 0,
-          },
-        ])
+        const nuevoPlato: Plato = {
+          id: platoId,
+          nombre: payload.nombre,
+          descripcion: payload.descripcion,
+          precio: String(payload.precio),
+          imagen_url: payload.imagen_url,
+          tiempo_estimado: payload.tiempo_estimado,
+          disponible: payload.disponible,
+          subcategoria_id: payload.subcategoria_id,
+          subcategoria_nombre: subNombre,
+          num_grupos: 0,
+        }
+        setPlatos([...platos, nuevoPlato])
       }
     } catch {
       setError('Error de conexión')
@@ -311,7 +315,9 @@ export default function PlatosEditor({
                         {p.num_grupos > 0 && (
                           <span
                             className="text-[10px] bg-brand/10 text-brand px-2 py-0.5 rounded-full font-medium flex-shrink-0"
-                            title={`${p.num_grupos} grupo${p.num_grupos === 1 ? '' : 's'} de opciones`}
+                            title={`${p.num_grupos} grupo${
+                              p.num_grupos === 1 ? '' : 's'
+                            } de opciones`}
                           >
                             ⚙️ {p.num_grupos}
                           </span>

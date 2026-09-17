@@ -16,7 +16,7 @@ interface Driver {
 }
 
 async function getDrivers(): Promise<Driver[]> {
-  return sql<Driver[]>`
+  return (await sql`
     SELECT 
       u.id,
       u.nombre,
@@ -35,7 +35,7 @@ async function getDrivers(): Promise<Driver[]> {
     LEFT JOIN driver_detalles d ON d.usuario_id = u.id
     WHERE u.role = 'DRIVER'
     ORDER BY u.activo DESC, u.creado_en DESC
-  `
+  `) as Driver[]
 }
 
 export default async function DriversPage() {

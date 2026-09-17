@@ -84,14 +84,12 @@ export async function authenticateAdmin(
   email: string,
   password: string
 ): Promise<SessionUser | null> {
-  const rows = await sql<
-    { id: string; role: string; email: string; password_hash: string; nombre: string }[]
-  >`
+  const rows = (await sql`
     SELECT id, role, email, password_hash, nombre
     FROM usuarios
     WHERE email = ${email} AND role = 'ADMIN' AND activo = TRUE
     LIMIT 1
-  `
+  `) as any[]
 
   const user = rows[0]
   if (!user || !user.password_hash) return null

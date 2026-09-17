@@ -96,20 +96,21 @@ export async function registrarCliente(
   password: string
 ): Promise<{ ok: true; user: SessionUser } | { ok: false; error: string }> {
   // Verificar si ya existe
-  const existe = await sql`
+  const existe = (await sql`
     SELECT id FROM usuarios WHERE celular = ${celular} LIMIT 1
-  `
+  `) as any[]
+
   if (existe.length > 0) {
     return { ok: false, error: 'Este celular ya está registrado' }
   }
 
   const passwordHash = await hashPassword(password)
 
-  const rows = await sql`
+  const rows = (await sql`
     INSERT INTO usuarios (role, celular, password_hash, nombre)
     VALUES ('CUSTOMER', ${celular}, ${passwordHash}, ${nombre})
     RETURNING id, celular, nombre
-  `
+  `) as any[]
 
   return {
     ok: true,
@@ -129,12 +130,12 @@ export async function autenticarCliente(
   celular: string,
   password: string
 ): Promise<SessionUser | null> {
-  const rows = await sql`
+  const rows = (await sql`
     SELECT id, celular, nombre, password_hash
     FROM usuarios
     WHERE celular = ${celular} AND role = 'CUSTOMER' AND activo = TRUE
     LIMIT 1
-  `
+  `) as any[]
 
   const user = rows[0]
   if (!user || !user.password_hash) return null

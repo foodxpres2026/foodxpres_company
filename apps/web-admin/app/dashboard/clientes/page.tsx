@@ -13,7 +13,7 @@ interface Cliente {
 }
 
 async function getClientes(): Promise<Cliente[]> {
-  return sql<Cliente[]>`
+  return (await sql`
     SELECT 
       u.id,
       u.nombre,
@@ -26,7 +26,7 @@ async function getClientes(): Promise<Cliente[]> {
     FROM usuarios u
     WHERE u.role = 'CUSTOMER'
     ORDER BY u.creado_en DESC
-  `
+  `) as Cliente[]
 }
 
 export default async function ClientesPage() {

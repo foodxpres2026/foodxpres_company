@@ -15,12 +15,12 @@ interface Restaurante {
 }
 
 async function getRestaurantes(): Promise<Restaurante[]> {
-  return sql<Restaurante[]>`
+  return (await sql`
     SELECT id, slug, nombre, subtitulo, direccion_fisica, celular,
            monto_minimo, activo, creado_en
     FROM restaurantes
     ORDER BY activo DESC, creado_en DESC
-  `
+  `) as Restaurante[]
 }
 
 export default async function RestaurantesPage() {
