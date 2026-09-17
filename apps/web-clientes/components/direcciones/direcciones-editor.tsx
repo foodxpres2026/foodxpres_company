@@ -1,8 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import DireccionModal, { type Direccion } from './direccion-modal'
+import DireccionModalWrapper from './direccion-modal-wrapper'
+import { type Direccion } from './direccion-modal'
+import {
+  leerDireccionTemporal,
+  limpiarDireccionTemporal,
+  type DireccionLocal,
+} from '@/hooks/use-direccion-actual'
 
 interface DireccionCompleta {
   id: string
@@ -16,15 +22,23 @@ interface DireccionCompleta {
 
 export default function DireccionesEditor({
   initialData,
+  estaLogueado,
 }: {
   initialData: DireccionCompleta[]
+  estaLogueado: boolean
 }) {
   const router = useRouter()
   const [direcciones, setDirecciones] = useState(initialData)
+  const [temporal, setTemporal] = useState<DireccionLocal | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [editando, setEditando] = useState<Partial<Direccion> | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!estaLogueado) {
+      setTemporal(leerDireccionTemporal())
+    }
+  }, [estaLogueado])
 
   function abrirNueva() {
     setEditando(null)
@@ -42,43 +56,6 @@ export default function DireccionesEditor({
       es_predeterminada: d.es_predeterminada,
     })
     setModalOpen(true)
-  }
-
-  async function guardar(data: Direccion) {
-    setError(null)
-    setLoading(true)
-
-    try {
-      const isEdit = !!data.id
-      const url = isEdit ? `/api/direcciones/${data.id}` : '/api/direcciones'
-
-      const res = await fetch(url, {
-        method: isEdit ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          etiqueta: data.etiqueta,
-          direccion: data.direccion,
-          referencia: data.referencia,
-          lat: data.lat,
-          lng: data.lng,
-        }),
-      })
-
-      const resData = await res.json()
-
-      if (!res.ok || !resData.ok) {
-        setError(resData.error || 'Error al guardar')
-        setLoading(false)
-        return
-      }
-
-      setModalOpen(false)
-      router.refresh()
-      window.location.reload() // simple recarga para tener todo fresco
-    } catch {
-      setError('Error de conexión')
-      setLoading(false)
-    }
   }
 
   async function marcarPredeterminada(d: DireccionCompleta) {
@@ -115,14 +92,107 @@ export default function DireccionesEditor({
     }
   }
 
+  function eliminarTemporal() {
+    if (!confirm('¿Eliminar esta dirección temporal?')) return
+    limpiarDireccionTemporal()
+    setTemporal(null)
+    router.refresh()
+  }
+
+  // ============================================
+  // CLIENTE ANÓNIMO
+  // ============================================
+  if (!estaLogueado) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-jaguar/5 border border-jaguar/30 rounded-2xl p-4">
+          <p className="text-xs text-jaguar">
+            💡 Por ahora tu dirección se guarda en este dispositivo. Al
+            registrarte se guardará automáticamente en tu cuenta.
+          </p>
+        </div>
+
+        {temporal ? (
+          <div className="bg-surface border-2 border-brand rounded-2xl p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-brand/15 flex items-center justify-center text-xl flex-shrink-0">
+                🏠
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="font-bold text-white">{temporal.etiqueta}</span>
+                  <span className="text-[10px] bg-brand text-black px-2 py-0.5 rounded-full font-bold">
+                    Actual
+                  </span>
+                </div>
+                <p className="text-sm text-gray-300 truncate">
+                  {temporal.direccion}
+                </p>
+                {temporal.referencia && (
+                  <p className="text-xs text-gray-500 mt-0.5 truncate">
+                    Ref: {temporal.referencia}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-line flex-wrap">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditando({
+                    etiqueta: temporal.etiqueta,
+                    direccion: temporal.direccion,
+                    referencia: temporal.referencia,
+                    lat: temporal.lat,
+                    lng: temporal.lng,
+                  })
+                  setModalOpen(true)
+                }}
+                className="text-xs text-gray-400 hover:text-brand"
+              >
+                Editar
+              </button>
+              <span className="text-gray-700">·</span>
+              <button
+                type="button"
+                onClick={eliminarTemporal}
+                className="text-xs text-gray-400 hover:text-danger"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-surface border border-line rounded-2xl p-12 text-center">
+            <p className="text-4xl mb-2">📍</p>
+            <p className="text-gray-400">Aún no tienes una dirección</p>
+            <button
+              type="button"
+              onClick={abrirNueva}
+              className="text-brand hover:underline text-sm mt-3 inline-block"
+            >
+              Agregar mi dirección →
+            </button>
+          </div>
+        )}
+
+        <DireccionModalWrapper
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          estaLogueado={false}
+          initialData={editando ?? undefined}
+          onGuardada={() => setTemporal(leerDireccionTemporal())}
+        />
+      </div>
+    )
+  }
+
+  // ============================================
+  // CLIENTE LOGUEADO
+  // ============================================
   return (
     <div className="space-y-4">
-      {error && (
-        <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded-xl text-sm">
-          {error}
-        </div>
-      )}
-
       {direcciones.length === 0 ? (
         <div className="bg-surface border border-line rounded-2xl p-12 text-center">
           <p className="text-4xl mb-2">📍</p>
@@ -210,10 +280,10 @@ export default function DireccionesEditor({
         </div>
       )}
 
-      <DireccionModal
+      <DireccionModalWrapper
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onGuardar={guardar}
+        estaLogueado={true}
         initialData={editando ?? undefined}
       />
     </div>

@@ -10,31 +10,24 @@ export const dynamic = 'force-dynamic'
 export default async function DireccionesPage() {
   const user = await getSessionUser()
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-5">
-        <p className="text-gray-400">Debes iniciar sesión</p>
-      </div>
-    )
+  let direcciones: any[] = []
+  let direccionDeBD = null
+
+  if (user) {
+    direcciones = (await sql`
+      SELECT id, etiqueta, direccion, referencia, lat, lng, es_predeterminada
+      FROM direcciones
+      WHERE usuario_id = ${user.id}
+      ORDER BY es_predeterminada DESC, creado_en DESC
+    `) as any[]
+    direccionDeBD = direcciones.find((d) => d.es_predeterminada) || null
   }
-
-  const direcciones = (await sql`
-    SELECT id, etiqueta, direccion, referencia, lat, lng, es_predeterminada
-    FROM direcciones
-    WHERE usuario_id = ${user.id}
-    ORDER BY es_predeterminada DESC, creado_en DESC
-  `) as any[]
-
-  // Dirección actual predeterminada (para el header)
-  const direccionActual =
-    (direcciones.find((d: any) => d.es_predeterminada) as any) || null
 
   return (
     <>
-      <Header user={user} direccionActual={direccionActual} />
+      <Header user={user} direccionDeBD={direccionDeBD} />
 
       <main className="max-w-3xl mx-auto px-4 py-5 pb-24 md:pb-8">
-        {/* BOTÓN ATRÁS */}
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand transition-colors mb-4"
@@ -44,13 +37,15 @@ export default async function DireccionesPage() {
         </Link>
 
         <div className="mb-5">
-          <h1 className="text-2xl font-black text-white">Mis direcciones</h1>
+          <h1 className="text-2xl font-black text-white">Mi dirección</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Gestiona dónde quieres recibir tus pedidos
+            {user
+              ? 'Gestiona dónde quieres recibir tus pedidos'
+              : 'Por ahora guardaremos tu dirección en este dispositivo. Al registrarte se guardará en tu cuenta.'}
           </p>
         </div>
 
-        <DireccionesEditor initialData={direcciones} />
+        <DireccionesEditor initialData={direcciones} estaLogueado={!!user} />
       </main>
 
       <BottomNav />

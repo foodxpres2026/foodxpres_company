@@ -31,10 +31,22 @@ function RegistroForm() {
     setLoading(true)
 
     try {
+      // 🎁 Leer dirección temporal del localStorage (si existe)
+      let direccionTemporal = null
+      try {
+        const raw = localStorage.getItem('foodxpres-direccion-temporal')
+        if (raw) direccionTemporal = JSON.parse(raw)
+      } catch {}
+
       const res = await fetch('/api/auth/registro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ celular, nombre, password }),
+        body: JSON.stringify({
+          celular,
+          nombre,
+          password,
+          direccion_temporal: direccionTemporal,
+        }),
       })
       const data = await res.json()
 
@@ -42,6 +54,11 @@ function RegistroForm() {
         setError(data.error || 'Error al registrarte')
         setLoading(false)
         return
+      }
+
+      // Limpiar dirección temporal (ya está en la BD)
+      if (direccionTemporal) {
+        localStorage.removeItem('foodxpres-direccion-temporal')
       }
 
       router.push(redirect)
