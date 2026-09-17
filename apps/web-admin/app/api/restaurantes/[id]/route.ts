@@ -18,6 +18,7 @@ export async function GET(
     const rows = await sql`
       SELECT id, slug, nombre, subtitulo, direccion_fisica, referencia,
              celular, lat, lng, tiempo_estimado, monto_minimo,
+             costo_envio_minimo,
              banner_url, logo_url, activo, calificacion, num_resenas,
              creado_en, actualizado_en
       FROM restaurantes
@@ -101,6 +102,7 @@ export async function PATCH(
         lng = ${d.lng ?? null},
         tiempo_estimado = ${d.tiempo_estimado || null},
         monto_minimo = ${d.monto_minimo},
+        costo_envio_minimo = ${d.costo_envio_minimo ?? null},
         banner_url = ${d.banner_url || null},
         logo_url = ${d.logo_url || null},
         activo = ${d.activo},

@@ -11,6 +11,7 @@ async function getData(id: string) {
   const rows = await sql`
     SELECT id, slug, nombre, subtitulo, direccion_fisica, referencia,
            celular, lat, lng, tiempo_estimado, monto_minimo,
+           costo_envio_minimo,
            banner_url, logo_url, activo
     FROM restaurantes
     WHERE id = ${id}
@@ -73,6 +74,9 @@ export default async function EditarRestaurantePage({
     lng: restaurante.lng ? String(restaurante.lng) : '',
     tiempo_estimado: restaurante.tiempo_estimado ?? '',
     monto_minimo: Number(restaurante.monto_minimo),
+    costo_envio_minimo: restaurante.costo_envio_minimo !== null
+      ? Number(restaurante.costo_envio_minimo)
+      : null,
     banner_url: restaurante.banner_url ?? '',
     logo_url: restaurante.logo_url ?? '',
     activo: restaurante.activo,

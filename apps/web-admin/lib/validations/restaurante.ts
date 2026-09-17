@@ -20,6 +20,8 @@ export const restauranteSchema = z.object({
   lng: z.coerce.number().optional().nullable(),
   tiempo_estimado: z.string().max(20).optional().nullable(),
   monto_minimo: z.coerce.number().min(0).default(5),
+  // ✨ NUEVO
+  costo_envio_minimo: z.coerce.number().min(0).nullable().optional(),
   banner_url: z.string().url().optional().nullable().or(z.literal('')),
   logo_url: z.string().url().optional().nullable().or(z.literal('')),
   activo: z.boolean().default(true),

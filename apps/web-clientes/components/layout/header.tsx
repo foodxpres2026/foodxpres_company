@@ -10,6 +10,7 @@ import {
   type DireccionLocal,
 } from '@/hooks/use-direccion-actual'
 import DireccionModalWrapper from '@/components/direcciones/direccion-modal-wrapper'
+import DireccionesSelector from '@/components/direcciones/direcciones-selector'
 
 interface HeaderProps {
   user: {
@@ -25,6 +26,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
   const [query, setQuery] = useState('')
   const [mounted, setMounted] = useState(false)
   const [modalDireccionOpen, setModalDireccionOpen] = useState(false)
+  const [selectorAbierto, setSelectorAbierto] = useState(false)
 
   const totalItems = useCarrito((s) => s.totalItems())
   const direccionActual = useDireccionActual(direccionDeBD ?? null)
@@ -53,6 +55,19 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
     }
   }
 
+  // ============================================
+  // ABRIR DIRECCIÓN
+  // Si logueado → selector de direcciones
+  // Si anónimo → modal de crear
+  // ============================================
+  function abrirDireccion() {
+    if (user) {
+      setSelectorAbierto(true)
+    } else {
+      setModalDireccionOpen(true)
+    }
+  }
+
   const sinDireccion = mounted && !direccionActual
 
   return (
@@ -72,29 +87,22 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
               </span>
             </Link>
 
-            {/* DIRECCIÓN (desktop) */}
-            {direccionActual ? (
-              <button
-                type="button"
-                onClick={() => setModalDireccionOpen(true)}
-                className="hidden md:flex items-center gap-2 px-3 py-2 bg-surface border border-line rounded-xl text-gray-300 hover:border-brand/40 transition-colors text-xs max-w-[220px]"
-              >
-                <span>📍</span>
-                <span className="truncate">
-                  {direccionActual.direccion}
-                </span>
-                <span className="text-gray-600">▾</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setModalDireccionOpen(true)}
-                className="hidden md:flex items-center gap-2 px-3 py-2 bg-jaguar/10 border border-jaguar/40 rounded-xl text-jaguar hover:bg-jaguar/20 transition-colors text-xs"
-              >
-                <span>📍</span>
-                <span className="font-bold">Añadir dirección</span>
-              </button>
-            )}
+            {/* DIRECCIÓN */}
+            <button
+              type="button"
+              onClick={abrirDireccion}
+              className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-xl transition-colors text-xs max-w-[220px] ${
+                direccionActual
+                  ? 'bg-surface border border-line text-gray-300 hover:border-brand/40'
+                  : 'bg-jaguar/10 border border-jaguar/40 text-jaguar hover:bg-jaguar/20'
+              }`}
+            >
+              <span>📍</span>
+              <span className="truncate font-medium">
+                {direccionActual?.direccion || 'Añadir dirección'}
+              </span>
+              <span className="text-gray-600">▾</span>
+            </button>
 
             {/* BÚSQUEDA (desktop) */}
             <button
@@ -146,11 +154,11 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
           </div>
         </div>
 
-        {/* BANNER DIRECCIÓN (mobile: si no hay dirección; desktop: si no hay dirección) */}
+        {/* BANNER DIRECCIÓN (mobile) */}
         {sinDireccion && (
           <button
             type="button"
-            onClick={() => setModalDireccionOpen(true)}
+            onClick={abrirDireccion}
             className="w-full bg-jaguar/10 border-t border-jaguar/30 px-4 py-2.5 text-left"
           >
             <div className="flex items-center gap-2 max-w-6xl mx-auto">
@@ -160,7 +168,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
                   ¿A dónde te llevamos?
                 </p>
                 <p className="text-[10px] text-gray-500">
-                  Agrega tu dirección para ver el costo de delivery
+                  Agrega tu dirección para ver el delivery
                 </p>
               </div>
               <span className="text-jaguar text-lg">›</span>
@@ -172,7 +180,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
         {mounted && direccionActual && (
           <button
             type="button"
-            onClick={() => setModalDireccionOpen(true)}
+            onClick={abrirDireccion}
             className="md:hidden w-full bg-surface/50 border-t border-line px-4 py-2 text-left"
           >
             <div className="flex items-center gap-2 max-w-6xl mx-auto">
@@ -180,7 +188,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
               <span className="flex-1 text-xs text-gray-400 truncate">
                 {direccionActual.direccion}
               </span>
-              <span className="text-gray-600 text-xs">Cambiar</span>
+              <span className="text-brand text-xs font-bold">Cambiar</span>
             </div>
           </button>
         )}
@@ -230,13 +238,24 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
         </div>
       )}
 
-      {/* MODAL DIRECCIÓN */}
-      <DireccionModalWrapper
-        open={modalDireccionOpen}
-        onClose={() => setModalDireccionOpen(false)}
-        estaLogueado={!!user}
-        initialData={direccionActual ?? undefined}
-      />
+      {/* SELECTOR DE DIRECCIONES (cliente logueado) */}
+      {user && (
+        <DireccionesSelector
+          open={selectorAbierto}
+          onClose={() => setSelectorAbierto(false)}
+          estaLogueado={true}
+        />
+      )}
+
+      {/* MODAL CREAR DIRECCIÓN (cliente anónimo) */}
+      {!user && (
+        <DireccionModalWrapper
+          open={modalDireccionOpen}
+          onClose={() => setModalDireccionOpen(false)}
+          estaLogueado={false}
+          initialData={direccionActual ?? undefined}
+        />
+      )}
     </>
   )
 }

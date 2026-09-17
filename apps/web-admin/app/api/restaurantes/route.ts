@@ -13,6 +13,7 @@ export async function GET() {
     const rows = await sql`
       SELECT id, slug, nombre, subtitulo, direccion_fisica, referencia,
              celular, lat, lng, tiempo_estimado, monto_minimo,
+             costo_envio_minimo,
              banner_url, logo_url, activo, calificacion, num_resenas,
              creado_en, actualizado_en
       FROM restaurantes
@@ -61,12 +62,14 @@ export async function POST(req: NextRequest) {
       INSERT INTO restaurantes (
         slug, nombre, subtitulo, direccion_fisica, referencia,
         celular, lat, lng, tiempo_estimado, monto_minimo,
+        costo_envio_minimo,
         banner_url, logo_url, activo
       ) VALUES (
         ${d.slug}, ${d.nombre}, ${d.subtitulo || null},
         ${d.direccion_fisica}, ${d.referencia || null},
         ${d.celular || null}, ${d.lat ?? null}, ${d.lng ?? null},
         ${d.tiempo_estimado || null}, ${d.monto_minimo},
+        ${d.costo_envio_minimo ?? null},
         ${d.banner_url || null}, ${d.logo_url || null}, ${d.activo}
       )
       RETURNING id, slug, nombre, activo, creado_en

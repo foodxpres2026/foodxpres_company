@@ -20,6 +20,7 @@ export interface RestauranteFormData {
   lng: string
   tiempo_estimado: string
   monto_minimo: number
+  costo_envio_minimo: number | null
   banner_url: string
   logo_url: string
   activo: boolean
@@ -55,6 +56,7 @@ export default function RestauranteForm({
     lng: initialData?.lng ?? '',
     tiempo_estimado: initialData?.tiempo_estimado ?? '',
     monto_minimo: initialData?.monto_minimo ?? 5,
+    costo_envio_minimo: initialData?.costo_envio_minimo ?? null,
     banner_url: initialData?.banner_url ?? '',
     logo_url: initialData?.logo_url ?? '',
     activo: initialData?.activo ?? true,
@@ -95,6 +97,7 @@ export default function RestauranteForm({
         tiempo_estimado: form.tiempo_estimado || null,
         lat: form.lat ? Number(form.lat) : null,
         lng: form.lng ? Number(form.lng) : null,
+        costo_envio_minimo: form.costo_envio_minimo ?? null,
       }
 
       const url =
@@ -221,7 +224,7 @@ export default function RestauranteForm({
         <div>
           <h3 className="text-base font-bold text-white">Ubicación GPS</h3>
           <p className="text-xs text-gray-500 mt-1">
-            Necesario para calcular envío por distancia
+            Necesario para calcular el envío por distancia
           </p>
         </div>
 
@@ -241,24 +244,75 @@ export default function RestauranteForm({
         </div>
       </div>
 
-      {/* CONFIGURACIÓN */}
+      {/* CONFIGURACIÓN DE VENTA */}
       <div className="bg-surface border border-line rounded-2xl p-5 md:p-6 space-y-4">
-        <h3 className="text-base font-bold text-white">Configuración</h3>
+        <h3 className="text-base font-bold text-white">Configuración de venta</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field
-            label="Monto mínimo (S/)"
+            label="Monto mínimo del pedido (S/)"
             type="number"
             value={String(form.monto_minimo)}
             onChange={(v) => update('monto_minimo', Number(v) || 0)}
             placeholder="5"
+            hint="Mínimo de productos para poder pedir"
           />
           <Field
-            label="Tiempo estimado"
+            label="Tiempo estimado de preparación"
             value={form.tiempo_estimado}
             onChange={(v) => update('tiempo_estimado', v)}
             placeholder="25-35 min"
           />
+        </div>
+
+        {/* ✨ ENVÍO PERSONALIZADO */}
+        <div className="bg-surface-dark border border-line-light rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="envio-personalizado"
+              checked={form.costo_envio_minimo !== null}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  update('costo_envio_minimo', 7)
+                } else {
+                  update('costo_envio_minimo', null)
+                }
+              }}
+              className="w-5 h-5 rounded border-gray-700 accent-brand focus:ring-brand"
+            />
+            <label
+              htmlFor="envio-personalizado"
+              className="text-sm font-medium text-white cursor-pointer flex-1"
+            >
+              🛵 Personalizar mínimo de envío
+            </label>
+          </div>
+
+          {form.costo_envio_minimo !== null ? (
+            <>
+              <input
+                type="number"
+                step="0.50"
+                min="0"
+                value={form.costo_envio_minimo}
+                onChange={(e) =>
+                  update('costo_envio_minimo', Number(e.target.value) || 0)
+                }
+                className="w-full px-4 py-3 bg-surface border border-brand rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+                placeholder="7.00"
+              />
+              <p className="text-xs text-brand">
+                Este local cobrará mínimo S/ {form.costo_envio_minimo.toFixed(2)}{' '}
+                de envío
+              </p>
+            </>
+          ) : (
+            <p className="text-xs text-gray-500">
+              💡 Se usa el mínimo global configurado en{' '}
+              <strong className="text-gray-400">Configuración</strong>
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-3 pt-2">
