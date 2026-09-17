@@ -6,14 +6,24 @@ import { useState, useEffect } from 'react'
 import UserMenu from './user-menu'
 import { useCarrito } from '@/lib/carrito/store'
 
+interface Direccion {
+  id: string
+  etiqueta: string
+  direccion: string
+  referencia: string | null
+  lat: number
+  lng: number
+}
+
 interface HeaderProps {
   user: {
     nombre: string
     celular: string
   } | null
+  direccionActual?: Direccion | null
 }
 
-export default function Header({ user }: HeaderProps) {
+export default function Header({ user, direccionActual }: HeaderProps) {
   const router = useRouter()
   const [busquedaAbierta, setBusquedaAbierta] = useState(false)
   const [query, setQuery] = useState('')
@@ -45,6 +55,10 @@ export default function Header({ user }: HeaderProps) {
     }
   }
 
+  // Mostrar banner de dirección si:
+  // - Está logueado Y no tiene dirección
+  const mostrarBannerDireccion = user && !direccionActual
+
   return (
     <>
       <header className="sticky top-0 z-40 bg-surface-dark/95 backdrop-blur-lg border-b border-line">
@@ -62,6 +76,27 @@ export default function Header({ user }: HeaderProps) {
               </span>
             </Link>
 
+            {/* DIRECCIÓN (desktop) */}
+            {direccionActual ? (
+              <Link
+                href="/direcciones"
+                className="hidden md:flex items-center gap-2 px-3 py-2 bg-surface border border-line rounded-xl text-gray-300 hover:border-brand/40 transition-colors text-xs max-w-[200px]"
+              >
+                <span>📍</span>
+                <span className="truncate">
+                  {direccionActual.direccion}
+                </span>
+              </Link>
+            ) : mostrarBannerDireccion ? (
+              <Link
+                href="/direcciones"
+                className="hidden md:flex items-center gap-2 px-3 py-2 bg-jaguar/10 border border-jaguar/40 rounded-xl text-jaguar hover:bg-jaguar/20 transition-colors text-xs"
+              >
+                <span>📍</span>
+                <span className="font-bold">Añadir dirección</span>
+              </Link>
+            ) : null}
+
             {/* BÚSQUEDA (desktop) */}
             <button
               type="button"
@@ -76,7 +111,6 @@ export default function Header({ user }: HeaderProps) {
 
             {/* ACCIONES */}
             <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
-              {/* BÚSQUEDA (mobile) */}
               <button
                 type="button"
                 onClick={() => setBusquedaAbierta(true)}
@@ -86,7 +120,6 @@ export default function Header({ user }: HeaderProps) {
                 🔍
               </button>
 
-              {/* CARRITO */}
               <Link
                 href="/carrito"
                 className="relative w-9 h-9 md:w-10 md:h-10 rounded-full bg-surface border border-line flex items-center justify-center hover:border-brand/40 transition-colors text-base md:text-lg"
@@ -100,7 +133,6 @@ export default function Header({ user }: HeaderProps) {
                 )}
               </Link>
 
-              {/* USER */}
               {user ? (
                 <UserMenu nombre={user.nombre} celular={user.celular} />
               ) : (
@@ -114,6 +146,27 @@ export default function Header({ user }: HeaderProps) {
             </div>
           </div>
         </div>
+
+        {/* BANNER DIRECCIÓN (mobile + si no hay dirección) */}
+        {mostrarBannerDireccion && (
+          <Link
+            href="/direcciones"
+            className="md:hidden block bg-jaguar/10 border-t border-jaguar/30 px-4 py-2.5"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-base">📍</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-jaguar">
+                  ¿A dónde te llevamos?
+                </p>
+                <p className="text-[10px] text-gray-500">
+                  Agrega tu dirección para ver el delivery
+                </p>
+              </div>
+              <span className="text-jaguar">›</span>
+            </div>
+          </Link>
+        )}
       </header>
 
       {/* MODAL DE BÚSQUEDA */}

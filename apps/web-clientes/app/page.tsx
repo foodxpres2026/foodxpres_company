@@ -102,6 +102,17 @@ export default async function HomePage({
   const categoriaActiva = params.categoria
 
   const user = await getSessionUser()
+  // Leer dirección predeterminada del cliente
+  let direccionActual = null
+  if (user) {
+    const dirRows = (await sql`
+      SELECT id, etiqueta, direccion, referencia, lat, lng
+      FROM direcciones
+      WHERE usuario_id = ${user.id} AND es_predeterminada = TRUE
+      LIMIT 1
+    `) as any[]
+    direccionActual = dirRows[0] || null
+  }
   const { restaurantes, categorias, promos } = await getData(categoriaActiva)
 
   // Separar para secciones
@@ -112,8 +123,7 @@ export default async function HomePage({
   return (
     <>
       <FondoDecorativo />
-      <Header user={user} />
-
+      <Header user={user} direccionActual={direccionActual} />
       <main className="max-w-6xl mx-auto px-4 py-5 pb-24 md:pb-8">
         {/* PROMO CARRUSEL */}
         <section className="mb-6">
