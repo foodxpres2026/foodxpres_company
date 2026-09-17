@@ -4,19 +4,26 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import UserMenu from './user-menu'
+import { useCarrito } from '@/lib/carrito/store'
 
 interface HeaderProps {
   user: {
     nombre: string
     celular: string
   } | null
-  cartCount: number
 }
 
-export default function Header({ user, cartCount }: HeaderProps) {
+export default function Header({ user }: HeaderProps) {
   const router = useRouter()
   const [busquedaAbierta, setBusquedaAbierta] = useState(false)
   const [query, setQuery] = useState('')
+  const [mounted, setMounted] = useState(false)
+
+  const totalItems = useCarrito((s) => s.totalItems())
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (busquedaAbierta) {
@@ -65,7 +72,6 @@ export default function Header({ user, cartCount }: HeaderProps) {
               <span className="truncate">¿Qué se te antoja hoy?</span>
             </button>
 
-            {/* ESPACIADOR mobile */}
             <div className="flex-1 md:hidden" />
 
             {/* ACCIONES */}
@@ -87,9 +93,9 @@ export default function Header({ user, cartCount }: HeaderProps) {
                 aria-label="Carrito"
               >
                 🛒
-                {cartCount > 0 && (
+                {mounted && totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-brand text-black text-[10px] font-bold w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center">
-                    {cartCount > 9 ? '9+' : cartCount}
+                    {totalItems > 9 ? '9+' : totalItems}
                   </span>
                 )}
               </Link>
@@ -129,7 +135,9 @@ export default function Header({ user, cartCount }: HeaderProps) {
                 ←
               </button>
               <div className="flex-1 flex items-center bg-surface border border-brand/40 rounded-xl px-3.5">
-                <span className="text-brand mr-2 text-base leading-none">🔍</span>
+                <span className="text-brand mr-2 text-base leading-none">
+                  🔍
+                </span>
                 <input
                   type="text"
                   value={query}
