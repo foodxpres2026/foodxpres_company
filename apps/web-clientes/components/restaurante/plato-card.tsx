@@ -1,6 +1,7 @@
 'use client'
 
 import { useCarrito } from '@/lib/carrito/store'
+import { useToast } from '@/components/ui/toast'
 
 export interface Plato {
   id: string
@@ -27,7 +28,8 @@ interface Props {
 export default function PlatoCard({ plato, restaurante, onAbrirOpciones }: Props) {
   const agregar = useCarrito((s) => s.agregar)
   const items = useCarrito((s) => s.items)
-
+  const { toast } = useToast()
+  
   // Contar cuántas unidades de este plato sin opciones hay en el carrito
   const enCarrito = items
     .filter((i) => i.plato_id === plato.id && i.opciones.length === 0)
@@ -58,6 +60,8 @@ export default function PlatoCard({ plato, restaurante, onAbrirOpciones }: Props
       notas: null,
       opciones: [],
     })
+
+    toast(`${plato.nombre} agregado`, { icon: '🛒' })
   }
 
   return (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useCarrito, type OpcionElegida } from '@/lib/carrito/store'
+import { useToast } from '@/components/ui/toast'
 
 interface Choice {
   id: string
@@ -51,7 +52,8 @@ export default function OpcionesModal({
   const [selecciones, setSelecciones] = useState<Record<string, Choice[]>>({})
   const [cantidad, setCantidad] = useState(1)
   const [notas, setNotas] = useState('')
-
+  const { toast } = useToast()
+  
   // Resetear al abrir
   useEffect(() => {
     if (open && plato) {
@@ -149,6 +151,8 @@ export default function OpcionesModal({
       notas: notas.trim() || null,
       opciones: opcionesElegidas,
     })
+
+    toast(`${platoActual.nombre} agregado`, { icon: '🛒' })
 
     onClose()
   }

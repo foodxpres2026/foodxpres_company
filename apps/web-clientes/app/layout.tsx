@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { ToastProvider } from '@/components/ui/toast'
 
 export const metadata: Metadata = {
   title: 'FoodXpres — Delivery en Pucallpa',
@@ -29,7 +30,9 @@ export default function RootLayout({
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         />
       </head>
-      <body className="antialiased min-h-screen">{children}</body>
+      <body className="antialiased min-h-screen">
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   )
 }
