@@ -7,6 +7,8 @@ import PromoCarousel from '@/components/home/promo-carousel'
 import CategoriasChips from '@/components/home/categorias-chips'
 import HomeRestaurantes from '@/components/home/home-restaurantes'
 import { estaAbierto, type HorarioDia } from '@/lib/horarios/esta-abierto'
+import { SkeletonRestaurante } from '@/components/ui/skeleton'
+import { Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
 
@@ -119,13 +121,28 @@ export default async function HomePage({
           </div>
         )}
 
-        <HomeRestaurantes
-          abiertos={abiertos as any[]}
-          masPedidos={masPedidos as any[]}
-          todos={restaurantes as any[]}
-          categoriaActiva={categoriaActiva}
-          direccionDeBD={direccionDeBD}
-        />
+        <Suspense
+          fallback={
+            <div className="space-y-8">
+              <section>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <SkeletonRestaurante />
+                  <SkeletonRestaurante />
+                  <SkeletonRestaurante />
+                  <SkeletonRestaurante />
+                </div>
+              </section>
+            </div>
+          }
+        >
+          <HomeRestaurantes
+            abiertos={abiertos as any[]}
+            masPedidos={masPedidos as any[]}
+            todos={restaurantes as any[]}
+            categoriaActiva={categoriaActiva}
+            direccionDeBD={direccionDeBD}
+          />
+        </Suspense>
       </main>
 
       <BottomNav />

@@ -1,3 +1,9 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Mis direcciones · FoodXpres',
+  description: 'Gestiona tus direcciones de entrega',
+}
 import Link from 'next/link'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'

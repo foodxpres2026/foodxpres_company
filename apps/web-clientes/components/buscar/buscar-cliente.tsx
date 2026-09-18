@@ -8,6 +8,7 @@ import {
   RestauranteGrid,
   type RestauranteCardData,
 } from '@/components/home/restaurante-card'
+import Skeleton, { SkeletonResultado } from '@/components/ui/skeleton'
 
 interface Plato {
   id: string
@@ -117,8 +118,11 @@ export default function BuscarCliente() {
 
       {/* Cargando */}
       {busco && loading && (
-        <div className="text-center py-12 text-gray-500 text-sm">
-          Buscando...
+        <div className="space-y-2">
+          <SkeletonResultado />
+          <SkeletonResultado />
+          <SkeletonResultado />
+          <SkeletonResultado />
         </div>
       )}
 
@@ -143,7 +147,7 @@ export default function BuscarCliente() {
 
       {/* Resultados */}
       {busco && !loading && totalResultados > 0 && (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fade-in">
           {/* Restaurantes */}
           {resultados.restaurantes.length > 0 && (
             <section>

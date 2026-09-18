@@ -1,3 +1,9 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Buscar · FoodXpres',
+  description: 'Busca restaurantes, platos y productos',
+}
 import { Suspense } from 'react'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'

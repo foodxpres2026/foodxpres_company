@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import EstadoTimeline from './estado-timeline'
 import { useCarrito } from '@/lib/carrito/store'
+import Skeleton, { SkeletonPedido } from '@/components/ui/skeleton'
 
 interface Pedido {
   id: string
@@ -155,30 +156,41 @@ export default function MisPedidosCliente() {
 
       {/* LISTA */}
       {loading ? (
-        <div className="text-center py-12 text-gray-500 text-sm">
-          Cargando...
+        <div className="space-y-3">
+          <SkeletonPedido />
+          <SkeletonPedido />
+          <SkeletonPedido />
         </div>
       ) : pedidos.length === 0 ? (
-        <div className="bg-surface border border-line rounded-2xl p-12 text-center">
-          <p className="text-4xl mb-2">📦</p>
-          <p className="text-gray-400">
+        <div className="bg-surface border border-line rounded-2xl p-10 md:p-16 text-center animate-fade-in">
+          <div className="text-6xl mb-4">
+            {filtro === 'activos' ? '🎉' : filtro === 'completados' ? '📭' : '📦'}
+          </div>
+          <h2 className="text-lg font-bold text-white mb-2">
             {filtro === 'todos'
-              ? 'Aún no has hecho pedidos'
+              ? 'Aún no tienes pedidos'
               : filtro === 'activos'
-              ? 'No tienes pedidos activos'
-              : 'No hay pedidos completados'}
+              ? '¡Todo al día!'
+              : 'Sin pedidos completados'}
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            {filtro === 'todos'
+              ? 'Cuando hagas tu primer pedido aparecerá aquí'
+              : filtro === 'activos'
+              ? 'No hay pedidos en curso ahora mismo'
+              : 'Los pedidos entregados se verán aquí'}
           </p>
           {filtro === 'todos' && (
             <Link
               href="/"
-              className="text-brand hover:underline text-sm mt-3 inline-block"
+              className="inline-block bg-brand hover:bg-brand-dark text-black font-bold px-6 py-3 rounded-xl transition-colors"
             >
               Explorar restaurantes →
             </Link>
           )}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 animate-fade-in">
           {pedidos.map((p) => {
             const esActivo = !['ENTREGADO', 'CANCELADO', 'RECHAZADO', 'PARCIAL'].includes(
               p.estado_global

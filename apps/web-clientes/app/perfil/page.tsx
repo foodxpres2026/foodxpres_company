@@ -1,3 +1,9 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Mi perfil · FoodXpres',
+  description: 'Gestiona tu cuenta',
+}
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
 import Header from '@/components/layout/header'
