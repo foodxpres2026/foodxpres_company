@@ -4,6 +4,9 @@ import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
 import { calcularEnvio } from '@/lib/envio/calcular'
 
+// ============================================
+// SCHEMAS
+// ============================================
 const itemSchema = z.object({
   plato_id: z.string().uuid(),
   nombre_snapshot: z.string(),
@@ -24,7 +27,7 @@ const grupoSchema = z.object({
   items: z.array(itemSchema).min(1),
 })
 
-const schema = z.object({
+const createSchema = z.object({
   direccion_id: z.string().uuid(),
   propina: z.coerce.number().min(0).default(0),
   vip: z.boolean().default(false),
@@ -36,6 +39,70 @@ function codigo() {
   return 'P-' + Math.random().toString(36).substring(2, 8).toUpperCase()
 }
 
+// ============================================
+// GET → listar pedidos del cliente
+// ============================================
+export async function GET(req: NextRequest) {
+  const user = await getSessionUser()
+  if (!user) {
+    return Response.json({ ok: false, error: 'No autorizado' }, { status: 401 })
+  }
+
+  try {
+    const { searchParams } = new URL(req.url)
+    const filtro = searchParams.get('filtro') // 'activos' | 'completados' | null
+
+    let whereEstado = sql``
+    if (filtro === 'activos') {
+      whereEstado = sql`AND p.estado_global NOT IN ('ENTREGADO', 'CANCELADO', 'RECHAZADO', 'PARCIAL')`
+    } else if (filtro === 'completados') {
+      whereEstado = sql`AND p.estado_global IN ('ENTREGADO', 'CANCELADO', 'RECHAZADO', 'PARCIAL')`
+    }
+
+    const rows = (await sql`
+      SELECT 
+        p.id,
+        p.codigo,
+        p.subtotal,
+        p.total_envio,
+        p.propina,
+        p.vip,
+        p.costo_vip,
+        p.total,
+        p.estado_global,
+        p.creado_en,
+        (
+          SELECT COUNT(*)::int FROM sub_pedidos 
+          WHERE pedido_id = p.id
+        ) as num_locales,
+        (
+          SELECT r.nombre 
+          FROM sub_pedidos sp
+          INNER JOIN restaurantes r ON r.id = sp.restaurante_id
+          WHERE sp.pedido_id = p.id
+          ORDER BY sp.creado_en ASC
+          LIMIT 1
+        ) as primer_restaurante
+      FROM pedidos p
+      WHERE p.usuario_id = ${user.id}
+        ${whereEstado}
+      ORDER BY p.creado_en DESC
+      LIMIT 50
+    `) as any[]
+
+    return Response.json({ ok: true, data: rows })
+  } catch (error) {
+    console.error('GET pedidos error:', error)
+    return Response.json(
+      { ok: false, error: 'Error al listar pedidos' },
+      { status: 500 }
+    )
+  }
+}
+
+// ============================================
+// POST → crear pedido
+// ============================================
 export async function POST(req: NextRequest) {
   const user = await getSessionUser()
   if (!user) {
@@ -44,7 +111,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const parsed = schema.safeParse(body)
+    const parsed = createSchema.safeParse(body)
 
     if (!parsed.success) {
       return Response.json(
