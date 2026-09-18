@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Logo from '@/components/layout/logo'
 
 export default function RecuperarPage() {
   const [celular, setCelular] = useState('')
@@ -39,16 +40,15 @@ export default function RecuperarPage() {
     return (
       <div className="min-h-screen flex flex-col bg-surface-dark">
         <header className="p-5">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <span className="text-3xl">🐯</span>
-            <span className="text-xl font-black tracking-tight">
-              FOOD<span className="text-brand">X</span>PRES
-            </span>
-          </Link>
+          <Logo size={44} linkeado />
         </header>
 
         <div className="flex-1 flex items-center justify-center px-5 pb-10">
           <div className="w-full max-w-md text-center">
+            <div className="flex justify-center mb-6">
+              <Logo size={96} />
+            </div>
+
             <div className="text-6xl mb-6">📨</div>
             <h1 className="text-2xl font-black text-white mb-3">
               ¡Solicitud enviada!
@@ -57,7 +57,8 @@ export default function RecuperarPage() {
               Recibimos tu solicitud para recuperar tu cuenta.
             </p>
             <p className="text-gray-400 mb-8">
-              Te contactaremos por <strong className="text-white">WhatsApp</strong> al{' '}
+              Te contactaremos por{' '}
+              <strong className="text-white">WhatsApp</strong> al{' '}
               <strong className="text-brand">+51 {celular}</strong> en breve con
               tu nueva contraseña.
             </p>
@@ -87,17 +88,17 @@ export default function RecuperarPage() {
   return (
     <div className="min-h-screen flex flex-col bg-surface-dark">
       <header className="p-5">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <span className="text-3xl">🐯</span>
-          <span className="text-xl font-black tracking-tight">
-            FOOD<span className="text-brand">X</span>PRES
-          </span>
-        </Link>
+        <Logo size={44} linkeado />
       </header>
 
       <div className="flex-1 flex items-center justify-center px-5 pb-10">
         <div className="w-full max-w-md">
-          <div className="mb-8">
+          {/* LOGO GRANDE */}
+          <div className="flex justify-center mb-6">
+            <Logo size={96} />
+          </div>
+
+          <div className="mb-8 text-center">
             <h1 className="text-3xl font-black text-white">
               ¿Olvidaste tu contraseña?
             </h1>

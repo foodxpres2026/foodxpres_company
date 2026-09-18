@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Logo from '@/components/layout/logo'
 
 function RegistroForm() {
   const router = useRouter()
@@ -31,7 +32,6 @@ function RegistroForm() {
     setLoading(true)
 
     try {
-      // 🎁 Leer dirección temporal del localStorage (si existe)
       let direccionTemporal = null
       try {
         const raw = localStorage.getItem('foodxpres-direccion-temporal')
@@ -56,7 +56,6 @@ function RegistroForm() {
         return
       }
 
-      // Limpiar dirección temporal (ya está en la BD)
       if (direccionTemporal) {
         localStorage.removeItem('foodxpres-direccion-temporal')
       }
@@ -71,18 +70,19 @@ function RegistroForm() {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface-dark">
+      {/* HEADER CON LOGO */}
       <header className="p-5">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <span className="text-3xl">🐯</span>
-          <span className="text-xl font-black tracking-tight">
-            FOOD<span className="text-brand">X</span>PRES
-          </span>
-        </Link>
+        <Logo size={44} linkeado />
       </header>
 
       <div className="flex-1 flex items-center justify-center px-5 pb-10">
         <div className="w-full max-w-md">
-          <div className="mb-8">
+          {/* LOGO GRANDE */}
+          <div className="flex justify-center mb-6">
+            <Logo size={96} />
+          </div>
+
+          <div className="mb-8 text-center">
             <h1 className="text-3xl font-black text-white">
               Crea tu cuenta 🚀
             </h1>
@@ -115,7 +115,9 @@ function RegistroForm() {
                 Celular
               </label>
               <div className="flex items-center bg-surface-dark border border-line-light rounded-xl focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 transition-all">
-                <span className="pl-4 pr-2 text-gray-500 font-medium">+51</span>
+                <span className="pl-4 pr-2 text-gray-500 font-medium">
+                  +51
+                </span>
                 <input
                   type="tel"
                   inputMode="numeric"

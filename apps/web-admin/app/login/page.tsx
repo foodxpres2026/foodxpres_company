@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Logo from '@/components/layout/logo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -40,18 +41,20 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface-dark px-4 py-8">
       <div className="w-full max-w-sm">
-        {/* LOGO */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-brand/10 mb-4">
-            <span className="text-4xl">🐯</span>
-          </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">
-            FOOD<span className="text-brand">X</span>PRES
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">Panel de Administración</p>
+        {/* LOGO GRANDE */}
+        <div className="flex justify-center mb-6">
+          <Logo size={96} />
         </div>
 
-        {/* FORM */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-black text-white">
+            Panel de Administración
+          </h1>
+          <p className="text-gray-500 text-sm mt-2">
+            Ingresa con tu cuenta de admin
+          </p>
+        </div>
+
         <form
           onSubmit={handleSubmit}
           className="bg-surface border border-line rounded-2xl p-6 space-y-4 shadow-2xl"

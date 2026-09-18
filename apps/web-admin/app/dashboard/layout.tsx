@@ -2,6 +2,7 @@ import { getSessionUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import LogoutButton from './logout-button'
+import Logo from '@/components/layout/logo'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Inicio', icon: '📊' },
@@ -26,14 +27,10 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-surface-dark flex flex-col md:flex-row">
       {/* SIDEBAR */}
       <aside className="w-full md:w-60 bg-[#111] border-b md:border-b-0 md:border-r border-line flex flex-col md:min-h-screen">
+        
         <div className="p-5 border-b border-line flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-2xl">🐯</span>
-          </div>
+          <Logo size={36} />
           <div className="min-w-0">
-            <h1 className="text-white font-black tracking-tight text-sm">
-              FOOD<span className="text-brand">X</span>PRES
-            </h1>
             <p className="text-[10px] text-gray-500 uppercase tracking-wider">
               Admin
             </p>

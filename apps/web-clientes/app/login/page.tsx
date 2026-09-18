@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Logo from '@/components/layout/logo'
 
 function LoginForm() {
   const router = useRouter()
@@ -43,20 +44,20 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface-dark">
-      {/* HEADER SIMPLE */}
+      {/* HEADER CON LOGO */}
       <header className="p-5">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <span className="text-3xl">🐯</span>
-          <span className="text-xl font-black tracking-tight">
-            FOOD<span className="text-brand">X</span>PRES
-          </span>
-        </Link>
+        <Logo size={44} linkeado />
       </header>
 
       {/* FORM */}
       <div className="flex-1 flex items-center justify-center px-5 pb-10">
         <div className="w-full max-w-md">
-          <div className="mb-8">
+          {/* LOGO GRANDE */}
+          <div className="flex justify-center mb-6">
+            <Logo size={96} />
+          </div>
+
+          <div className="mb-8 text-center">
             <h1 className="text-3xl font-black text-white">
               Bienvenido de vuelta 👋
             </h1>
@@ -74,7 +75,9 @@ function LoginForm() {
                 Celular
               </label>
               <div className="flex items-center bg-surface-dark border border-line-light rounded-xl focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 transition-all">
-                <span className="pl-4 pr-2 text-gray-500 font-medium">+51</span>
+                <span className="pl-4 pr-2 text-gray-500 font-medium">
+                  +51
+                </span>
                 <input
                   type="tel"
                   inputMode="numeric"
@@ -103,6 +106,14 @@ function LoginForm() {
                 placeholder="••••••••"
                 className="w-full px-4 py-4 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
               />
+              <div className="text-right mt-2">
+                <Link
+                  href="/recuperar"
+                  className="text-xs text-brand hover:underline"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
             </div>
 
             {error && (

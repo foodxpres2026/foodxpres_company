@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import UserMenu from './user-menu'
+import Logo from './logo'
 import { useCarrito } from '@/lib/carrito/store'
 import {
   useDireccionActual,
@@ -55,11 +56,6 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
     }
   }
 
-  // ============================================
-  // ABRIR DIRECCIÓN
-  // Si logueado → selector de direcciones
-  // Si anónimo → modal de crear
-  // ============================================
   function abrirDireccion() {
     if (user) {
       setSelectorAbierto(true)
@@ -75,17 +71,13 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
       <header className="sticky top-0 z-40 bg-surface-dark/95 backdrop-blur-lg border-b border-line">
         <div className="max-w-6xl mx-auto px-3 md:px-4 py-2.5">
           <div className="flex items-center gap-2 md:gap-3">
-            {/* LOGO */}
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 flex-shrink-0"
+            {/* LOGO - Solo el tigre, sin texto (ya está dentro del logo.png) */}
+            <div
+              className="flex-shrink-0"
               onClick={() => setBusquedaAbierta(false)}
             >
-              <span className="text-2xl leading-none">🐯</span>
-              <span className="text-base font-black tracking-tight hidden sm:inline leading-none">
-                FOOD<span className="text-brand">X</span>PRES
-              </span>
-            </Link>
+              <Logo size={36} linkeado />
+            </div>
 
             {/* DIRECCIÓN */}
             <button
