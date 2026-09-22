@@ -343,17 +343,19 @@ export default function CarritoCliente({
                       </p>
 
                       <div className="flex items-center justify-between gap-2 mt-2">
+                        
                         <div className="flex items-center gap-1 bg-surface-dark border border-line rounded-lg">
                           <button
                             type="button"
                             onClick={() =>
                               cambiarCantidad(item.id, item.cantidad - 1)
                             }
-                            className="w-7 h-7 text-white font-bold hover:bg-surface-light rounded-l-lg transition-colors text-sm"
+                            className="w-9 h-9 text-white font-bold hover:bg-surface-light rounded-l-lg transition-colors text-base"
+                            aria-label="Reducir cantidad"
                           >
                             −
                           </button>
-                          <span className="w-7 text-center text-xs font-bold text-white">
+                          <span className="w-8 text-center text-sm font-bold text-white">
                             {item.cantidad}
                           </span>
                           <button
@@ -361,7 +363,8 @@ export default function CarritoCliente({
                             onClick={() =>
                               cambiarCantidad(item.id, item.cantidad + 1)
                             }
-                            className="w-7 h-7 text-white font-bold hover:bg-surface-light rounded-r-lg transition-colors text-sm"
+                            className="w-9 h-9 text-white font-bold hover:bg-surface-light rounded-r-lg transition-colors text-base"
+                            aria-label="Aumentar cantidad"
                           >
                             +
                           </button>
@@ -374,7 +377,7 @@ export default function CarritoCliente({
                           <button
                             type="button"
                             onClick={() => eliminar(item.id)}
-                            className="text-gray-500 hover:text-danger transition-colors p-1"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-danger hover:bg-danger/10 transition-colors"
                             aria-label="Eliminar"
                           >
                             ✕

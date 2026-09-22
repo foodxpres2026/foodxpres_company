@@ -99,3 +99,59 @@ body {
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* ============================================
+   MOBILE OPTIMIZATIONS
+   ============================================ */
+
+/* Áreas táctiles mínimas */
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Suavizar scroll en iOS */
+html {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Evitar zoom automático en inputs (iOS) */
+input, textarea, select {
+  font-size: 16px;
+}
+
+/* Safe areas para iPhone con notch */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Ocultar scrollbar pero mantener scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Selección de texto deshabilitada en botones */
+button, a {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevenir zoom en iOS al tocar inputs */
+@media (max-width: 767px) {
+  input[type='text'],
+  input[type='tel'],
+  input[type='email'],
+  input[type='password'],
+  input[type='number'],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

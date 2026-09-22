@@ -1,0 +1,25 @@
+{
+  "name": "FoodXpres — Delivery en Pucallpa",
+  "short_name": "FoodXpres",
+  "description": "Pide tu comida favorita en Pucallpa",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#7ED321",
+  "orientation": "portrait",
+  "lang": "es-PE",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
