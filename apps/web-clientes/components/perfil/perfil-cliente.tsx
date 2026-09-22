@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import EditarNombreModal from './editar-nombre-modal'
 import CambiarPasswordModal from './cambiar-password-modal'
-import ActivarNotificaciones from './activar-notificaciones'
 
 interface Props {
   user: {
@@ -56,7 +55,6 @@ export default function PerfilCliente({ user }: Props) {
       </div>
       
       {/* NOTIFICACIONES */}
-      <ActivarNotificaciones />
 
       {/* OPCIONES */}
       <div className="bg-surface border border-line rounded-2xl overflow-hidden">

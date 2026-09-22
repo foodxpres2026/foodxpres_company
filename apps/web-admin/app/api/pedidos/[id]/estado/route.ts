@@ -3,7 +3,14 @@ import { z } from 'zod'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
 import { recalcularPedido } from '@/lib/pedidos-utils'
-
+import {
+  notificarPedidoAceptado,
+  notificarPedidoRechazado,
+  notificarPedidoListo,
+  notificarPedidoEnCamino,
+  notificarPedidoEntregado,
+  notificarPedidoCancelado,
+} from '@/lib/firebase/notificaciones-pedido'
 const estadoSchema = z.object({
   estado: z.enum([
     'PENDIENTE',
@@ -94,6 +101,64 @@ export async function PATCH(
           SET estado = ${estado}
           WHERE id = ${id}
         `
+    }    // 🔔 Notificar al cliente
+    try {
+      // Traer usuario y restaurante
+      const info = (await sql`
+        SELECT 
+          sp.pedido_id,
+          p.usuario_id,
+          r.nombre as restaurante_nombre,
+          sp.tiempo_estimado,
+          u.nombre as driver_nombre
+        FROM sub_pedidos sp
+        INNER JOIN pedidos p ON p.id = sp.pedido_id
+        INNER JOIN restaurantes r ON r.id = sp.restaurante_id
+        LEFT JOIN usuarios u ON u.id = sp.driver_id
+        WHERE sp.id = ${id}
+        LIMIT 1
+      `) as any[]
+
+      if (info.length > 0) {
+        const row = info[0]
+        const usuarioId = row.usuario_id
+
+        switch (estado) {
+          case 'ACEPTADO':
+            await notificarPedidoAceptado(
+              usuarioId,
+              row.restaurante_nombre,
+              row.tiempo_estimado
+            )
+            break
+          case 'RECHAZADO':
+            await notificarPedidoRechazado(
+              usuarioId,
+              row.restaurante_nombre,
+              notas || null
+            )
+            break
+          case 'LISTO':
+            await notificarPedidoListo(usuarioId, row.restaurante_nombre)
+            break
+          case 'EN_CAMINO':
+            await notificarPedidoEnCamino(
+              usuarioId,
+              row.restaurante_nombre,
+              row.driver_nombre
+            )
+            break
+          case 'ENTREGADO':
+            await notificarPedidoEntregado(usuarioId, row.restaurante_nombre)
+            break
+          case 'CANCELADO':
+            await notificarPedidoCancelado(usuarioId, row.restaurante_nombre)
+            break
+        }
+      }
+    } catch (notifErr) {
+      // No fallar el cambio de estado si la notificación falla
+      console.error('Error enviando notificación:', notifErr)
     }
 
     // Registrar en historial
