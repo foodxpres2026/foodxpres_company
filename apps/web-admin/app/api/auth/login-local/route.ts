@@ -3,6 +3,23 @@ import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import { sql } from '@/lib/db'
 
+// ============================================
+// CORS HEADERS (para apps Flutter)
+// ============================================
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+// Handler para preflight (OPTIONS)
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  })
+}
+
 const schema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(1),
@@ -16,7 +33,7 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return Response.json(
         { ok: false, error: 'Datos inválidos' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       )
     }
 
@@ -35,7 +52,7 @@ export async function POST(req: NextRequest) {
     if (rows.length === 0) {
       return Response.json(
         { ok: false, error: 'Credenciales inválidas' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders }
       )
     }
 
@@ -44,7 +61,7 @@ export async function POST(req: NextRequest) {
     if (!user.password_hash) {
       return Response.json(
         { ok: false, error: 'Credenciales inválidas' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders }
       )
     }
 
@@ -53,24 +70,30 @@ export async function POST(req: NextRequest) {
     if (!valido) {
       return Response.json(
         { ok: false, error: 'Credenciales inválidas' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders }
       )
     }
 
     const token = Buffer.from(`${user.id}:${Date.now()}`).toString('base64')
 
-    return Response.json({
-      ok: true,
-      user: {
-        id: user.id,
-        token,
-        restaurant_id: user.restaurante_id,
-        restaurant_name: user.restaurant_name,
-        nombre: user.nombre,
+    return Response.json(
+      {
+        ok: true,
+        user: {
+          id: user.id,
+          token,
+          restaurant_id: user.restaurante_id,
+          restaurant_name: user.restaurant_name,
+          nombre: user.nombre,
+        },
       },
-    })
+      { headers: corsHeaders }
+    )
   } catch (error) {
     console.error('Login-local error:', error)
-    return Response.json({ ok: false, error: 'Error interno' }, { status: 500 })
+    return Response.json(
+      { ok: false, error: 'Error interno' },
+      { status: 500, headers: corsHeaders }
+    )
   }
 }
