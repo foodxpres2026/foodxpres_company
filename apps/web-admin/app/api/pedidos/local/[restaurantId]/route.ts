@@ -17,6 +17,21 @@ export async function GET(
 ) {
   try {
     const { restaurantId } = await params
+    const { searchParams } = new URL(req.url)
+    const fecha = searchParams.get('fecha') // 'hoy' | 'ayer' | 'semana' | null
+
+    // Construir filtro de fecha según parámetro
+    let filtroFecha = sql``
+    if (fecha === 'hoy') {
+      filtroFecha = sql`AND sp.creado_en >= CURRENT_DATE`
+    } else if (fecha === 'ayer') {
+      filtroFecha = sql`
+        AND sp.creado_en >= CURRENT_DATE - INTERVAL '1 day'
+        AND sp.creado_en < CURRENT_DATE
+      `
+    } else if (fecha === 'semana') {
+      filtroFecha = sql`AND sp.creado_en >= CURRENT_DATE - INTERVAL '7 days'`
+    }
 
     const rows = (await sql`
       SELECT 
@@ -28,6 +43,7 @@ export async function GET(
         sp.creado_en,
         sp.aceptado_en,
         sp.listo_en,
+        sp.entregado_en,
         sp.direccion_snapshot,
         p.codigo as pedido_codigo,
         p.total as pedido_total,
@@ -37,8 +53,13 @@ export async function GET(
       INNER JOIN pedidos p ON p.id = sp.pedido_id
       INNER JOIN usuarios u ON u.id = p.usuario_id
       WHERE sp.restaurante_id = ${restaurantId}
-        AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO')
-      ORDER BY sp.creado_en ASC
+        AND sp.estado IN (
+          'PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO',
+          'ASIGNADO', 'EN_CAMINO', 'ENTREGADO', 'RECHAZADO', 'CANCELADO'
+        )
+        ${filtroFecha}
+      ORDER BY sp.creado_en DESC
+      LIMIT 100
     `) as any[]
 
     const pedidosConItems = await Promise.all(
