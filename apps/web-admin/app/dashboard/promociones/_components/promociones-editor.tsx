@@ -13,6 +13,7 @@ interface Promocion {
   cta_texto: string | null
   imagen_url: string | null
   gradiente_css: string | null
+  link_url: string | null // ← AGREGAR
   orden: number
   activo: boolean
   creado_en: string
