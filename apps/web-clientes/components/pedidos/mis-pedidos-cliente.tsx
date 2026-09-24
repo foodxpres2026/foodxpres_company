@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import EstadoTimeline from './estado-timeline'
 import { useCarrito } from '@/lib/carrito/store'
-import Skeleton, { SkeletonPedido } from '@/components/ui/skeleton'
+import { tiempoRelativo } from '@/lib/utils/fechas'
 
 interface Pedido {
   id: string
@@ -49,21 +48,6 @@ const ESTADO_COLORES: Record<string, string> = {
   PARCIAL: 'bg-purple-500/15 text-purple-400',
 }
 
-function tiempoRelativo(fecha: string) {
-  const min = Math.floor((Date.now() - new Date(fecha).getTime()) / 60000)
-  if (min < 1) return 'Ahora mismo'
-  if (min < 60) return `Hace ${min} min`
-  const hrs = Math.floor(min / 60)
-  if (hrs < 24) return `Hace ${hrs}h`
-  const dias = Math.floor(hrs / 24)
-  if (dias === 1) return 'Ayer'
-  if (dias < 7) return `Hace ${dias} días`
-  return new Date(fecha).toLocaleDateString('es-PE', {
-    day: '2-digit',
-    month: 'short',
-  })
-}
-
 export default function MisPedidosCliente() {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [filtro, setFiltro] = useState('todos')
@@ -74,9 +58,7 @@ export default function MisPedidosCliente() {
   useEffect(() => {
     setLoading(true)
     const url =
-      filtro === 'todos'
-        ? '/api/pedidos'
-        : `/api/pedidos?filtro=${filtro}`
+      filtro === 'todos' ? '/api/pedidos' : `/api/pedidos?filtro=${filtro}`
 
     fetch(url)
       .then((r) => r.json())
@@ -99,12 +81,11 @@ export default function MisPedidosCliente() {
         return
       }
 
-      // Agregar items al carrito
       let totalItems = 0
       for (const sp of data.data.sub_pedidos) {
         for (const item of sp.items) {
           agregar({
-            plato_id: item.id, // aproximación
+            plato_id: item.id,
             plato_nombre: item.nombre_snapshot,
             plato_imagen: null,
             restaurante_id: sp.id,
@@ -157,14 +138,25 @@ export default function MisPedidosCliente() {
       {/* LISTA */}
       {loading ? (
         <div className="space-y-3">
-          <SkeletonPedido />
-          <SkeletonPedido />
-          <SkeletonPedido />
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="bg-surface border border-line rounded-2xl p-4 animate-pulse"
+            >
+              <div className="h-4 bg-surface-light rounded w-24 mb-2" />
+              <div className="h-3 bg-surface-light rounded w-40 mb-3" />
+              <div className="h-5 bg-surface-light rounded w-32" />
+            </div>
+          ))}
         </div>
       ) : pedidos.length === 0 ? (
-        <div className="bg-surface border border-line rounded-2xl p-10 md:p-16 text-center animate-fade-in">
+        <div className="bg-surface border border-line rounded-2xl p-10 md:p-16 text-center">
           <div className="text-6xl mb-4">
-            {filtro === 'activos' ? '🎉' : filtro === 'completados' ? '📭' : '📦'}
+            {filtro === 'activos'
+              ? '🎉'
+              : filtro === 'completados'
+              ? '📭'
+              : '📦'}
           </div>
           <h2 className="text-lg font-bold text-white mb-2">
             {filtro === 'todos'
@@ -190,83 +182,64 @@ export default function MisPedidosCliente() {
           )}
         </div>
       ) : (
-        <div className="space-y-3 animate-fade-in">
+        <div className="space-y-3">
           {pedidos.map((p) => {
-            const esActivo = !['ENTREGADO', 'CANCELADO', 'RECHAZADO', 'PARCIAL'].includes(
-              p.estado_global
-            )
+            const esActivo = ![
+              'ENTREGADO',
+              'CANCELADO',
+              'RECHAZADO',
+              'PARCIAL',
+            ].includes(p.estado_global)
 
             return (
-              <div
+              <Link
                 key={p.id}
-                className="bg-surface border border-line rounded-2xl overflow-hidden"
+                href={`/pedido/${p.codigo}`}
+                className="block bg-surface border border-line rounded-2xl p-4 hover:border-brand/40 transition-colors"
               >
                 {/* HEADER */}
-                <Link
-                  href={`/pedido/${p.codigo}`}
-                  className="block p-4 hover:bg-surface-light transition-colors"
-                >
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-bold text-white text-sm">
-                          {p.codigo}
-                        </span>
-                        <span className="text-[10px] text-gray-500">
-                          {tiempoRelativo(p.creado_en)}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-400 truncate">
-                        {p.primer_restaurante}
-                        {p.num_locales > 1 && (
-                          <span className="text-purple-400 font-medium">
-                            {' '}
-                            +{p.num_locales - 1} más
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="font-black text-brand text-lg">
-                        S/ {Number(p.total).toFixed(2)}
-                      </p>
-                      <span
-                        className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          ESTADO_COLORES[p.estado_global] ||
-                          ESTADO_COLORES.PENDIENTE
-                        }`}
-                      >
-                        {ESTADO_LABELS[p.estado_global] || p.estado_global}
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="font-bold text-white text-sm">
+                        {p.codigo}
+                      </span>
+                      <span className="text-[10px] text-gray-500">
+                        {tiempoRelativo(p.creado_en)}
                       </span>
                     </div>
+                    <p className="text-xs text-gray-400 truncate">
+                      🏪 {p.primer_restaurante}
+                      {p.num_locales > 1 && (
+                        <span className="text-purple-400 font-medium">
+                          {' '}
+                          +{p.num_locales - 1} más
+                        </span>
+                      )}
+                    </p>
                   </div>
-
-                  {/* TIMELINE */}
-                  {esActivo && (
-                    <EstadoTimeline estado={p.estado_global} compact />
-                  )}
-                </Link>
-
-                {/* ACCIONES */}
-                <div className="px-4 pb-3 flex items-center gap-2 border-t border-line pt-3">
-                  <Link
-                    href={`/pedido/${p.codigo}`}
-                    className="flex-1 text-center text-xs bg-surface-light hover:bg-[#222] text-gray-300 font-medium py-2 rounded-lg transition-colors"
-                  >
-                    Ver detalle
-                  </Link>
-                  {!esActivo && (
-                    <button
-                      type="button"
-                      onClick={() => reordenar(p)}
-                      disabled={reordenando === p.id}
-                      className="flex-1 text-center text-xs bg-brand hover:bg-brand-dark disabled:bg-brand/40 text-black font-bold py-2 rounded-lg transition-colors"
-                    >
-                      {reordenando === p.id ? 'Agregando...' : '🔁 Reordenar'}
-                    </button>
-                  )}
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-black text-brand text-lg">
+                      S/ {Number(p.total).toFixed(2)}
+                    </p>
+                  </div>
                 </div>
-              </div>
+
+                {/* ESTADO */}
+                <div className="flex items-center justify-between gap-2 mt-3">
+                  <span
+                    className={`text-[10px] px-2 py-1 rounded-full font-bold ${
+                      ESTADO_COLORES[p.estado_global] ||
+                      ESTADO_COLORES.PENDIENTE
+                    }`}
+                  >
+                    {ESTADO_LABELS[p.estado_global] || p.estado_global}
+                  </span>
+                  <span className="text-xs text-brand font-bold">
+                    Ver detalle →
+                  </span>
+                </div>
+              </Link>
             )
           })}
         </div>

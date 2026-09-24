@@ -11,6 +11,7 @@ interface Promo {
   cta_texto: string | null
   imagen_url: string | null
   gradiente_css: string | null
+  link_url: string | null
 }
 
 export default function PromoCarousel({ promos }: { promos: Promo[] }) {
@@ -25,7 +26,6 @@ export default function PromoCarousel({ promos }: { promos: Promo[] }) {
   }, [promos.length])
 
   if (promos.length === 0) {
-    // Fallback con promos decorativas si no hay en BD
     return (
       <div className="h-40 md:h-56 rounded-2xl overflow-hidden relative bg-gradient-to-br from-brand/30 to-brand/5 border border-brand/20">
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
@@ -50,12 +50,13 @@ export default function PromoCarousel({ promos }: { promos: Promo[] }) {
         {promos.map((promo, i) => (
           <Link
             key={promo.id}
-            href="/buscar"
+            href={promo.link_url || '/'}
             className={`absolute inset-0 transition-opacity duration-700 ${
               i === activo ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
             {promo.imagen_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={promo.imagen_url}
                 alt={promo.titulo}
@@ -65,7 +66,9 @@ export default function PromoCarousel({ promos }: { promos: Promo[] }) {
               <div
                 className="w-full h-full"
                 style={{
-                  background: promo.gradiente_css || 'linear-gradient(135deg, #7ED321, #4A9A2C)',
+                  background:
+                    promo.gradiente_css ||
+                    'linear-gradient(135deg, #7ED321, #4A9A2C)',
                 }}
               />
             )}
@@ -81,16 +84,13 @@ export default function PromoCarousel({ promos }: { promos: Promo[] }) {
                 {promo.titulo}
               </h2>
               {promo.subtitulo && (
-                <p className="text-sm text-gray-300 mt-1">
-                  {promo.subtitulo}
-                </p>
+                <p className="text-sm text-gray-300 mt-1">{promo.subtitulo}</p>
               )}
             </div>
           </Link>
         ))}
       </div>
 
-      {/* DOTS */}
       {promos.length > 1 && (
         <div className="flex justify-center gap-1.5 mt-3">
           {promos.map((_, i) => (

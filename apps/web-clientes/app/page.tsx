@@ -48,10 +48,13 @@ async function getData(categoriaSlug?: string) {
     SELECT id, slug, nombre, emoji FROM categorias ORDER BY orden, nombre
   `) as any[]
 
-  const promos = (await sql`
-    SELECT id, badge, titulo, subtitulo, cta_texto, imagen_url, gradiente_css
-    FROM promociones WHERE activo = TRUE ORDER BY orden LIMIT 5
-  `) as any[]
+  const promos = await sql`
+    SELECT id, badge, titulo, subtitulo, cta_texto, imagen_url, gradiente_css, link_url
+    FROM promociones
+    WHERE activo = TRUE
+    ORDER BY orden
+    LIMIT 5
+  `
 
   const restaurantes = restaurantesRows.map((r) => ({
     ...r,

@@ -4,16 +4,9 @@ import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
 
 const patchSchema = z.object({
-  badge: z.string().max(40).optional().nullable(),
-  titulo: z.string().min(2).max(80),
-  subtitulo: z.string().max(120).optional().nullable(),
-  descripcion: z.string().max(500).optional().nullable(),
-  cta_texto: z.string().max(40).optional().nullable(),
-  imagen_url: z.string().url().optional().nullable().or(z.literal('')),
-  gradiente_css: z.string().max(160).optional().nullable(),
-  link_url: z.string().max(255).optional().nullable(),
+  nombre: z.string().min(2).max(60),
+  emoji: z.string().max(10).optional().nullable(),
   orden: z.coerce.number().int().min(0).default(0),
-  activo: z.boolean().default(true),
 })
 
 export async function PATCH(
@@ -41,23 +34,16 @@ export async function PATCH(
     const d = parsed.data
 
     await sql`
-      UPDATE promociones SET
-        badge = ${d.badge || null},
-        titulo = ${d.titulo},
-        subtitulo = ${d.subtitulo || null},
-        descripcion = ${d.descripcion || null},
-        cta_texto = ${d.cta_texto || null},
-        imagen_url = ${d.imagen_url || null},
-        gradiente_css = ${d.gradiente_css || null},
-        link_url = ${d.link_url || null},
-        orden = ${d.orden},
-        activo = ${d.activo}
+      UPDATE categorias SET
+        nombre = ${d.nombre},
+        emoji = ${d.emoji || null},
+        orden = ${d.orden}
       WHERE id = ${id}
     `
 
     return Response.json({ ok: true })
   } catch (error) {
-    console.error('PATCH promocion error:', error)
+    console.error('PATCH categoria error:', error)
     return Response.json(
       { ok: false, error: 'Error al actualizar' },
       { status: 500 }
@@ -77,10 +63,26 @@ export async function DELETE(
   const { id } = await params
 
   try {
-    await sql`DELETE FROM promociones WHERE id = ${id}`
+    const count = (await sql`
+      SELECT COUNT(*)::int as total 
+      FROM restaurantes_categorias 
+      WHERE categoria_id = ${id}
+    `) as any[]
+
+    if (count[0].total > 0) {
+      return Response.json(
+        {
+          ok: false,
+          error: `No se puede eliminar: ${count[0].total} restaurante(s) la usan`,
+        },
+        { status: 409 }
+      )
+    }
+
+    await sql`DELETE FROM categorias WHERE id = ${id}`
     return Response.json({ ok: true })
   } catch (error) {
-    console.error('DELETE promocion error:', error)
+    console.error('DELETE categoria error:', error)
     return Response.json(
       { ok: false, error: 'Error al eliminar' },
       { status: 500 }

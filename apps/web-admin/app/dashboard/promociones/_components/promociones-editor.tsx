@@ -45,6 +45,7 @@ export default function PromocionesEditor({
       cta_texto: p.cta_texto ?? '',
       imagen_url: p.imagen_url ?? '',
       gradiente_css: p.gradiente_css ?? '',
+      link_url: p.link_url ?? '/', // ← NUEVO
       orden: p.orden,
       activo: p.activo,
     })

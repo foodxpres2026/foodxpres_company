@@ -11,6 +11,7 @@ const schema = z.object({
   cta_texto: z.string().max(40).optional().nullable(),
   imagen_url: z.string().url().optional().nullable().or(z.literal('')),
   gradiente_css: z.string().max(160).optional().nullable(),
+  link_url: z.string().max(255).optional().nullable(),
   orden: z.coerce.number().int().min(0).default(0),
   activo: z.boolean().default(true),
 })
@@ -24,7 +25,7 @@ export async function GET() {
   try {
     const rows = await sql`
       SELECT id, badge, titulo, subtitulo, descripcion, cta_texto,
-             imagen_url, gradiente_css, orden, activo, creado_en
+             imagen_url, gradiente_css, link_url, orden, activo, creado_en
       FROM promociones
       ORDER BY orden ASC, creado_en DESC
     `
@@ -57,18 +58,18 @@ export async function POST(req: NextRequest) {
 
     const d = parsed.data
 
-    const inserted = await sql`
+    const inserted = (await sql`
       INSERT INTO promociones (
         badge, titulo, subtitulo, descripcion, cta_texto,
-        imagen_url, gradiente_css, orden, activo
+        imagen_url, gradiente_css, link_url, orden, activo
       ) VALUES (
         ${d.badge || null}, ${d.titulo}, ${d.subtitulo || null},
         ${d.descripcion || null}, ${d.cta_texto || null},
         ${d.imagen_url || null}, ${d.gradiente_css || null},
-        ${d.orden}, ${d.activo}
+        ${d.link_url || null}, ${d.orden}, ${d.activo}
       )
       RETURNING id, titulo, activo
-    `
+    `) as any[]
 
     return Response.json({ ok: true, data: inserted[0] }, { status: 201 })
   } catch (error) {

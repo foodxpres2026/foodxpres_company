@@ -4,7 +4,7 @@ import PromocionesEditor from './_components/promociones-editor'
 export default async function PromocionesPage() {
   const promos = await sql`
     SELECT id, badge, titulo, subtitulo, descripcion, cta_texto,
-           imagen_url, gradiente_css, orden, activo, creado_en
+           imagen_url, gradiente_css, link_url, orden, activo, creado_en
     FROM promociones
     ORDER BY orden ASC, creado_en DESC
   `

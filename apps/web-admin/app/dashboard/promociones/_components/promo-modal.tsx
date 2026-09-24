@@ -12,9 +12,23 @@ export interface PromoFormData {
   cta_texto: string
   imagen_url: string
   gradiente_css: string
+  link_url: string
   orden: number
   activo: boolean
 }
+
+interface Restaurante {
+  id: string
+  slug: string
+  nombre: string
+}
+
+// Opciones especiales del dropdown
+const LINK_ESPECIALES = [
+  { value: '/', label: '🏠 Ir al inicio' },
+  { value: '/buscar', label: '🔍 Ir al buscador' },
+  { value: '/mis-pedidos', label: '📦 Ir a mis pedidos' },
+]
 
 export default function PromoModal({
   open,
@@ -38,6 +52,7 @@ export default function PromoModal({
     cta_texto: 'Pedir ahora',
     imagen_url: '',
     gradiente_css: '',
+    link_url: '/',
     orden: 0,
     activo: true,
   })
@@ -46,6 +61,8 @@ export default function PromoModal({
     initialData ? ({ ...empty(), ...initialData } as PromoFormData) : empty()
   )
   const [error, setError] = useState<string | null>(null)
+  const [restaurantes, setRestaurantes] = useState<Restaurante[]>([])
+  const [loadingRestaurantes, setLoadingRestaurantes] = useState(true)
 
   useEffect(() => {
     if (open) {
@@ -56,6 +73,26 @@ export default function PromoModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialData])
+
+  // Cargar restaurantes para el dropdown
+  useEffect(() => {
+    if (!open) return
+    setLoadingRestaurantes(true)
+    fetch('/api/restaurantes')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.ok) {
+          setRestaurantes(
+            data.data.map((r: any) => ({
+              id: r.id,
+              slug: r.slug,
+              nombre: r.nombre,
+            }))
+          )
+        }
+      })
+      .finally(() => setLoadingRestaurantes(false))
+  }, [open])
 
   if (!open) return null
 
@@ -145,6 +182,46 @@ export default function PromoModal({
             onChange={(v) => update('imagen_url', v)}
             carpeta="promociones"
           />
+
+          {/* DROPDOWN DE LINK */}
+          <div>
+            <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
+              🎯 ¿A dónde lleva el click?
+            </label>
+            <select
+              value={form.link_url}
+              onChange={(e) => update('link_url', e.target.value)}
+              disabled={loadingRestaurantes}
+              className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white focus:outline-none focus:border-brand disabled:opacity-50"
+            >
+              <option value="">— Selecciona una opción —</option>
+
+              <optgroup label="🏪 Restaurantes">
+                {loadingRestaurantes ? (
+                  <option disabled>Cargando...</option>
+                ) : restaurantes.length === 0 ? (
+                  <option disabled>No hay restaurantes</option>
+                ) : (
+                  restaurantes.map((r) => (
+                    <option key={r.id} value={`/restaurante/${r.slug}`}>
+                      {r.nombre}
+                    </option>
+                  ))
+                )}
+              </optgroup>
+
+              <optgroup label="🔗 Links especiales">
+                {LINK_ESPECIALES.map((l) => (
+                  <option key={l.value} value={l.value}>
+                    {l.label}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
+            <p className="text-xs text-gray-600 mt-1">
+              Al hacer click en el banner, el cliente irá a esta pantalla
+            </p>
+          </div>
 
           <div>
             <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">

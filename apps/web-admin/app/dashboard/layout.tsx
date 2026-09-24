@@ -7,14 +7,16 @@ import Logo from '@/components/layout/logo'
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Inicio', icon: '📊' },
   { href: '/dashboard/restaurantes', label: 'Restaurantes', icon: '🏪' },
+  { href: '/dashboard/categorias', label: 'Categorías', icon: '🍽️' }, // ← NUEVO
   { href: '/dashboard/pedidos', label: 'Pedidos', icon: '📦' },
   { href: '/dashboard/drivers', label: 'Drivers', icon: '🏍️' },
   { href: '/dashboard/clientes', label: 'Clientes', icon: '👥' },
-  { href: '/dashboard/promociones', label: 'Promociones', icon: '🎨' }, // ← NUEVO
+  { href: '/dashboard/promociones', label: 'Promociones', icon: '🎨' },
   { href: '/dashboard/solicitudes', label: 'Solicitudes', icon: '🔑' },
   { href: '/dashboard/admins', label: 'Admins', icon: '🔐' },
   { href: '/dashboard/configuracion', label: 'Configuración', icon: '⚙️' },
 ]
+
 export default async function DashboardLayout({
   children,
 }: {

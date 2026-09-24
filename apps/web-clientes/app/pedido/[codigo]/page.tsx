@@ -5,6 +5,7 @@ import { getSessionUser } from '@/lib/auth'
 import Header from '@/components/layout/header'
 import BottomNav from '@/components/layout/bottom-nav'
 import EstadoTimeline from '@/components/pedidos/estado-timeline'
+import { formatearFechaHora } from '@/lib/utils/fechas'
 
 export const dynamic = 'force-dynamic'
 
@@ -94,7 +95,6 @@ export default async function PedidoPage({
   const pedido = await getPedido(codigo, user.id)
   if (!pedido) notFound()
 
-  // Dirección para header
   const dirRows = (await sql`
     SELECT id, etiqueta, direccion, referencia, lat, lng
     FROM direcciones
@@ -103,6 +103,7 @@ export default async function PedidoPage({
   `) as any[]
 
   const direccionDeBD = dirRows[0] || null
+  const esMulti = pedido.sub_pedidos.length > 1
 
   return (
     <>
@@ -122,107 +123,129 @@ export default async function PedidoPage({
             Pedido {pedido.codigo}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            {new Date(pedido.creado_en).toLocaleString('es-PE', {
-              day: '2-digit',
-              month: 'short',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+            {formatearFechaHora(pedido.creado_en)}
           </p>
         </div>
 
-        {/* TIMELINE GLOBAL */}
-        <div className="bg-surface border border-line rounded-2xl p-5 mb-4">
-          <EstadoTimeline estado={pedido.estado_global} />
-        </div>
+        {/* TIMELINE GLOBAL — solo si hay varios locales */}
+        {esMulti && (
+          <div className="bg-surface border border-line rounded-2xl p-5 mb-4">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 font-bold">
+              Estado general del pedido
+            </p>
+            <EstadoTimeline estado={pedido.estado_global} />
+          </div>
+        )}
 
-        {/* ESTADO POR LOCAL */}
-        <div className="space-y-3 mb-4">
+        {/* SUB-PEDIDOS */}
+        <div className="space-y-4 mb-4">
           {pedido.sub_pedidos.map((sp: any, idx: number) => (
             <div
               key={sp.id}
               className="bg-surface border border-line rounded-2xl overflow-hidden"
             >
-              {/* Header local */}
+              {/* HEADER LOCAL */}
               <div className="p-4 border-b border-line">
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      {pedido.sub_pedidos.length > 1 && (
-                        <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-bold">
-                          Local {idx + 1}/{pedido.sub_pedidos.length}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-bold text-white text-sm truncate">
+                    {esMulti && (
+                      <p className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-bold inline-block mb-2">
+                        Local {idx + 1} de {pedido.sub_pedidos.length}
+                      </p>
+                    )}
+                    <h3 className="font-bold text-white text-base truncate">
                       🏪 {sp.restaurante_nombre}
                     </h3>
+                    {sp.restaurante_celular && (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        📱 {sp.restaurante_celular}
+                      </p>
+                    )}
                   </div>
-                  <span className="text-xs text-gray-500 whitespace-nowrap">
+                  <span className="text-sm font-bold text-brand whitespace-nowrap">
                     S/ {Number(sp.subtotal).toFixed(2)}
                   </span>
                 </div>
 
-                {/* Timeline del local */}
+                {/* TIMELINE DEL LOCAL */}
                 <EstadoTimeline estado={sp.estado} />
               </div>
 
-              {/* Driver si está asignado */}
+              {/* DRIVER DESTACADO */}
               {sp.driver_nombre && (
-                <div className="p-4 border-b border-line">
-                  <div className="flex items-center gap-3 p-3 bg-surface-dark rounded-xl">
-                    <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center text-brand font-bold flex-shrink-0">
+                <div className="p-4 border-b border-line bg-brand/5">
+                  <div className="flex items-center gap-3 p-3 bg-surface rounded-xl border border-brand/30">
+                    <div className="w-14 h-14 rounded-full bg-brand/20 flex items-center justify-center text-brand font-black text-xl flex-shrink-0">
                       {sp.driver_nombre.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500">Tu repartidor</p>
-                      <p className="text-sm font-bold text-white truncate">
+                      <p className="text-[10px] text-brand uppercase tracking-wider font-bold mb-0.5">
+                        🏍️ Tu repartidor
+                      </p>
+                      <p className="text-base font-bold text-white truncate">
                         {sp.driver_nombre}
                       </p>
+                      {sp.driver_celular && (
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          📱 +51 {sp.driver_celular}
+                        </p>
+                      )}
                     </div>
                     {sp.driver_celular && (
                       <a
                         href={`tel:+51${sp.driver_celular}`}
-                        className="text-xs bg-brand hover:bg-brand-dark text-black font-bold px-3 py-2 rounded-lg flex-shrink-0 transition-colors"
+                        className="bg-brand hover:bg-brand-dark text-black font-bold text-xs px-4 py-3 rounded-lg flex-shrink-0 transition-colors"
                       >
-                        📞 Llamar
+                        📞
                       </a>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* Items */}
+              {/* ITEMS */}
               <div className="p-4">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-3">
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-3 font-bold">
                   Items ({sp.items.length})
                 </p>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {sp.items.map((item: any) => (
-                    <div key={item.id} className="flex gap-2 text-xs">
-                      <span className="font-bold text-brand flex-shrink-0">
+                    <div key={item.id} className="flex gap-3">
+                      <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-brand/15 text-brand flex items-center justify-center text-xs font-bold">
                         {item.cantidad}×
-                      </span>
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white truncate">
-                          {item.nombre_snapshot}
-                        </p>
-                        {item.opciones.length > 0 && (
-                          <p className="text-[10px] text-gray-500 mt-0.5 truncate">
-                            {item.opciones
-                              .map((o: any) => o.choice_nombre_snapshot)
-                              .join(' · ')}
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="text-sm text-white font-medium truncate">
+                            {item.nombre_snapshot}
                           </p>
+                          <p className="text-sm text-white font-bold flex-shrink-0">
+                            S/ {Number(item.subtotal).toFixed(2)}
+                          </p>
+                        </div>
+                        {item.opciones.length > 0 && (
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {item.opciones.map((op: any, i: number) => (
+                              <span
+                                key={i}
+                                className="text-[10px] bg-surface-dark border border-line text-gray-400 px-1.5 py-0.5 rounded"
+                              >
+                                {op.choice_nombre_snapshot}
+                                {Number(op.precio_extra) > 0 && (
+                                  <span className="text-brand ml-1">
+                                    +S/{Number(op.precio_extra).toFixed(2)}
+                                  </span>
+                                )}
+                              </span>
+                            ))}
+                          </div>
                         )}
                         {item.notas && (
-                          <p className="text-[10px] text-yellow-500 mt-0.5">
+                          <p className="mt-1 text-[11px] text-yellow-500">
                             📝 {item.notas}
                           </p>
                         )}
                       </div>
-                      <span className="text-white font-bold flex-shrink-0">
-                        S/ {Number(item.subtotal).toFixed(2)}
-                      </span>
                     </div>
                   ))}
                 </div>
@@ -231,29 +254,37 @@ export default async function PedidoPage({
           ))}
         </div>
 
-        {/* RESUMEN */}
+        {/* RESUMEN DEL PAGO */}
         <div className="bg-surface border border-line rounded-2xl p-5 space-y-2 text-sm">
           <h3 className="font-bold text-white text-sm uppercase tracking-wider mb-3">
             Resumen del pago
           </h3>
           <div className="flex justify-between">
             <span className="text-gray-400">Subtotal</span>
-            <span className="text-white">S/ {Number(pedido.subtotal).toFixed(2)}</span>
+            <span className="text-white">
+              S/ {Number(pedido.subtotal).toFixed(2)}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-400">Delivery</span>
-            <span className="text-white">S/ {Number(pedido.total_envio).toFixed(2)}</span>
+            <span className="text-white">
+              S/ {Number(pedido.total_envio).toFixed(2)}
+            </span>
           </div>
           {Number(pedido.propina) > 0 && (
             <div className="flex justify-between">
               <span className="text-gray-400">Propina</span>
-              <span className="text-white">S/ {Number(pedido.propina).toFixed(2)}</span>
+              <span className="text-white">
+                S/ {Number(pedido.propina).toFixed(2)}
+              </span>
             </div>
           )}
           {pedido.vip && (
             <div className="flex justify-between">
               <span className="text-gray-400">VIP</span>
-              <span className="text-yellow-400">S/ {Number(pedido.costo_vip).toFixed(2)}</span>
+              <span className="text-yellow-400">
+                S/ {Number(pedido.costo_vip).toFixed(2)}
+              </span>
             </div>
           )}
           <div className="flex justify-between pt-3 border-t border-line">
@@ -264,7 +295,7 @@ export default async function PedidoPage({
           </div>
         </div>
 
-        {/* Botón */}
+        {/* BOTÓN VOLVER */}
         <Link
           href="/"
           className="block mt-4 text-center bg-surface border border-line hover:border-brand text-gray-300 font-bold py-3 rounded-xl transition-colors"
