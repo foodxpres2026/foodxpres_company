@@ -18,7 +18,6 @@ export async function GET(
   try {
     const { restaurantId } = await params
 
-    // Traer sub-pedidos del local con items
     const rows = (await sql`
       SELECT 
         sp.id,
@@ -31,17 +30,17 @@ export async function GET(
         sp.listo_en,
         sp.direccion_snapshot,
         p.codigo as pedido_codigo,
-        p.cliente_nombre,
-        p.cliente_celular,
-        p.total as pedido_total
+        p.total as pedido_total,
+        u.nombre as cliente_nombre,
+        u.celular as cliente_celular
       FROM sub_pedidos sp
       INNER JOIN pedidos p ON p.id = sp.pedido_id
+      INNER JOIN usuarios u ON u.id = p.usuario_id
       WHERE sp.restaurante_id = ${restaurantId}
         AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO')
       ORDER BY sp.creado_en ASC
     `) as any[]
 
-    // Traer items por cada pedido
     const pedidosConItems = await Promise.all(
       rows.map(async (sp) => {
         const items = (await sql`
@@ -54,7 +53,10 @@ export async function GET(
       })
     )
 
-    return Response.json({ ok: true, data: pedidosConItems }, { headers: corsHeaders })
+    return Response.json(
+      { ok: true, data: pedidosConItems },
+      { headers: corsHeaders }
+    )
   } catch (error) {
     console.error('GET pedidos local error:', error)
     return Response.json(
