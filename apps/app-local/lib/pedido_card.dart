@@ -58,7 +58,9 @@ class PedidoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = (pedido['items'] as List?) ?? [];
     final dir = pedido['direccion_snapshot'] as Map<String, dynamic>? ?? {};
-    final total = double.tryParse(pedido['pedido_total']?.toString() ?? '0') ?? 0;
+    final subtotal =
+        double.tryParse(pedido['subtotal']?.toString() ?? '0') ?? 0;
+    final notas = pedido['notas'] as String?;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -152,7 +154,7 @@ class PedidoCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // ITEMS + TOTAL
+          // ITEMS + SUBTOTAL
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -161,7 +163,7 @@ class PedidoCard extends StatelessWidget {
                 style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
               Text(
-                'S/ ${total.toStringAsFixed(2)}',
+                'S/ ${subtotal.toStringAsFixed(2)}',
                 style: const TextStyle(
                   color: Color(0xFF7ED321),
                   fontWeight: FontWeight.bold,
@@ -172,8 +174,7 @@ class PedidoCard extends StatelessWidget {
           ),
 
           // NOTAS
-          if (pedido['notas'] != null &&
-              (pedido['notas'] as String).isNotEmpty) ...[
+          if (notas != null && notas.isNotEmpty) ...[
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(8),
@@ -191,7 +192,7 @@ class PedidoCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      pedido['notas'],
+                      notas,
                       style: const TextStyle(
                         color: Color(0xFFFFC107),
                         fontSize: 11,
