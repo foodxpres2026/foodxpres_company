@@ -8,6 +8,7 @@ import HorariosForm, {
   type HorarioDia,
 } from './horarios-form'
 import CategoriasPicker from './categorias-picker'
+import ImageUploader from '@/components/ui/image-uploader'
 
 export interface RestauranteFormData {
   slug: string
@@ -200,23 +201,26 @@ export default function RestauranteForm({
         <div>
           <h3 className="text-base font-bold text-white">Imágenes</h3>
           <p className="text-xs text-gray-500 mt-1">
-            Pega URLs por ahora. Subida directa en el futuro.
+            Sube el logo y la imagen de portada del restaurante
           </p>
         </div>
 
-        <Field
-          label="URL del logo"
-          value={form.logo_url}
-          onChange={(v) => update('logo_url', v)}
-          placeholder="https://ejemplo.com/logo.png"
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ImageUploader
+            label="Logo del restaurante"
+            value={form.logo_url}
+            onChange={(v) => update('logo_url', v)}
+            carpeta="restaurantes/logos"
+            aspect="square"
+          />
 
-        <Field
-          label="URL del banner"
-          value={form.banner_url}
-          onChange={(v) => update('banner_url', v)}
-          placeholder="https://ejemplo.com/banner.jpg"
-        />
+          <ImageUploader
+            label="Imagen de portada"
+            value={form.banner_url}
+            onChange={(v) => update('banner_url', v)}
+            carpeta="restaurantes/banners"
+          />
+        </div>
       </div>
 
       {/* UBICACIÓN */}

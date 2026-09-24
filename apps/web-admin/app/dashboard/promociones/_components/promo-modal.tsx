@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import ImageUploader from '@/components/ui/image-uploader'
 
 export interface PromoFormData {
   id?: string
@@ -138,21 +139,12 @@ export default function PromoModal({
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-              URL de imagen (fondo del banner)
-            </label>
-            <input
-              type="url"
-              value={form.imagen_url}
-              onChange={(e) => update('imagen_url', e.target.value)}
-              placeholder="https://images.unsplash.com/..."
-              className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand"
-            />
-            <p className="text-xs text-gray-600 mt-1">
-              Si no pones imagen, se usará un gradiente de fondo
-            </p>
-          </div>
+          <ImageUploader
+            label="Imagen del banner"
+            value={form.imagen_url}
+            onChange={(v) => update('imagen_url', v)}
+            carpeta="promociones"
+          />
 
           <div>
             <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">

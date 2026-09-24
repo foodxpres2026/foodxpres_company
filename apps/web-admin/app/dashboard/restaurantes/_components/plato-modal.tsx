@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import OpcionesEditor, {
   type GrupoLocal,
 } from './opciones-editor'
+import ImageUploader from '@/components/ui/image-uploader'
 
 export interface PlatoFormData {
   id?: string
@@ -205,18 +206,13 @@ export default function PlatoModal({
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-              URL de imagen
-            </label>
-            <input
-              type="url"
-              value={form.imagen_url}
-              onChange={(e) => update('imagen_url', e.target.value)}
-              placeholder="https://ejemplo.com/plato.jpg"
-              className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-            />
-          </div>
+          {/* IMAGE */}
+          <ImageUploader
+            label="Imagen del plato"
+            value={form.imagen_url}
+            onChange={(v) => update('imagen_url', v)}
+            carpeta="platos"
+          />
 
           <div className="flex items-center gap-3">
             <input
