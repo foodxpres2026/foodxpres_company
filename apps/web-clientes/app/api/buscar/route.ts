@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const restaurantes = (await sql`
       SELECT 
         r.id, r.slug, r.nombre, r.subtitulo, r.banner_url, r.logo_url,
-        r.calificacion, r.num_resenas, r.tiempo_estimado, r.monto_minimo,
+        r.tiempo_estimado, r.monto_minimo,
         r.activo,
         COALESCE(
           json_agg(
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
           OR r.direccion_fisica ILIKE ${term}
         )
       GROUP BY r.id
-      ORDER BY r.calificacion DESC, r.nombre ASC
+      ORDER BY r.nombre ASC
       LIMIT 20
     `) as any[]
 

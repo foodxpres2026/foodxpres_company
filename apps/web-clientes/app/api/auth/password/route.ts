@@ -5,11 +5,12 @@ import {
   getSessionUser,
   verifyPassword,
   hashPassword,
+  setSessionCookie,
 } from '@/lib/auth'
 
 const schema = z.object({
   password_actual: z.string().min(1, 'Ingresa tu contraseña actual'),
-  password_nueva: z.string().min(6, 'Mínimo 6 caracteres'),
+  password_nueva: z.string().min(12, 'Mínimo 12 caracteres').refine((value) => Buffer.byteLength(value, 'utf8') <= 72, 'Máximo 72 bytes'),
 })
 
 export async function PATCH(req: NextRequest) {
@@ -59,9 +60,12 @@ export async function PATCH(req: NextRequest) {
 
     await sql`
       UPDATE usuarios 
-      SET password_hash = ${nuevoHash}, actualizado_en = NOW()
+      SET password_hash = ${nuevoHash}, actualizado_en = GREATEST(NOW(), actualizado_en + INTERVAL '1 millisecond')
       WHERE id = ${user.id} AND role = 'CUSTOMER'
     `
+
+    // El cambio de contraseña revoca los demás dispositivos; este recibe un token nuevo.
+    await setSessionCookie(user)
 
     return Response.json({ ok: true })
   } catch (error) {

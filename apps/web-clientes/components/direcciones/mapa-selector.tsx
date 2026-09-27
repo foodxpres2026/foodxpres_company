@@ -18,18 +18,11 @@ export default function MapaSelector({ lat, lng, onChange }: Props) {
     if (typeof window === 'undefined') return
     if (!mapRef.current) return
 
-    // 🛡️ Si ya existe un mapa asociado a este elemento, lo limpiamos
-    // Leaflet guarda una referencia en el elemento DOM
-    if ((mapRef.current as any)._leaflet_id) {
-      delete (mapRef.current as any)._leaflet_id
-    }
-
-    // Destruir instancia previa si existe
     if (mapInstance.current) {
       try {
         mapInstance.current.remove()
-      } catch (e) {
-        // ignorar
+      } catch {
+        // La instancia puede haberse desmontado durante un render de desarrollo.
       }
       mapInstance.current = null
       markerRef.current = null
@@ -39,11 +32,6 @@ export default function MapaSelector({ lat, lng, onChange }: Props) {
 
     import('leaflet').then((L) => {
       if (cancelado || !mapRef.current) return
-
-      // 🛡️ Segunda verificación después del import asíncrono
-      if ((mapRef.current as any)._leaflet_id) {
-        delete (mapRef.current as any)._leaflet_id
-      }
 
       // Fix iconos por defecto de Leaflet
       // @ts-ignore
@@ -60,11 +48,11 @@ export default function MapaSelector({ lat, lng, onChange }: Props) {
       try {
         const map = L.map(mapRef.current, {
           zoomControl: true,
-          attributionControl: false,
         }).setView([lat, lng], 16)
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
         }).addTo(map)
 
         const marker = L.marker([lat, lng], { draggable: true }).addTo(map)
@@ -82,6 +70,16 @@ export default function MapaSelector({ lat, lng, onChange }: Props) {
 
         mapInstance.current = map
         markerRef.current = marker
+
+        // Leaflet mide el contenedor al inicializarse. En un diálogo que acaba
+        // de mostrarse esa medida puede ser provisional; recalcularla evita
+        // teselas comprimidas o agrupadas en una franja.
+        const invalidateSize = () => map.invalidateSize({ pan: false })
+        requestAnimationFrame(() => requestAnimationFrame(invalidateSize))
+        const resizeObserver = new ResizeObserver(invalidateSize)
+        resizeObserver.observe(mapRef.current)
+        map.on('unload', () => resizeObserver.disconnect())
+
         setReady(true)
       } catch (err) {
         console.error('Error creando mapa:', err)
@@ -93,14 +91,11 @@ export default function MapaSelector({ lat, lng, onChange }: Props) {
       if (mapInstance.current) {
         try {
           mapInstance.current.remove()
-        } catch (e) {
-          // ignorar
+        } catch {
+          // Ignorar errores al retirar el mapa durante el desmontaje.
         }
         mapInstance.current = null
         markerRef.current = null
-      }
-      if (mapRef.current && (mapRef.current as any)._leaflet_id) {
-        delete (mapRef.current as any)._leaflet_id
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

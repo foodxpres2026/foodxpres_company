@@ -4,7 +4,8 @@ import bcrypt from 'bcryptjs'
 import { sql } from './db'
 
 const COOKIE_NAME = 'foodxpres_session'
-const SESSION_MAX_AGE = 60 * 60 * 24 * 7 // 7 días
+const SESSION_MAX_AGE = 60 * 60 * 8 // 8 horas
+const SESSION_AUDIENCE = 'foodxpres:web-admin:v1'
 
 export interface SessionUser {
   id: string
@@ -14,50 +15,56 @@ export interface SessionUser {
   nombre: string
 }
 
+type SessionPayload = { user: SessionUser; exp: number; version: number }
+type AuthRow = { role: SessionUser['role']; activo: boolean; auth_version: string | number }
+
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10)
 }
 
-export async function verifyPassword(
-  password: string,
-  hash: string
-): Promise<boolean> {
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash)
 }
 
+function secret(): string {
+  const value = process.env.AUTH_SECRET
+  if (!value || Buffer.byteLength(value, 'utf8') < 32) {
+    throw new Error('AUTH_SECRET debe tener al menos 32 bytes')
+  }
+  return value
+}
+
 function sign(payload: string): string {
-  const secret = process.env.AUTH_SECRET
-  if (!secret) throw new Error('AUTH_SECRET no está definido')
-  return createHmac('sha256', secret).update(payload).digest('hex')
+  return createHmac('sha256', secret()).update(`${SESSION_AUDIENCE}\0${payload}`).digest('hex')
 }
 
-function encodeSession(user: SessionUser): string {
-  const payload = Buffer.from(JSON.stringify(user)).toString('base64url')
-  const signature = sign(payload)
-  return `${payload}.${signature}`
+function encodeSession(payload: SessionPayload): string {
+  const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url')
+  return `${encoded}.${sign(encoded)}`
 }
 
-function decodeSession(token: string): SessionUser | null {
+function decodeSession(token: string): SessionPayload | null {
   try {
-    const [payload, signature] = token.split('.')
-    if (!payload || !signature) return null
-
-    const expected = sign(payload)
-    const a = Buffer.from(signature, 'hex')
-    const b = Buffer.from(expected, 'hex')
-    if (a.length !== b.length) return null
-    if (!timingSafeEqual(a, b)) return null
-
-    return JSON.parse(
-      Buffer.from(payload, 'base64url').toString()
-    ) as SessionUser
+    const [payload, signature, extra] = token.split('.')
+    if (!payload || !signature || extra) return null
+    const expected = Buffer.from(sign(payload), 'hex')
+    const actual = Buffer.from(signature, 'hex')
+    if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) return null
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as SessionPayload
+    if (!data.user?.id || data.user.role !== 'ADMIN' || !Number.isFinite(data.exp) || data.exp <= Date.now() || !Number.isFinite(data.version)) return null
+    return data
   } catch {
     return null
   }
 }
 
 export async function setSessionCookie(user: SessionUser) {
-  const token = encodeSession(user)
+  const rows = (await sql`
+    SELECT FLOOR(EXTRACT(EPOCH FROM actualizado_en) * 1000)::bigint AS auth_version
+    FROM usuarios WHERE id = ${user.id} AND role = 'ADMIN' AND activo = TRUE LIMIT 1
+  `) as { auth_version: string | number }[]
+  if (!rows[0]) throw new Error('No se pudo crear la sesión')
+  const token = encodeSession({ user, exp: Date.now() + SESSION_MAX_AGE * 1000, version: Number(rows[0].auth_version) })
   const cookieStore = await cookies()
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
@@ -70,40 +77,36 @@ export async function setSessionCookie(user: SessionUser) {
 
 export async function clearSessionCookie() {
   const cookieStore = await cookies()
+  const token = cookieStore.get(COOKIE_NAME)?.value
+  const session = token ? decodeSession(token) : null
+  if (session) {
+    await sql`UPDATE usuarios SET actualizado_en = GREATEST(NOW(), actualizado_en + INTERVAL '1 millisecond') WHERE id = ${session.user.id} AND role = 'ADMIN'`
+  }
   cookieStore.delete(COOKIE_NAME)
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies()
   const token = cookieStore.get(COOKIE_NAME)?.value
-  if (!token) return null
-  return decodeSession(token)
+  const session = token ? decodeSession(token) : null
+  if (!session) return null
+  const rows = (await sql`
+    SELECT role, activo, FLOOR(EXTRACT(EPOCH FROM actualizado_en) * 1000)::bigint AS auth_version
+    FROM usuarios WHERE id = ${session.user.id} LIMIT 1
+  `) as AuthRow[]
+  const account = rows[0]
+  if (!account || account.role !== 'ADMIN' || !account.activo || Number(account.auth_version) !== session.version) return null
+  return session.user
 }
 
-export async function authenticateAdmin(
-  email: string,
-  password: string
-): Promise<SessionUser | null> {
+export async function authenticateAdmin(email: string, password: string): Promise<SessionUser | null> {
   const rows = (await sql`
     SELECT id, role, email, password_hash, nombre
-    FROM usuarios
-    WHERE email = ${email} AND role = 'ADMIN' AND activo = TRUE
-    LIMIT 1
+    FROM usuarios WHERE email = ${email} AND role = 'ADMIN' AND activo = TRUE LIMIT 1
   `) as any[]
-
   const user = rows[0]
-  if (!user || !user.password_hash) return null
-
-  const valid = await verifyPassword(password, user.password_hash)
-  if (!valid) return null
-
-  return {
-    id: user.id,
-    role: user.role as SessionUser['role'],
-    email: user.email,
-    celular: null,
-    nombre: user.nombre,
-  }
+  if (!user?.password_hash || !(await verifyPassword(password, user.password_hash))) return null
+  return { id: user.id, role: 'ADMIN', email: user.email, celular: null, nombre: user.nombre }
 }
 
 export { COOKIE_NAME }

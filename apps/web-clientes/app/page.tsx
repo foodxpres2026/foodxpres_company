@@ -16,7 +16,7 @@ async function getData(categoriaSlug?: string) {
   const restaurantesRows = (await sql`
     SELECT 
       r.id, r.slug, r.nombre, r.subtitulo, r.banner_url, r.logo_url,
-      r.calificacion, r.num_resenas, r.tiempo_estimado, r.monto_minimo,
+      r.tiempo_estimado, r.monto_minimo,
       r.activo, r.creado_en,
       COALESCE(
         json_agg(

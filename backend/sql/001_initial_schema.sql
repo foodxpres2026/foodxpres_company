@@ -189,6 +189,9 @@ CREATE TABLE IF NOT EXISTS pedidos (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   codigo          VARCHAR(20) UNIQUE NOT NULL,
   usuario_id      UUID NOT NULL REFERENCES usuarios(id),
+  origen          VARCHAR(20) NOT NULL DEFAULT 'APP'
+                    CHECK (origen IN ('APP', 'AUTOPEDIDO')),
+  creado_por      UUID REFERENCES usuarios(id),
   subtotal        NUMERIC(10,2) NOT NULL DEFAULT 0,
   total_envio     NUMERIC(10,2) NOT NULL DEFAULT 0,
   propina         NUMERIC(10,2) NOT NULL DEFAULT 0,
@@ -222,6 +225,8 @@ CREATE TABLE IF NOT EXISTS sub_pedidos (
   motivo_rechazo      TEXT,
   creado_en           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   aceptado_en         TIMESTAMPTZ,
+  driver_asignado_en  TIMESTAMPTZ,
+  driver_llego_en     TIMESTAMPTZ,
   listo_en            TIMESTAMPTZ,
   recogido_en         TIMESTAMPTZ,
   entregado_en        TIMESTAMPTZ,

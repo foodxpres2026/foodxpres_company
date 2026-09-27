@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import MapaSelector from './mapa-selector'
 
 export interface Direccion {
@@ -31,6 +31,8 @@ export default function DireccionModal({
   const [paso, setPaso] = useState<'elegir' | 'mapa'>('elegir')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const reverseLookupTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reverseLookupId = useRef(0)
 
   const [lat, setLat] = useState(initialData?.lat ?? PUCALLPA_CENTRO.lat)
   const [lng, setLng] = useState(initialData?.lng ?? PUCALLPA_CENTRO.lng)
@@ -59,6 +61,29 @@ export default function DireccionModal({
       document.body.style.overflow = ''
     }
   }, [open])
+
+  useEffect(() => () => {
+    if (reverseLookupTimer.current) clearTimeout(reverseLookupTimer.current)
+    reverseLookupId.current += 1
+  }, [])
+
+  function queueReverseLookup(latitude: number, longitude: number) {
+    if (reverseLookupTimer.current) clearTimeout(reverseLookupTimer.current)
+    const lookupId = ++reverseLookupId.current
+    reverseLookupTimer.current = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=es`
+        )
+        const data = await response.json()
+        if (lookupId === reverseLookupId.current && data.display_name) {
+          setDireccionTexto(data.display_name.split(',').slice(0, 4).join(', '))
+        }
+      } catch {
+        // El usuario puede escribir o corregir la dirección manualmente.
+      }
+    }, 1200)
+  }
 
   if (!open) return null
 
@@ -242,20 +267,7 @@ export default function DireccionModal({
                 onChange={(newLat, newLng) => {
                   setLat(newLat)
                   setLng(newLng)
-                  fetch(
-                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${newLat}&lon=${newLng}&accept-language=es`
-                  )
-                    .then((r) => r.json())
-                    .then((data) => {
-                      if (data.display_name) {
-                        const dir = data.display_name
-                          .split(',')
-                          .slice(0, 4)
-                          .join(', ')
-                        setDireccionTexto(dir)
-                      }
-                    })
-                    .catch(() => {})
+                  queueReverseLookup(newLat, newLng)
                 }}
               />
 

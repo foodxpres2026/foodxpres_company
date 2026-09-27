@@ -4,6 +4,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 export interface OpcionElegida {
+  grupo_id: string
+  choice_id: string
   grupo_titulo: string
   choice_nombre: string
   precio_extra: number

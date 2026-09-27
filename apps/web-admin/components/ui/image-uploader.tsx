@@ -99,7 +99,7 @@ export default function ImageUploader({
               <p className="text-xs text-gray-500 text-center px-4">
                 Arrastra una imagen o <br /> haz clic para seleccionar
               </p>
-              <p className="text-[10px] text-gray-600">JPG, PNG, WEBP, GIF · Máx 5 MB</p>
+              <p className="text-[10px] text-gray-600">JPG, PNG, WEBP, GIF, AVIF · Máx 4 MB</p>
             </>
           )}
         </div>
@@ -108,7 +108,7 @@ export default function ImageUploader({
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
         onChange={(e) => {
           const f = e.target.files?.[0]
           if (f) handleFile(f)

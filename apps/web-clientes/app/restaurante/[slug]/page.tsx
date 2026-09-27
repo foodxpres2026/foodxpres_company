@@ -18,7 +18,7 @@ async function getRestaurante(slug: string) {
   const rows = await sql`
     SELECT 
       r.id, r.slug, r.nombre, r.subtitulo, r.banner_url, r.logo_url,
-      r.direccion_fisica, r.calificacion, r.num_resenas, r.tiempo_estimado,
+      r.direccion_fisica, r.tiempo_estimado,
       r.monto_minimo, r.activo,
       COALESCE(
         json_agg(
@@ -118,8 +118,6 @@ export default async function RestaurantePage({
           subtitulo={restaurante.subtitulo}
           banner_url={restaurante.banner_url}
           logo_url={restaurante.logo_url}
-          calificacion={restaurante.calificacion}
-          num_resenas={restaurante.num_resenas}
           tiempo_estimado={restaurante.tiempo_estimado}
           monto_minimo={restaurante.monto_minimo}
           abierto={abierto}

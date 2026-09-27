@@ -2,21 +2,16 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import { sql } from '@/lib/db'
+import { createLocalToken, localCorsHeaders } from '@/lib/local-auth'
 
 // ============================================
 // CORS HEADERS (para apps Flutter)
 // ============================================
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
 // Handler para preflight (OPTIONS)
-export async function OPTIONS() {
+export async function OPTIONS(req: NextRequest) {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders,
+    headers: localCorsHeaders(req, 'POST, OPTIONS'),
   })
 }
 
@@ -33,7 +28,7 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return Response.json(
         { ok: false, error: 'Datos inválidos' },
-        { status: 400, headers: corsHeaders }
+        { status: 400, headers: localCorsHeaders(req, 'POST, OPTIONS') }
       )
     }
 
@@ -52,7 +47,7 @@ export async function POST(req: NextRequest) {
     if (rows.length === 0) {
       return Response.json(
         { ok: false, error: 'Credenciales inválidas' },
-        { status: 401, headers: corsHeaders }
+        { status: 401, headers: localCorsHeaders(req, 'POST, OPTIONS') }
       )
     }
 
@@ -61,7 +56,7 @@ export async function POST(req: NextRequest) {
     if (!user.password_hash) {
       return Response.json(
         { ok: false, error: 'Credenciales inválidas' },
-        { status: 401, headers: corsHeaders }
+        { status: 401, headers: localCorsHeaders(req, 'POST, OPTIONS') }
       )
     }
 
@@ -70,11 +65,22 @@ export async function POST(req: NextRequest) {
     if (!valido) {
       return Response.json(
         { ok: false, error: 'Credenciales inválidas' },
-        { status: 401, headers: corsHeaders }
+        { status: 401, headers: localCorsHeaders(req, 'POST, OPTIONS') }
       )
     }
 
-    const token = Buffer.from(`${user.id}:${Date.now()}`).toString('base64')
+    if (!user.restaurante_id) {
+      return Response.json(
+        { ok: false, error: 'La cuenta no tiene un restaurante asignado' },
+        { status: 403, headers: localCorsHeaders(req, 'POST, OPTIONS') }
+      )
+    }
+
+    const token = createLocalToken({
+      id: user.id,
+      restaurantId: user.restaurante_id,
+      name: user.nombre,
+    })
 
     return Response.json(
       {
@@ -87,13 +93,13 @@ export async function POST(req: NextRequest) {
           nombre: user.nombre,
         },
       },
-      { headers: corsHeaders }
+      { headers: localCorsHeaders(req, 'POST, OPTIONS') }
     )
   } catch (error) {
     console.error('Login-local error:', error)
     return Response.json(
       { ok: false, error: 'Error interno' },
-      { status: 500, headers: corsHeaders }
+      { status: 500, headers: localCorsHeaders(req, 'POST, OPTIONS') }
     )
   }
 }

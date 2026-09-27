@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { randomBytes, randomUUID } from 'crypto'
 import { z } from 'zod'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
@@ -9,34 +10,39 @@ import { calcularEnvio } from '@/lib/envio/calcular'
 // ============================================
 const itemSchema = z.object({
   plato_id: z.string().uuid(),
-  nombre_snapshot: z.string(),
-  precio_snapshot: z.coerce.number(),
-  cantidad: z.coerce.number().int().min(1),
+  cantidad: z.number().int().min(1).max(99),
   notas: z.string().max(100).optional().nullable(),
-  opciones: z.array(
-    z.object({
-      grupo_titulo: z.string(),
-      choice_nombre: z.string(),
-      precio_extra: z.coerce.number().default(0),
-    })
-  ),
+  opciones: z.array(z.object({
+    grupo_id: z.string().uuid().optional(),
+    choice_id: z.string().uuid().optional(),
+    grupo_titulo: z.string().min(1).max(120).optional(),
+    choice_nombre: z.string().min(1).max(80).optional(),
+  }).refine((op) => Boolean(op.choice_id || (op.grupo_titulo && op.choice_nombre)))),
 })
 
 const grupoSchema = z.object({
   restaurante_id: z.string().uuid(),
-  items: z.array(itemSchema).min(1),
+  items: z.array(itemSchema).min(1).max(50),
 })
 
 const createSchema = z.object({
   direccion_id: z.string().uuid(),
-  propina: z.coerce.number().min(0).default(0),
+  propina: z.number().finite().min(0).max(1000).default(0),
   vip: z.boolean().default(false),
   notas: z.string().max(500).optional().nullable(),
-  grupos: z.array(grupoSchema).min(1),
+  grupos: z.array(grupoSchema).min(1).max(10),
+}).superRefine((data, ctx) => {
+  const ids = data.grupos.map((grupo) => grupo.restaurante_id)
+  if (new Set(ids).size !== ids.length) {
+    ctx.addIssue({ code: 'custom', message: 'No se permiten restaurantes repetidos', path: ['grupos'] })
+  }
+  if (data.grupos.reduce((total, grupo) => total + grupo.items.length, 0) > 50) {
+    ctx.addIssue({ code: 'custom', message: 'El pedido supera el máximo de productos', path: ['grupos'] })
+  }
 })
 
 function codigo() {
-  return 'P-' + Math.random().toString(36).substring(2, 8).toUpperCase()
+  return `P-${randomBytes(5).toString('hex').toUpperCase()}`
 }
 
 // ============================================
@@ -141,7 +147,7 @@ export async function POST(req: NextRequest) {
 
     const dir = dirRows[0]
 
-    if (!dir.lat || !dir.lng) {
+    if (dir.lat === null || dir.lng === null) {
       return Response.json(
         { ok: false, error: 'La dirección no tiene coordenadas' },
         { status: 400 }
@@ -157,21 +163,124 @@ export async function POST(req: NextRequest) {
 
     const costoVip = vip ? Number(configRows[0]?.costo_vip || 0) : 0
 
+    // Releer menú y precios en servidor; el carrito del cliente no es fuente de precios.
+    const platoIds = [...new Set(grupos.flatMap((grupo) => grupo.items.map((item) => item.plato_id)))]
+    const platosRows = (await sql`
+      SELECT p.id, p.restaurante_id, p.nombre, p.precio
+      FROM platos p
+      INNER JOIN restaurantes r ON r.id = p.restaurante_id
+      WHERE p.id = ANY(${platoIds}::uuid[])
+        AND p.disponible = TRUE
+        AND r.activo = TRUE
+    `) as any[]
+    const platosPorId = new Map(platosRows.map((plato) => [plato.id, plato]))
+
+    if (platosPorId.size !== platoIds.length) {
+      return Response.json(
+        { ok: false, error: 'Uno o más platos ya no están disponibles' },
+        { status: 409 }
+      )
+    }
+
+    for (const grupo of grupos) {
+      if (grupo.items.some((item) => platosPorId.get(item.plato_id)?.restaurante_id !== grupo.restaurante_id)) {
+        return Response.json(
+          { ok: false, error: 'El carrito contiene platos de otro restaurante' },
+          { status: 400 }
+        )
+      }
+    }
+
+    const opcionesRows = (await sql`
+      SELECT g.plato_id, g.id AS grupo_id, g.titulo AS grupo_titulo,
+             g.requerido, g.minimo, g.maximo,
+             c.id AS choice_id, c.nombre AS choice_nombre,
+             c.precio_extra
+      FROM grupos_opciones g
+      LEFT JOIN opciones_choices c ON c.grupo_id = g.id
+      WHERE g.plato_id = ANY(${platoIds}::uuid[])
+      ORDER BY g.orden, c.orden
+    `) as any[]
+    const opcionesPorPlato = new Map<string, any[]>()
+    for (const row of opcionesRows) {
+      const opciones = opcionesPorPlato.get(row.plato_id) ?? []
+      opciones.push(row)
+      opcionesPorPlato.set(row.plato_id, opciones)
+    }
+
     // ============================================
-    // 3. Calcular totales de cada grupo
+    // 3. Validar opciones y calcular importes con precios de la BD
     // ============================================
-    const gruposCalculados = []
+    const gruposCalculados: any[] = []
 
     for (const g of grupos) {
-      let subtotalGrupo = 0
+      let subtotalGrupoCentimos = 0
+      const itemsCalculados = []
 
       for (const item of g.items) {
-        const extraOpciones = item.opciones.reduce(
-          (s, o) => s + o.precio_extra,
-          0
-        )
-        const precioUnitario = item.precio_snapshot + extraOpciones
-        subtotalGrupo += precioUnitario * item.cantidad
+        const plato = platosPorId.get(item.plato_id)
+        if (!plato) {
+          return Response.json({ ok: false, error: 'Plato no disponible' }, { status: 409 })
+        }
+        const definiciones = opcionesPorPlato.get(item.plato_id) ?? []
+        const gruposOpciones = new Map<string, any>()
+        for (const opcion of definiciones) {
+          if (!gruposOpciones.has(opcion.grupo_id)) {
+            gruposOpciones.set(opcion.grupo_id, { ...opcion, choices: [] })
+          }
+          if (opcion.choice_id) gruposOpciones.get(opcion.grupo_id).choices.push(opcion)
+        }
+
+        const elegidas: any[] = []
+        for (const enviada of item.opciones) {
+          const coincidencia = definiciones.find((def) =>
+            def.choice_id && (
+              enviada.choice_id
+                ? def.choice_id === enviada.choice_id && (!enviada.grupo_id || def.grupo_id === enviada.grupo_id)
+                : def.grupo_titulo === enviada.grupo_titulo && def.choice_nombre === enviada.choice_nombre
+            )
+          )
+          if (!coincidencia) {
+            return Response.json(
+              { ok: false, error: `Una opción de ${plato.nombre} ya no es válida` },
+              { status: 409 }
+            )
+          }
+          if (elegidas.some((opcion) => opcion.choice_id === coincidencia.choice_id)) {
+            return Response.json({ ok: false, error: 'Hay opciones duplicadas' }, { status: 400 })
+          }
+          elegidas.push(coincidencia)
+        }
+
+        for (const definicion of gruposOpciones.values()) {
+          const cantidadElegida = elegidas.filter((opcion) => opcion.grupo_id === definicion.grupo_id).length
+          const minimo = definicion.requerido
+            ? Math.max(1, definicion.minimo)
+            : definicion.minimo
+          if (cantidadElegida < minimo || cantidadElegida > definicion.maximo) {
+            return Response.json(
+              { ok: false, error: `Completa las opciones de ${plato.nombre}` },
+              { status: 400 }
+            )
+          }
+        }
+
+        const opcionesSnapshot = elegidas.map((opcion) => ({
+          grupo_titulo: opcion.grupo_titulo,
+          choice_nombre: opcion.choice_nombre,
+          precio_extra: Number(opcion.precio_extra),
+        }))
+        const precioUnitarioCentimos = Math.round(Number(plato.precio) * 100) +
+          elegidas.reduce((suma, opcion) => suma + Math.round(Number(opcion.precio_extra) * 100), 0)
+        const subtotalItemCentimos = precioUnitarioCentimos * item.cantidad
+        subtotalGrupoCentimos += subtotalItemCentimos
+        itemsCalculados.push({
+          ...item,
+          nombre_snapshot: plato.nombre,
+          precio_snapshot: precioUnitarioCentimos / 100,
+          subtotal: subtotalItemCentimos / 100,
+          opciones: opcionesSnapshot,
+        })
       }
 
       // Calcular envío con la dirección del cliente
@@ -193,8 +302,8 @@ export async function POST(req: NextRequest) {
 
       gruposCalculados.push({
         restaurante_id: g.restaurante_id,
-        items: g.items,
-        subtotal: Math.round(subtotalGrupo * 100) / 100,
+        items: itemsCalculados,
+        subtotal: subtotalGrupoCentimos / 100,
         costo_envio: envio.costo,
         distancia_km: envio.distancia_km,
       })
@@ -203,33 +312,34 @@ export async function POST(req: NextRequest) {
     // ============================================
     // 4. Totales globales
     // ============================================
-    const subtotalGlobal = gruposCalculados.reduce(
-      (s, g) => s + g.subtotal,
-      0
+    const subtotalGlobalCentimos = gruposCalculados.reduce(
+      (s, g) => s + Math.round(g.subtotal * 100), 0
     )
-    const envioGlobal = gruposCalculados.reduce(
-      (s, g) => s + g.costo_envio,
-      0
+    const envioGlobalCentimos = gruposCalculados.reduce(
+      (s, g) => s + Math.round(g.costo_envio * 100), 0
     )
-    const total = subtotalGlobal + envioGlobal + propina + costoVip
+    const propinaCentimos = Math.round(propina * 100)
+    const costoVipCentimos = Math.round(costoVip * 100)
+    const subtotalGlobal = subtotalGlobalCentimos / 100
+    const envioGlobal = envioGlobalCentimos / 100
+    const total = (subtotalGlobalCentimos + envioGlobalCentimos + propinaCentimos + costoVipCentimos) / 100
 
     // ============================================
     // 5. Crear pedido PADRE
     // ============================================
     const codigoPedido = codigo()
 
-    const pedidoRows = (await sql`
+    const pedidoId = randomUUID()
+    const transactionQueries: any[] = []
+    transactionQueries.push(sql`
       INSERT INTO pedidos (
-        codigo, usuario_id, subtotal, total_envio, propina, vip,
+        id, codigo, usuario_id, subtotal, total_envio, propina, vip,
         costo_vip, total, notas, estado_global
       ) VALUES (
-        ${codigoPedido}, ${user.id}, ${subtotalGlobal}, ${envioGlobal},
-        ${propina}, ${vip}, ${costoVip}, ${total}, ${notas || null}, 'PENDIENTE'
+        ${pedidoId}, ${codigoPedido}, ${user.id}, ${subtotalGlobal}, ${envioGlobal},
+        ${propinaCentimos / 100}, ${vip}, ${costoVipCentimos / 100}, ${total}, ${notas || null}, 'PENDIENTE'
       )
-      RETURNING id, codigo
-    `) as any[]
-
-    const pedidoId = pedidoRows[0].id
+    `)
 
     // ============================================
     // 6. Crear sub_pedidos + items
@@ -243,46 +353,35 @@ export async function POST(req: NextRequest) {
     }
 
     for (const g of gruposCalculados) {
-      const spRows = (await sql`
+      const spId = randomUUID()
+      transactionQueries.push(sql`
         INSERT INTO sub_pedidos (
-          pedido_id, restaurante_id, estado, subtotal, costo_envio,
+          id, pedido_id, restaurante_id, estado, subtotal, costo_envio,
           distancia_km, direccion_snapshot
         ) VALUES (
-          ${pedidoId}, ${g.restaurante_id}, 'PENDIENTE', ${g.subtotal},
+          ${spId}, ${pedidoId}, ${g.restaurante_id}, 'PENDIENTE', ${g.subtotal},
           ${g.costo_envio}, ${g.distancia_km},
           ${JSON.stringify(dirSnapshot)}::jsonb
         )
-        RETURNING id
-      `) as any[]
-
-      const spId = spRows[0].id
+      `)
 
       // Items con sus opciones
       for (const item of g.items) {
-        const extraOpciones = item.opciones.reduce(
-          (s, o) => s + o.precio_extra,
-          0
-        )
-        const precioUnitario = item.precio_snapshot + extraOpciones
-        const subtotalItem = precioUnitario * item.cantidad
-
-        const itemRows = (await sql`
+        const itemId = randomUUID()
+        transactionQueries.push(sql`
           INSERT INTO pedido_items (
-            sub_pedido_id, plato_id, nombre_snapshot, precio_snapshot,
+            id, sub_pedido_id, plato_id, nombre_snapshot, precio_snapshot,
             cantidad, subtotal, notas
           ) VALUES (
-            ${spId}, ${item.plato_id}, ${item.nombre_snapshot},
-            ${precioUnitario}, ${item.cantidad}, ${subtotalItem},
+            ${itemId}, ${spId}, ${item.plato_id}, ${item.nombre_snapshot},
+            ${item.precio_snapshot}, ${item.cantidad}, ${item.subtotal},
             ${item.notas || null}
           )
-          RETURNING id
-        `) as any[]
-
-        const itemId = itemRows[0].id
+        `)
 
         // Opciones
         for (const op of item.opciones) {
-          await sql`
+          transactionQueries.push(sql`
             INSERT INTO item_opciones (
               item_id, grupo_titulo_snapshot,
               choice_nombre_snapshot, precio_extra
@@ -290,19 +389,21 @@ export async function POST(req: NextRequest) {
               ${itemId}, ${op.grupo_titulo},
               ${op.choice_nombre}, ${op.precio_extra}
             )
-          `
+          `)
         }
       }
 
       // Historial inicial
-      await sql`
+      transactionQueries.push(sql`
         INSERT INTO pedido_estado_historial (
           sub_pedido_id, estado, cambiado_por, notas
         ) VALUES (
           ${spId}, 'PENDIENTE', ${user.id}, 'Pedido recibido'
         )
-      `
+      `)
     }
+
+    await sql.transaction(transactionQueries)
 
     return Response.json(
       {

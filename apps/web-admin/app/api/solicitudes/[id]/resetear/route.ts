@@ -70,7 +70,7 @@ export async function POST(
 
     await sql`
       UPDATE usuarios
-      SET password_hash = ${hash}, actualizado_en = NOW()
+      SET password_hash = ${hash}, actualizado_en = GREATEST(NOW(), actualizado_en + INTERVAL '1 millisecond')
       WHERE id = ${usuarioId}
     `
 

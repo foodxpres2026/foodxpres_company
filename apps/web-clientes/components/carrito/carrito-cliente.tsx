@@ -86,8 +86,6 @@ export default function CarritoCliente({
 
     const ids = [...new Set(items.map((i) => i.restaurante_id))]
 
-    console.log('Calculando envíos:', { ids, lat: direccionActual.lat, lng: direccionActual.lng })
-
     fetch('/api/envio/calcular-multi', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -99,7 +97,6 @@ export default function CarritoCliente({
     })
       .then((r) => r.json())
       .then((data) => {
-        console.log('Respuesta envíos:', data)
         if (data.ok) {
           const map: Record<string, number> = {}
           for (const item of data.data) {
@@ -110,8 +107,7 @@ export default function CarritoCliente({
           setEnviosPorLocal(map)
         }
       })
-      .catch((err) => {
-        console.error('Error envíos:', err)
+      .catch(() => {
         setEnviosPorLocal({})
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -162,14 +158,13 @@ export default function CarritoCliente({
             restaurante_id: string
             items: {
               plato_id: string
-              nombre_snapshot: string
-              precio_snapshot: number
               cantidad: number
               notas: string | null
               opciones: {
+                grupo_id: string
+                choice_id: string
                 grupo_titulo: string
                 choice_nombre: string
-                precio_extra: number
               }[]
             }[]
           }
@@ -181,17 +176,15 @@ export default function CarritoCliente({
             items: [],
           }
         }
-        const extras = item.opciones.reduce((s, o) => s + o.precio_extra, 0)
         acc[item.restaurante_id].items.push({
           plato_id: item.plato_id,
-          nombre_snapshot: item.plato_nombre,
-          precio_snapshot: item.precio_unitario - extras,
           cantidad: item.cantidad,
           notas: item.notas,
           opciones: item.opciones.map((o) => ({
+            grupo_id: o.grupo_id,
+            choice_id: o.choice_id,
             grupo_titulo: o.grupo_titulo,
             choice_nombre: o.choice_nombre,
-            precio_extra: o.precio_extra,
           })),
         })
         return acc

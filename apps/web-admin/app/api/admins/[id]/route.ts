@@ -61,7 +61,7 @@ export async function PATCH(
           nombre = ${d.nombre},
           password_hash = ${hash},
           activo = ${d.activo},
-          actualizado_en = NOW()
+          actualizado_en = GREATEST(NOW(), actualizado_en + INTERVAL '1 millisecond')
         WHERE id = ${id} AND role = 'ADMIN'
       `
     } else {
@@ -70,7 +70,7 @@ export async function PATCH(
           email = ${d.email},
           nombre = ${d.nombre},
           activo = ${d.activo},
-          actualizado_en = NOW()
+          actualizado_en = GREATEST(NOW(), actualizado_en + INTERVAL '1 millisecond')
         WHERE id = ${id} AND role = 'ADMIN'
       `
     }
@@ -106,7 +106,7 @@ export async function DELETE(
   try {
     await sql`
       UPDATE usuarios 
-      SET activo = FALSE, actualizado_en = NOW()
+      SET activo = FALSE, actualizado_en = GREATEST(NOW(), actualizado_en + INTERVAL '1 millisecond')
       WHERE id = ${id} AND role = 'ADMIN'
     `
     return Response.json({ ok: true })

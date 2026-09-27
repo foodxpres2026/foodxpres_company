@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest) {
 
     await sql`
       UPDATE usuarios 
-      SET nombre = ${nombre}, actualizado_en = NOW()
+      SET nombre = ${nombre}, actualizado_en = GREATEST(NOW(), actualizado_en + INTERVAL '1 millisecond')
       WHERE id = ${user.id} AND role = 'CUSTOMER'
     `
 

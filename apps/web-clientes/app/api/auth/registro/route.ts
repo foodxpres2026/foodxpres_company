@@ -6,7 +6,7 @@ import { registrarCliente, setSessionCookie } from '@/lib/auth'
 const schema = z.object({
   celular: z.string().regex(/^9\d{8}$/, 'Celular debe ser 9 dígitos empezando con 9'),
   nombre: z.string().min(2, 'Mínimo 2 caracteres').max(120),
-  password: z.string().min(6, 'Mínimo 6 caracteres'),
+  password: z.string().min(12, 'Mínimo 12 caracteres').refine((value) => Buffer.byteLength(value, 'utf8') <= 72, 'Máximo 72 bytes'),
   direccion_temporal: z
     .object({
       etiqueta: z.string().max(40),
@@ -15,9 +15,9 @@ const schema = z.object({
       lat: z.coerce.number(),
       lng: z.coerce.number(),
     })
-    .optional()
-    .nullable(),
-})
+      .optional()
+      .nullable(),
+}).strict()
 
 export async function POST(req: NextRequest) {
   try {

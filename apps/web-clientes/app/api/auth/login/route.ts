@@ -4,7 +4,7 @@ import { autenticarCliente, setSessionCookie } from '@/lib/auth'
 
 const schema = z.object({
   celular: z.string().regex(/^9\d{8}$/),
-  password: z.string().min(1),
+  password: z.string().min(1).refine((value) => Buffer.byteLength(value, 'utf8') <= 72, 'Datos inválidos'),
 })
 
 export async function POST(req: NextRequest) {

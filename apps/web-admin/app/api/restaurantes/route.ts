@@ -14,7 +14,7 @@ export async function GET() {
       SELECT id, slug, nombre, subtitulo, direccion_fisica, referencia,
              celular, lat, lng, tiempo_estimado, monto_minimo,
              costo_envio_minimo,
-             banner_url, logo_url, activo, calificacion, num_resenas,
+             banner_url, logo_url, activo,
              creado_en, actualizado_en
       FROM restaurantes
       ORDER BY activo DESC, creado_en DESC

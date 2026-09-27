@@ -132,6 +132,8 @@ export default function OpcionesModal({
       const choices = selecciones[grupo.id] || []
       for (const choice of choices) {
         opcionesElegidas.push({
+          grupo_id: grupo.id,
+          choice_id: choice.id,
           grupo_titulo: grupo.titulo,
           choice_nombre: choice.nombre,
           precio_extra: Number(choice.precio_extra),

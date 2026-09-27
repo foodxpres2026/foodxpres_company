@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import 'leaflet/dist/leaflet.css'
 import { ToastProvider } from '@/components/ui/toast'
 
 export const metadata: Metadata = {
@@ -38,10 +39,6 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        />
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

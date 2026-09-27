@@ -9,8 +9,6 @@ export interface RestauranteCardData {
   subtitulo: string | null
   banner_url: string | null
   logo_url: string | null
-  calificacion: string
-  num_resenas: number
   tiempo_estimado: string | null
   monto_minimo: string
   abierto: boolean
@@ -92,15 +90,6 @@ export function RestauranteHero({
         </div>
 
         <div className="flex items-center gap-3 text-[11px] md:text-xs text-gray-300">
-          <span className="flex items-center gap-1">
-            ⭐{' '}
-            <strong className="text-white">
-              {Number(restaurante.calificacion).toFixed(1)}
-            </strong>
-            {restaurante.num_resenas > 0 && (
-              <span className="text-gray-500">({restaurante.num_resenas})</span>
-            )}
-          </span>
           {restaurante.tiempo_estimado && (
             <span>⏱ {restaurante.tiempo_estimado}</span>
           )}
@@ -177,9 +166,6 @@ export function RestauranteGrid({
           {restaurante.subtitulo || 'Restaurante'}
         </p>
         <div className="flex items-center justify-between text-[10px]">
-          <span className="text-gray-400 flex items-center gap-1">
-            ⭐ {Number(restaurante.calificacion).toFixed(1)}
-          </span>
           {restaurante.tiempo_estimado && (
             <span className="text-gray-500">
               ⏱ {restaurante.tiempo_estimado}

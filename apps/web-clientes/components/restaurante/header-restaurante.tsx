@@ -7,8 +7,6 @@ interface Props {
   subtitulo: string | null
   banner_url: string | null
   logo_url: string | null
-  calificacion: string
-  num_resenas: number
   tiempo_estimado: string | null
   monto_minimo: string
   abierto: boolean
@@ -21,8 +19,6 @@ export default function HeaderRestaurante({
   subtitulo,
   banner_url,
   logo_url,
-  calificacion,
-  num_resenas,
   tiempo_estimado,
   monto_minimo,
   abierto,
@@ -106,21 +102,8 @@ export default function HeaderRestaurante({
           </div>
 
           {/* STATS */}
-          <div className="grid grid-cols-3 gap-2 pt-4 border-t border-line">
-            <div className="text-center">
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
-                Rating
-              </p>
-              <p className="text-sm font-bold text-white">
-                ⭐ {Number(calificacion).toFixed(1)}
-              </p>
-              {num_resenas > 0 && (
-                <p className="text-[10px] text-gray-600">
-                  {num_resenas} reseñas
-                </p>
-              )}
-            </div>
-            <div className="text-center border-x border-line">
+          <div className="grid grid-cols-2 gap-2 pt-4 border-t border-line">
+            <div className="text-center border-r border-line">
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
                 Tiempo
               </p>

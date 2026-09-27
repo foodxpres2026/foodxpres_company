@@ -1,0 +1,3223 @@
+{
+  "categorias": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "slug",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 40,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "nombre",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 60,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "emoji",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 10,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "orden",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 5
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "categorias_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "categorias_slug_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "slug",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "categorias_pkey",
+        "indexdef": "CREATE UNIQUE INDEX categorias_pkey ON public.categorias USING btree (id)"
+      },
+      {
+        "indexname": "categorias_slug_key",
+        "indexdef": "CREATE UNIQUE INDEX categorias_slug_key ON public.categorias USING btree (slug)"
+      }
+    ],
+    "total_filas": 10
+  },
+  "configuracion_sistema": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "smallint",
+        "udt_name": "int2",
+        "character_maximum_length": null,
+        "numeric_precision": 16,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "1",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "tarifa_base",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 6,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "2.00",
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "precio_por_km",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 6,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "2.00",
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "costo_vip",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 6,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "2.30",
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "monto_minimo_global",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 6,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "5.00",
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "tiempo_max_aceptacion",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "5",
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "actualizado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 7
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "configuracion_sistema_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "configuracion_sistema_pkey",
+        "indexdef": "CREATE UNIQUE INDEX configuracion_sistema_pkey ON public.configuracion_sistema USING btree (id)"
+      }
+    ],
+    "total_filas": 1
+  },
+  "direcciones": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "etiqueta",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 40,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "direccion",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "referencia",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "lat",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 9,
+        "numeric_scale": 6,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "lng",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 9,
+        "numeric_scale": 6,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "es_predeterminada",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "false",
+        "ordinal_position": 8
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 9
+      },
+      {
+        "column_name": "actualizado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 10
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "direcciones_usuario_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "direcciones_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "direcciones_pkey",
+        "indexdef": "CREATE UNIQUE INDEX direcciones_pkey ON public.direcciones USING btree (id)"
+      },
+      {
+        "indexname": "idx_direcciones_usuario",
+        "indexdef": "CREATE INDEX idx_direcciones_usuario ON public.direcciones USING btree (usuario_id)"
+      }
+    ],
+    "total_filas": 33
+  },
+  "driver_detalles": {
+    "columnas": [
+      {
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "vehiculo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 60,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "placa",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 20,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "licencia",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 40,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "disponible",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "true",
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "lat_actual",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 9,
+        "numeric_scale": 6,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "lng_actual",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 9,
+        "numeric_scale": 6,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "actualizado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 8
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "driver_detalles_usuario_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "driver_detalles_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "driver_detalles_pkey",
+        "indexdef": "CREATE UNIQUE INDEX driver_detalles_pkey ON public.driver_detalles USING btree (usuario_id)"
+      }
+    ],
+    "total_filas": 10
+  },
+  "favoritos": {
+    "columnas": [
+      {
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "restaurante_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 3
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "favoritos_restaurante_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": "restaurantes",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "favoritos_usuario_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "favoritos_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "favoritos_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "favoritos_pkey",
+        "indexdef": "CREATE UNIQUE INDEX favoritos_pkey ON public.favoritos USING btree (usuario_id, restaurante_id)"
+      }
+    ],
+    "total_filas": 0
+  },
+  "grupos_opciones": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "plato_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "titulo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 120,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "requerido",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "false",
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "minimo",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "maximo",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "1",
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "orden",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 7
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "grupos_opciones_plato_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "plato_id",
+        "tabla_referenciada": "platos",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "grupos_opciones_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "grupos_opciones_pkey",
+        "indexdef": "CREATE UNIQUE INDEX grupos_opciones_pkey ON public.grupos_opciones USING btree (id)"
+      },
+      {
+        "indexname": "idx_grupos_opciones_plato",
+        "indexdef": "CREATE INDEX idx_grupos_opciones_plato ON public.grupos_opciones USING btree (plato_id)"
+      }
+    ],
+    "total_filas": 11
+  },
+  "horarios_atencion": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "restaurante_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "dia",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 3,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "hora_apertura",
+        "data_type": "time without time zone",
+        "udt_name": "time",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "hora_cierre",
+        "data_type": "time without time zone",
+        "udt_name": "time",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 5
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "horarios_atencion_restaurante_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": "restaurantes",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "horarios_atencion_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "horarios_atencion_restaurante_id_dia_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "horarios_atencion_restaurante_id_dia_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "dia",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "horarios_atencion_pkey",
+        "indexdef": "CREATE UNIQUE INDEX horarios_atencion_pkey ON public.horarios_atencion USING btree (id)"
+      },
+      {
+        "indexname": "horarios_atencion_restaurante_id_dia_key",
+        "indexdef": "CREATE UNIQUE INDEX horarios_atencion_restaurante_id_dia_key ON public.horarios_atencion USING btree (restaurante_id, dia)"
+      }
+    ],
+    "total_filas": 42
+  },
+  "item_opciones": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "item_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "grupo_titulo_snapshot",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 120,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "choice_nombre_snapshot",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 80,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "precio_extra",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 8,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 5
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "item_opciones_item_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "item_id",
+        "tabla_referenciada": "pedido_items",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "item_opciones_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "item_opciones_pkey",
+        "indexdef": "CREATE UNIQUE INDEX item_opciones_pkey ON public.item_opciones USING btree (id)"
+      },
+      {
+        "indexname": "idx_item_opciones_item",
+        "indexdef": "CREATE INDEX idx_item_opciones_item ON public.item_opciones USING btree (item_id)"
+      }
+    ],
+    "total_filas": 3
+  },
+  "notificaciones": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "sub_pedido_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "tipo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 30,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "titulo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 120,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "mensaje",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "leida",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "false",
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 8
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "notificaciones_sub_pedido_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "sub_pedido_id",
+        "tabla_referenciada": "sub_pedidos",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "notificaciones_usuario_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "notificaciones_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "notificaciones_pkey",
+        "indexdef": "CREATE UNIQUE INDEX notificaciones_pkey ON public.notificaciones USING btree (id)"
+      },
+      {
+        "indexname": "idx_notif_usuario",
+        "indexdef": "CREATE INDEX idx_notif_usuario ON public.notificaciones USING btree (usuario_id, creado_en DESC)"
+      }
+    ],
+    "total_filas": 0
+  },
+  "opciones_choices": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "grupo_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "nombre",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 80,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "precio_extra",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 8,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "orden",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 5
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "opciones_choices_grupo_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "grupo_id",
+        "tabla_referenciada": "grupos_opciones",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "opciones_choices_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "opciones_choices_pkey",
+        "indexdef": "CREATE UNIQUE INDEX opciones_choices_pkey ON public.opciones_choices USING btree (id)"
+      },
+      {
+        "indexname": "idx_opciones_choices_grupo",
+        "indexdef": "CREATE INDEX idx_opciones_choices_grupo ON public.opciones_choices USING btree (grupo_id)"
+      }
+    ],
+    "total_filas": 40
+  },
+  "otp_codes": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "celular",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 9,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "codigo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 6,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "expira_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "usado",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "false",
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 6
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "otp_codes_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "otp_codes_pkey",
+        "indexdef": "CREATE UNIQUE INDEX otp_codes_pkey ON public.otp_codes USING btree (id)"
+      },
+      {
+        "indexname": "idx_otp_celular",
+        "indexdef": "CREATE INDEX idx_otp_celular ON public.otp_codes USING btree (celular)"
+      }
+    ],
+    "total_filas": 0
+  },
+  "pedido_estado_historial": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "sub_pedido_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "estado",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 20,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "cambiado_por",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "notas",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 6
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "pedido_estado_historial_cambiado_por_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "cambiado_por",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "pedido_estado_historial_sub_pedido_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "sub_pedido_id",
+        "tabla_referenciada": "sub_pedidos",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "pedido_estado_historial_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "pedido_estado_historial_pkey",
+        "indexdef": "CREATE UNIQUE INDEX pedido_estado_historial_pkey ON public.pedido_estado_historial USING btree (id)"
+      },
+      {
+        "indexname": "idx_historial_subpedido",
+        "indexdef": "CREATE INDEX idx_historial_subpedido ON public.pedido_estado_historial USING btree (sub_pedido_id)"
+      }
+    ],
+    "total_filas": 194
+  },
+  "pedido_items": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "sub_pedido_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "plato_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "nombre_snapshot",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 120,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "precio_snapshot",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 8,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "cantidad",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "subtotal",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "notas",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 8
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 9
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "pedido_items_plato_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "plato_id",
+        "tabla_referenciada": "platos",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "pedido_items_sub_pedido_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "sub_pedido_id",
+        "tabla_referenciada": "sub_pedidos",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "pedido_items_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "pedido_items_pkey",
+        "indexdef": "CREATE UNIQUE INDEX pedido_items_pkey ON public.pedido_items USING btree (id)"
+      },
+      {
+        "indexname": "idx_items_subpedido",
+        "indexdef": "CREATE INDEX idx_items_subpedido ON public.pedido_items USING btree (sub_pedido_id)"
+      }
+    ],
+    "total_filas": 156
+  },
+  "pedidos": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "codigo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 20,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "subtotal",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "total_envio",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "propina",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "vip",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "false",
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "costo_vip",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 8
+      },
+      {
+        "column_name": "total",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 9
+      },
+      {
+        "column_name": "notas",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 10
+      },
+      {
+        "column_name": "estado_global",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 20,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "'PENDIENTE'::character varying",
+        "ordinal_position": 11
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 12
+      },
+      {
+        "column_name": "actualizado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 13
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "pedidos_usuario_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "pedidos_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "pedidos_codigo_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "codigo",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "pedidos_codigo_key",
+        "indexdef": "CREATE UNIQUE INDEX pedidos_codigo_key ON public.pedidos USING btree (codigo)"
+      },
+      {
+        "indexname": "pedidos_pkey",
+        "indexdef": "CREATE UNIQUE INDEX pedidos_pkey ON public.pedidos USING btree (id)"
+      },
+      {
+        "indexname": "idx_pedidos_creado",
+        "indexdef": "CREATE INDEX idx_pedidos_creado ON public.pedidos USING btree (creado_en DESC)"
+      },
+      {
+        "indexname": "idx_pedidos_usuario",
+        "indexdef": "CREATE INDEX idx_pedidos_usuario ON public.pedidos USING btree (usuario_id)"
+      }
+    ],
+    "total_filas": 62
+  },
+  "platos": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "restaurante_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "subcategoria_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "nombre",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 120,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "descripcion",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "precio",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 8,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "imagen_url",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "tiempo_estimado",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 8
+      },
+      {
+        "column_name": "disponible",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "true",
+        "ordinal_position": 9
+      },
+      {
+        "column_name": "orden",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 10
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 11
+      },
+      {
+        "column_name": "actualizado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 12
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "platos_restaurante_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": "restaurantes",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "platos_subcategoria_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "subcategoria_id",
+        "tabla_referenciada": "subcategorias",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "platos_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "platos_pkey",
+        "indexdef": "CREATE UNIQUE INDEX platos_pkey ON public.platos USING btree (id)"
+      },
+      {
+        "indexname": "idx_platos_restaurante",
+        "indexdef": "CREATE INDEX idx_platos_restaurante ON public.platos USING btree (restaurante_id)"
+      },
+      {
+        "indexname": "idx_platos_subcategoria",
+        "indexdef": "CREATE INDEX idx_platos_subcategoria ON public.platos USING btree (subcategoria_id)"
+      }
+    ],
+    "total_filas": 40
+  },
+  "promociones": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "badge",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 40,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "titulo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 80,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "subtitulo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 120,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "descripcion",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "cta_texto",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 40,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "imagen_url",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "gradiente_css",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 160,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 8
+      },
+      {
+        "column_name": "orden",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 9
+      },
+      {
+        "column_name": "activo",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "true",
+        "ordinal_position": 10
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 11
+      },
+      {
+        "column_name": "link_url",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 12
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "promociones_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "promociones_pkey",
+        "indexdef": "CREATE UNIQUE INDEX promociones_pkey ON public.promociones USING btree (id)"
+      },
+      {
+        "indexname": "idx_promociones_activo",
+        "indexdef": "CREATE INDEX idx_promociones_activo ON public.promociones USING btree (activo, orden)"
+      }
+    ],
+    "total_filas": 3
+  },
+  "push_subscriptions": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "token",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "user_agent",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "activo",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "true",
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "actualizado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 7
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "push_subscriptions_usuario_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "push_subscriptions_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "push_subscriptions_token_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "token",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "push_subscriptions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX push_subscriptions_pkey ON public.push_subscriptions USING btree (id)"
+      },
+      {
+        "indexname": "push_subscriptions_token_key",
+        "indexdef": "CREATE UNIQUE INDEX push_subscriptions_token_key ON public.push_subscriptions USING btree (token)"
+      },
+      {
+        "indexname": "idx_push_subs_usuario",
+        "indexdef": "CREATE INDEX idx_push_subs_usuario ON public.push_subscriptions USING btree (usuario_id, activo)"
+      }
+    ],
+    "total_filas": 1
+  },
+  "push_tokens": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "token",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "plataforma",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 20,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 5
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "push_tokens_usuario_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "push_tokens_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "push_tokens_token_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "token",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "push_tokens_pkey",
+        "indexdef": "CREATE UNIQUE INDEX push_tokens_pkey ON public.push_tokens USING btree (id)"
+      },
+      {
+        "indexname": "push_tokens_token_key",
+        "indexdef": "CREATE UNIQUE INDEX push_tokens_token_key ON public.push_tokens USING btree (token)"
+      },
+      {
+        "indexname": "idx_push_tokens_usuario",
+        "indexdef": "CREATE INDEX idx_push_tokens_usuario ON public.push_tokens USING btree (usuario_id)"
+      }
+    ],
+    "total_filas": 0
+  },
+  "restaurantes": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "slug",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 60,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "nombre",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 120,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "subtitulo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 160,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "direccion_fisica",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "referencia",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "lat",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 9,
+        "numeric_scale": 6,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 8
+      },
+      {
+        "column_name": "lng",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 9,
+        "numeric_scale": 6,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 9
+      },
+      {
+        "column_name": "celular",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 9,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 10
+      },
+      {
+        "column_name": "logo_url",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 11
+      },
+      {
+        "column_name": "banner_url",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 12
+      },
+      {
+        "column_name": "tiempo_estimado",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 20,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 13
+      },
+      {
+        "column_name": "monto_minimo",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 8,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "5.00",
+        "ordinal_position": 14
+      },
+      {
+        "column_name": "calificacion",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 2,
+        "numeric_scale": 1,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 15
+      },
+      {
+        "column_name": "num_resenas",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 16
+      },
+      {
+        "column_name": "activo",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "true",
+        "ordinal_position": 17
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 18
+      },
+      {
+        "column_name": "actualizado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 19
+      },
+      {
+        "column_name": "costo_envio_minimo",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 6,
+        "numeric_scale": 2,
+        "is_nullable": "YES",
+        "column_default": "NULL::numeric",
+        "ordinal_position": 20
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "restaurantes_usuario_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "restaurantes_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "restaurantes_slug_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "slug",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "restaurantes_usuario_id_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "usuario_id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "restaurantes_pkey",
+        "indexdef": "CREATE UNIQUE INDEX restaurantes_pkey ON public.restaurantes USING btree (id)"
+      },
+      {
+        "indexname": "restaurantes_slug_key",
+        "indexdef": "CREATE UNIQUE INDEX restaurantes_slug_key ON public.restaurantes USING btree (slug)"
+      },
+      {
+        "indexname": "restaurantes_usuario_id_key",
+        "indexdef": "CREATE UNIQUE INDEX restaurantes_usuario_id_key ON public.restaurantes USING btree (usuario_id)"
+      }
+    ],
+    "total_filas": 6
+  },
+  "restaurantes_categorias": {
+    "columnas": [
+      {
+        "column_name": "restaurante_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "categoria_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "restaurantes_categorias_categoria_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "categoria_id",
+        "tabla_referenciada": "categorias",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "restaurantes_categorias_restaurante_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": "restaurantes",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "restaurantes_categorias_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "restaurantes_categorias_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "categoria_id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "restaurantes_categorias_pkey",
+        "indexdef": "CREATE UNIQUE INDEX restaurantes_categorias_pkey ON public.restaurantes_categorias USING btree (restaurante_id, categoria_id)"
+      }
+    ],
+    "total_filas": 10
+  },
+  "rutas_cache": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "restaurante_lat",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 9,
+        "numeric_scale": 6,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "restaurante_lng",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 9,
+        "numeric_scale": 6,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "cliente_lat",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 9,
+        "numeric_scale": 6,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "cliente_lng",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 9,
+        "numeric_scale": 6,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "distancia_km",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 6,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "duracion_min",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 8
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "rutas_cache_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "rutas_cache_unique",
+        "constraint_type": "UNIQUE",
+        "column_name": "restaurante_lat",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "rutas_cache_unique",
+        "constraint_type": "UNIQUE",
+        "column_name": "restaurante_lng",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "rutas_cache_unique",
+        "constraint_type": "UNIQUE",
+        "column_name": "cliente_lat",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "rutas_cache_unique",
+        "constraint_type": "UNIQUE",
+        "column_name": "cliente_lng",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "rutas_cache_pkey",
+        "indexdef": "CREATE UNIQUE INDEX rutas_cache_pkey ON public.rutas_cache USING btree (id)"
+      },
+      {
+        "indexname": "rutas_cache_unique",
+        "indexdef": "CREATE UNIQUE INDEX rutas_cache_unique ON public.rutas_cache USING btree (restaurante_lat, restaurante_lng, cliente_lat, cliente_lng)"
+      },
+      {
+        "indexname": "idx_rutas_cache_lookup",
+        "indexdef": "CREATE INDEX idx_rutas_cache_lookup ON public.rutas_cache USING btree (restaurante_lat, restaurante_lng, cliente_lat, cliente_lng)"
+      }
+    ],
+    "total_filas": 40
+  },
+  "solicitudes_recuperacion": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "celular",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 9,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "estado",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 20,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "'PENDIENTE'::character varying",
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "notas",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "atendido_por",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "atendido_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 8
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "solicitudes_recuperacion_atendido_por_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "atendido_por",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "solicitudes_recuperacion_usuario_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "usuario_id",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "solicitudes_recuperacion_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "solicitudes_recuperacion_pkey",
+        "indexdef": "CREATE UNIQUE INDEX solicitudes_recuperacion_pkey ON public.solicitudes_recuperacion USING btree (id)"
+      },
+      {
+        "indexname": "idx_solicitudes_celular",
+        "indexdef": "CREATE INDEX idx_solicitudes_celular ON public.solicitudes_recuperacion USING btree (celular)"
+      },
+      {
+        "indexname": "idx_solicitudes_estado",
+        "indexdef": "CREATE INDEX idx_solicitudes_estado ON public.solicitudes_recuperacion USING btree (estado, creado_en DESC)"
+      }
+    ],
+    "total_filas": 1
+  },
+  "sub_pedidos": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "pedido_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "restaurante_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "driver_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "estado",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 20,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "'PENDIENTE'::character varying",
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "subtotal",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "costo_envio",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "distancia_km",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 6,
+        "numeric_scale": 2,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 8
+      },
+      {
+        "column_name": "tiempo_estimado",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 9
+      },
+      {
+        "column_name": "direccion_snapshot",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 10
+      },
+      {
+        "column_name": "notas",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 11
+      },
+      {
+        "column_name": "motivo_rechazo",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 12
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 13
+      },
+      {
+        "column_name": "aceptado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 14
+      },
+      {
+        "column_name": "listo_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 15
+      },
+      {
+        "column_name": "recogido_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 16
+      },
+      {
+        "column_name": "entregado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 17
+      },
+      {
+        "column_name": "se_quedo_propina",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": "false",
+        "ordinal_position": 18
+      },
+      {
+        "column_name": "propina_vip_monto",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 8,
+        "numeric_scale": 2,
+        "is_nullable": "YES",
+        "column_default": "0",
+        "ordinal_position": 19
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "sub_pedidos_driver_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "driver_id",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "sub_pedidos_pedido_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "pedido_id",
+        "tabla_referenciada": "pedidos",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "sub_pedidos_restaurante_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": "restaurantes",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "sub_pedidos_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "sub_pedidos_pkey",
+        "indexdef": "CREATE UNIQUE INDEX sub_pedidos_pkey ON public.sub_pedidos USING btree (id)"
+      },
+      {
+        "indexname": "idx_subpedidos_driver",
+        "indexdef": "CREATE INDEX idx_subpedidos_driver ON public.sub_pedidos USING btree (driver_id, estado)"
+      },
+      {
+        "indexname": "idx_subpedidos_pedido",
+        "indexdef": "CREATE INDEX idx_subpedidos_pedido ON public.sub_pedidos USING btree (pedido_id)"
+      },
+      {
+        "indexname": "idx_subpedidos_rest",
+        "indexdef": "CREATE INDEX idx_subpedidos_rest ON public.sub_pedidos USING btree (restaurante_id, estado)"
+      }
+    ],
+    "total_filas": 76
+  },
+  "subcategorias": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "restaurante_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "nombre",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 80,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "orden",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "character_maximum_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": "NO",
+        "column_default": "0",
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 5
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "subcategorias_restaurante_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": "restaurantes",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "subcategorias_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "subcategorias_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subcategorias_pkey ON public.subcategorias USING btree (id)"
+      },
+      {
+        "indexname": "idx_subcategorias_rest",
+        "indexdef": "CREATE INDEX idx_subcategorias_rest ON public.subcategorias USING btree (restaurante_id)"
+      }
+    ],
+    "total_filas": 22
+  },
+  "usuarios": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "role",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 20,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "'CUSTOMER'::character varying",
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "email",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 255,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "celular",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 9,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "password_hash",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 255,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "nombre",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 120,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "avatar_url",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "activo",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "true",
+        "ordinal_position": 8
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 9
+      },
+      {
+        "column_name": "actualizado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "ordinal_position": 10
+      },
+      {
+        "column_name": "restaurante_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "ordinal_position": 11
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "usuarios_restaurante_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": "restaurantes",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "usuarios_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "usuarios_celular_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "celular",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "usuarios_email_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "email",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "usuarios_celular_key",
+        "indexdef": "CREATE UNIQUE INDEX usuarios_celular_key ON public.usuarios USING btree (celular)"
+      },
+      {
+        "indexname": "usuarios_email_key",
+        "indexdef": "CREATE UNIQUE INDEX usuarios_email_key ON public.usuarios USING btree (email)"
+      },
+      {
+        "indexname": "usuarios_pkey",
+        "indexdef": "CREATE UNIQUE INDEX usuarios_pkey ON public.usuarios USING btree (id)"
+      },
+      {
+        "indexname": "idx_usuarios_celular",
+        "indexdef": "CREATE INDEX idx_usuarios_celular ON public.usuarios USING btree (celular)"
+      },
+      {
+        "indexname": "idx_usuarios_role",
+        "indexdef": "CREATE INDEX idx_usuarios_role ON public.usuarios USING btree (role)"
+      },
+      {
+        "indexname": "idx_usuarios_restaurante",
+        "indexdef": "CREATE INDEX idx_usuarios_restaurante ON public.usuarios USING btree (restaurante_id)"
+      }
+    ],
+    "total_filas": 39
+  }
+}
