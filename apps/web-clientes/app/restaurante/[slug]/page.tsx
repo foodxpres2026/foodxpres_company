@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
@@ -13,6 +14,48 @@ import {
 } from '@/lib/horarios/esta-abierto'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const rows = (await sql`
+    SELECT nombre, subtitulo, banner_url, logo_url
+    FROM restaurantes
+    WHERE slug = ${slug} AND activo = TRUE
+    LIMIT 1
+  `) as {
+    nombre: string
+    subtitulo: string | null
+    banner_url: string | null
+    logo_url: string | null
+  }[]
+
+  const restaurante = rows[0]
+  if (!restaurante) return { robots: { index: false, follow: true } }
+
+  const description =
+    restaurante.subtitulo?.trim() ||
+    `Explora el menú de ${restaurante.nombre} y pide por delivery en Pucallpa con FoodXpres.`
+  const image = restaurante.banner_url || restaurante.logo_url
+
+  return {
+    title: `${restaurante.nombre} — Menú y delivery en Pucallpa`,
+    description,
+    alternates: { canonical: `/restaurante/${encodeURIComponent(slug)}` },
+    openGraph: {
+      title: `${restaurante.nombre} | FoodXpres`,
+      description,
+      type: 'website',
+      locale: 'es_PE',
+      siteName: 'FoodXpres',
+      url: `/restaurante/${encodeURIComponent(slug)}`,
+      ...(image ? { images: [{ url: image, alt: restaurante.nombre }] } : {}),
+    },
+  }
+}
 
 async function getRestaurante(slug: string) {
   const rows = await sql`

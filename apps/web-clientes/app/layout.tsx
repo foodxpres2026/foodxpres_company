@@ -4,10 +4,24 @@ import 'leaflet/dist/leaflet.css'
 import { ToastProvider } from '@/components/ui/toast'
 
 export const metadata: Metadata = {
-  title: 'FoodXpres — Delivery en Pucallpa',
+  metadataBase: new URL(
+    `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || 'localhost:3000'}`,
+  ),
+  title: {
+    default: 'FoodXpres | Delivery de comida en Pucallpa',
+    template: '%s | FoodXpres',
+  },
   description:
-    'Pide tu comida favorita en Pucallpa. Rápido, fácil y al mejor precio.',
-  keywords: 'delivery, pucallpa, comida, restaurantes, comida a domicilio',
+    'Pide comida de restaurantes de Pucallpa con FoodXpres. Explora menús, encuentra tus platos favoritos y recibe tu pedido por delivery.',
+  applicationName: 'FoodXpres',
+  keywords: [
+    'FoodXpres',
+    'delivery Pucallpa',
+    'comida a domicilio Pucallpa',
+    'restaurantes Pucallpa',
+    'pedir comida online',
+  ],
+  alternates: { canonical: '/' },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -15,10 +29,19 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
   },
   openGraph: {
-    title: 'FoodXpres — Delivery en Pucallpa',
-    description: 'Pide tu comida favorita en Pucallpa',
+    title: 'FoodXpres | Delivery de comida en Pucallpa',
+    description:
+      'Pide comida de restaurantes de Pucallpa y recibe tu pedido por delivery.',
     type: 'website',
     locale: 'es_PE',
+    siteName: 'FoodXpres',
+    url: '/',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FoodXpres | Delivery de comida en Pucallpa',
+    description:
+      'Pide comida de restaurantes de Pucallpa y recibe tu pedido por delivery.',
   },
 }
 
