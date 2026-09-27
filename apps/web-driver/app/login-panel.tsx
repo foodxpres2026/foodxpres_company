@@ -1,26 +1,12 @@
 'use client'
 
-import { FormEvent, useEffect, useState } from 'react'
-
-type User = { nombre: string; celular: string }
+import { FormEvent, useState } from 'react'
 
 export default function LoginPanel() {
   const [celular, setCelular] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(false)
-  const [checking, setChecking] = useState(true)
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    let active = true
-    fetch('/api/auth/me', { cache: 'no-store' })
-      .then(async (response) => response.ok ? response.json() : null)
-      .then((data) => { if (active && data?.ok) setUser(data.user) })
-      .catch(() => {})
-      .finally(() => { if (active) setChecking(false) })
-    return () => { active = false }
-  }, [])
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(''); setLoading(true)
@@ -31,14 +17,8 @@ export default function LoginPanel() {
       })
       const data = await response.json()
       if (!response.ok || !data.ok) { setError(data.error ?? 'No se pudo iniciar sesión'); return }
-      setUser(data.user); setPassword('')
+      window.location.reload()
     } catch { setError('Error de conexión. Intenta de nuevo.') }
-    finally { setLoading(false) }
-  }
-
-  async function logout() {
-    setLoading(true)
-    try { await fetch('/api/auth/logout', { method: 'POST' }); setUser(null) }
     finally { setLoading(false) }
   }
 
@@ -52,13 +32,7 @@ export default function LoginPanel() {
           <p>Ingresa con tu cuenta de repartidor</p>
         </header>
         <section className="card" aria-live="polite">
-          {checking ? <p className="heading">Verificando sesión...</p> : user ? (
-            <div className="success">
-              <p>Sesión iniciada como <strong>{user.nombre}</strong><br />{user.celular}</p>
-              <button className="logout" type="button" disabled={loading} onClick={logout}>Cerrar sesión</button>
-            </div>
-          ) : (
-            <form onSubmit={submit}>
+          <form onSubmit={submit}>
               <div className="field">
                 <label htmlFor="driver-phone">Celular</label>
                 <input id="driver-phone" type="tel" inputMode="numeric" autoComplete="username" value={celular} onChange={(event) => setCelular(event.target.value.replace(/\D/g, '').slice(0, 9))} placeholder="9XXXXXXXX" required pattern="9[0-9]{8}" maxLength={9} />
@@ -69,8 +43,7 @@ export default function LoginPanel() {
               </div>
               {error && <p className="error" role="alert">{error}</p>}
               <button className="submit" type="submit" disabled={loading}>{loading ? 'Ingresando...' : 'Ingresar'}</button>
-            </form>
-          )}
+          </form>
         </section>
         <p className="footer">FoodXpres © {new Date().getFullYear()} · Pucallpa</p>
       </div>
