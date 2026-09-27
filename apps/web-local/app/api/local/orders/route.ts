@@ -15,10 +15,13 @@ export async function GET() {
              sp.motivo_rechazo, sp.creado_en, sp.aceptado_en, sp.listo_en,
              sp.entregado_en, sp.direccion_snapshot,
              p.codigo AS pedido_codigo, p.total AS pedido_total, p.notas AS notas_pedido,
-             u.nombre AS cliente_nombre, u.celular AS cliente_celular
+             CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.nombre ELSE u.nombre END AS cliente_nombre,
+             CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.celular ELSE u.celular END AS cliente_celular,
+             p.vip, p.costo_vip
       FROM sub_pedidos sp
       INNER JOIN pedidos p ON p.id = sp.pedido_id
       INNER JOIN usuarios u ON u.id = p.usuario_id
+      INNER JOIN restaurantes r ON r.id = sp.restaurante_id
       WHERE sp.restaurante_id = ${staff.restauranteId}
         AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGADO', 'RECHAZADO', 'CANCELADO')
       ORDER BY CASE WHEN sp.estado = 'PENDIENTE' THEN 0 WHEN sp.estado IN ('ACEPTADO', 'PREPARANDO') THEN 1 WHEN sp.estado = 'LISTO' THEN 2 ELSE 3 END,

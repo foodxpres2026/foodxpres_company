@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { LocalUser } from '@/lib/auth'
+import AutopedidosPanel from './autopedidos-panel'
 
 type Section = 'pending' | 'preparing' | 'ready' | 'history'
 type OrderItem = { id: string; nombre_snapshot: string; cantidad: number; subtotal: number | string; notas: string | null }
@@ -40,6 +41,7 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
   const [notice, setNotice] = useState('')
   const [refreshAt, setRefreshAt] = useState<Date | null>(null)
   const [drawer, setDrawer] = useState(false)
+  const [autoMode, setAutoMode] = useState(false)
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true)
@@ -98,17 +100,19 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
     <div className="local-layout">
       <aside className={`local-sidebar ${drawer ? 'open' : ''}`}>
         <div className="local-profile"><div className="local-avatar">{user.restauranteNombre.slice(0, 1).toUpperCase()}</div><div><strong>{user.restauranteNombre}</strong><span>{user.nombre}</span></div><button className="local-drawer-close" onClick={() => setDrawer(false)} aria-label="Cerrar menú">×</button></div>
-        <nav aria-label="Pedidos del local">{sections.map((tab) => <button key={tab.id} onClick={() => { setSection(tab.id); setDrawer(false) }} className={`local-nav-item ${section === tab.id ? 'active' : ''}`}><span>{tab.id === 'pending' ? '◷' : tab.id === 'preparing' ? '◉' : tab.id === 'ready' ? '✓' : '↺'}</span>{tab.label}<b>{counts[tab.id]}</b></button>)}</nav>
+        <nav aria-label="Pedidos del local"><button onClick={() => { setAutoMode(false); setSection('pending'); setDrawer(false) }} className={`local-nav-item ${!autoMode ? 'active' : ''}`}><span>◷</span>Pedidos<b>{activeTotal}</b></button><button onClick={() => { setAutoMode(true); setDrawer(false) }} className={`local-nav-item ${autoMode ? 'active' : ''}`}><span>＋</span>Autopedidos</button>{sections.map((tab) => <button key={tab.id} onClick={() => { setAutoMode(false); setSection(tab.id); setDrawer(false) }} className={`local-nav-item ${!autoMode && section === tab.id ? 'active' : ''}`}><span>{tab.id === 'pending' ? '◷' : tab.id === 'preparing' ? '◉' : tab.id === 'ready' ? '✓' : '↺'}</span>{tab.label}<b>{counts[tab.id]}</b></button>)}</nav>
         <div className="local-sidebar-bottom"><span className="local-online-dot"/>Pedidos activos: {activeTotal}<button onClick={logout} disabled={busy === 'logout'}>Cerrar sesión</button></div>
       </aside>
       {drawer && <button className="local-backdrop" onClick={() => setDrawer(false)} aria-label="Cerrar menú"/>}
       <section className="local-content">
+        {autoMode ? <AutopedidosPanel onBack={() => setAutoMode(false)} onCreated={() => void load(true)} /> : <>
         <div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>{title}</h1><p>Gestiona los pedidos de {user.restauranteNombre}.</p></div><button className="local-refresh" onClick={() => void load()} disabled={loading}>↻ <span>Actualizar</span></button></div>
         <div className="local-mobile-tabs">{sections.map((tab) => <button key={tab.id} onClick={() => setSection(tab.id)} className={section === tab.id ? 'active' : ''}>{tab.label}<span>{counts[tab.id]}</span></button>)}</div>
         <div className="local-list-meta"><span>{visibleOrders.length} {visibleOrders.length === 1 ? 'pedido' : 'pedidos'}</span><span>Actualizado {refreshAt ? refreshAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '—'} · Auto cada 15 s</span></div>
         {notice && <div className="local-notice" role="status">✓ {notice}</div>}
         {error && <div className="local-error" role="alert"><span>{error}</span><button onClick={() => void load()}>Reintentar</button></div>}
         {loading && orders.length === 0 ? <div className="local-empty"><i className="local-spinner"/><p>Cargando pedidos…</p></div> : visibleOrders.length === 0 && !error ? <div className="local-empty"><div className="local-empty-icon">{section === 'pending' ? '✓' : section === 'history' ? '↺' : '□'}</div><h2>{section === 'pending' ? 'No hay pedidos por aceptar' : `No hay pedidos en ${title.toLowerCase()}`}</h2><p>Los nuevos pedidos de tu local aparecerán aquí automáticamente.</p></div> : <div className="local-orders-grid">{visibleOrders.map((order) => <LocalOrderCard key={order.id} order={order} onDetails={() => { setSelected(order); setEstimate('30'); setRejectReason('') }} />)}</div>}
+        </>}
       </section>
     </div>
     {selected && <div className="local-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null) }}><section className="local-modal" role="dialog" aria-modal="true" aria-labelledby="local-modal-title"><div className="local-modal-head"><div><span className={`local-state ${selected.estado.toLowerCase()}`}>{stateLabel[selected.estado] ?? selected.estado}</span><h2 id="local-modal-title">Pedido {selected.pedido_codigo}</h2></div><button onClick={() => setSelected(null)} aria-label="Cerrar detalle">×</button></div>
