@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   description:
     'Pide comida de restaurantes de Pucallpa con FoodXpres. Explora menús, encuentra tus platos favoritos y recibe tu pedido por delivery.',
   applicationName: 'FoodXpres',
+  icons: { icon: '/icons/icon-192.png', apple: '/icons/icon-192.png' },
   keywords: [
     'FoodXpres',
     'delivery Pucallpa',

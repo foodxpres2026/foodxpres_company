@@ -1,5 +1,6 @@
 packages:
   - "apps/web-clientes"
   - "apps/web-admin"
-  - "apps/mobile-api"
+  - "apps/web-local"
+  - "apps/web-driver"
   - "packages/*"

@@ -71,7 +71,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
       <header className="sticky top-0 z-40 bg-surface-dark/95 backdrop-blur-lg border-b border-line">
         <div className="max-w-6xl mx-auto px-3 md:px-4 py-2.5">
           <div className="flex items-center gap-2 md:gap-3">
-            {/* LOGO - Solo el tigre, sin texto (ya está dentro del logo.png) */}
+            {/* Emblema FoodXpres para el encabezado compacto */}
             <div
               className="flex-shrink-0"
               onClick={() => setBusquedaAbierta(false)}

@@ -46,7 +46,7 @@ export default function RecuperarPage() {
         <div className="flex-1 flex items-center justify-center px-5 pb-10">
           <div className="w-full max-w-md text-center">
             <div className="flex justify-center mb-6">
-              <Logo size={96} />
+              <Logo size={96} conTexto />
             </div>
 
             <div className="text-6xl mb-6">📨</div>
@@ -95,7 +95,7 @@ export default function RecuperarPage() {
         <div className="w-full max-w-md">
           {/* LOGO GRANDE */}
           <div className="flex justify-center mb-6">
-            <Logo size={96} />
+            <Logo size={96} conTexto />
           </div>
 
           <div className="mb-8 text-center">

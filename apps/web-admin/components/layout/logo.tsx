@@ -17,19 +17,11 @@ export default function Logo({
     <div className={`flex items-center gap-2 ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/logo.png"
+        src={conTexto ? '/logo.png' : '/logo-mark.png'}
         alt="FoodXpres"
-        style={{ width: size, height: size }}
+        style={conTexto ? { width: size * 2.2, height: size * 1.5 } : { width: size, height: size }}
         className="object-contain flex-shrink-0"
       />
-      {conTexto && (
-        <span
-          className="font-black tracking-tight leading-none"
-          style={{ fontSize: size * 0.42 }}
-        >
-          FOOD<span className="text-brand">X</span>PRES
-        </span>
-      )}
     </div>
   )
 

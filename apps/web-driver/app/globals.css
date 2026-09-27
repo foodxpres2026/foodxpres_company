@@ -1,0 +1,26 @@
+:root { color-scheme: dark; --bg: #0a0a0a; --panel: #151515; --line: #2a2a2a; --muted: #718096; --green: #7ed321; --green-hover: #6bb81a; --danger: #ef4444; }
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body { margin: 0; background: var(--bg); color: #fff; font-family: Arial, Helvetica, sans-serif; }
+button, input { font: inherit; }
+.login-shell { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 32px 16px; }
+.login-wrap { width: 100%; max-width: 340px; }
+.logo { display: block; width: 250px; height: 172px; object-fit: contain; margin: 0 auto 12px; }
+.heading { text-align: center; margin-bottom: 28px; }
+.heading h1 { margin: 0; font-size: 23px; font-weight: 800; letter-spacing: -.3px; }
+.heading p { margin: 8px 0 0; color: #718096; font-size: 13px; }
+.card { padding: 20px; border: 1px solid #222; border-radius: 16px; background: var(--panel); box-shadow: 0 20px 50px #0007; }
+.field { margin-bottom: 16px; }
+.field label { display: block; margin-bottom: 7px; color: #a0aec0; font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; }
+.field input { width: 100%; padding: 12px 14px; color: white; background: var(--bg); border: 1px solid var(--line); border-radius: 11px; outline: none; }
+.field input:focus { border-color: var(--green); box-shadow: 0 0 0 3px #7ed32124; }
+.submit { width: 100%; padding: 12px; border: 0; border-radius: 11px; color: #070707; background: var(--green); font-weight: 700; cursor: pointer; transition: background .15s, transform .15s; }
+.submit:hover { background: var(--green-hover); }
+.submit:active { transform: scale(.985); }
+.submit:disabled { opacity: .6; cursor: wait; }
+.error { margin: 0 0 14px; padding: 11px 13px; color: #ff7676; background: #ef44441a; border: 1px solid #ef44444d; border-radius: 10px; font-size: 13px; }
+.success { text-align: center; }
+.success p { margin: 0 0 18px; color: #a0aec0; line-height: 1.5; }
+.success strong { color: white; }
+.logout { padding: 10px 18px; color: white; background: transparent; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.footer { margin: 24px 0 0; color: #4a5568; text-align: center; font-size: 11px; }

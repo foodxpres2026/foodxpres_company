@@ -21,7 +21,7 @@ export async function enviarNotificacion({
   mensaje,
   url = '/mis-pedidos',
   tag = 'foodxpres',
-  icono = '/logo.png',
+  icono = '/logo-mark.png',
   data = {},
 }: EnviarParams): Promise<{ enviados: number; fallidos: number }> {
   try {

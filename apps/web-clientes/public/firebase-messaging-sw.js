@@ -26,8 +26,8 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification?.title || 'FoodXpres'
   const notificationOptions = {
     body: payload.notification?.body || 'Tienes una actualización',
-    icon: '/logo.png',
-    badge: '/logo.png',
+    icon: '/logo-mark.png',
+    badge: '/icons/icon-192.png',
     data: payload.data,
     tag: payload.data?.tag || 'foodxpres-notif',
   }

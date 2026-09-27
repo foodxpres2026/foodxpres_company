@@ -42,7 +42,7 @@ export default function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-surface-dark px-4 py-8">
       <div className="w-full max-w-sm">
         <div className="flex justify-center mb-6">
-          <Logo size={96} />
+          <Logo size={96} conTexto />
         </div>
 
         <div className="text-center mb-8">
