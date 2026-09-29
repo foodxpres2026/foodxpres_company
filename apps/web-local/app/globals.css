@@ -181,9 +181,23 @@ button, input { font: inherit; }
 .auto-submit:disabled { opacity: .48; cursor: not-allowed; }
 .auto-hint { display: block; margin-top: 8px; color: #aab69f; font-size: 9px; line-height: 1.4; }
 .auto-empty { padding: 22px; color: #808a80; text-align: center; font-size: 11px; }
+.auto-coordinate, .auto-location-help { color: #89958a; font-size: 10px; align-self: center; }
+.map-picker-backdrop { position: fixed; z-index: 90; inset: 0; display: grid; place-items: center; padding: 18px; background: #000c; }
+.map-picker { display: flex; flex-direction: column; width: min(760px, 100%); max-height: min(92dvh, 850px); overflow: hidden; background: #151715; border: 1px solid #343a34; border-radius: 15px; box-shadow: 0 24px 80px #000a; }
+.map-picker > header, .map-picker > footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 16px; }
+.map-picker > header { border-bottom: 1px solid #2a302a; }
+.map-picker > header h2 { margin: 0; color: #edf2e9; font-size: 14px; }
+.map-picker > header p { margin: 5px 0 0; color: #89958a; font-size: 10px; }
+.map-picker > header button { color: #bdc5bb; background: none; border: 0; font-size: 26px; cursor: pointer; }
+.map-picker-canvas { z-index: 0; width: 100%; height: min(58dvh, 540px); min-height: 300px; background: #202720; }
+.map-picker > footer { flex-wrap: wrap; border-top: 1px solid #2a302a; }
+.map-picker > footer span { margin-right: auto; color: #aab5a8; font-size: 10px; }
+.map-picker-error { margin: 0; padding: 8px 14px; color: #ff9c9c; font-size: 11px; }
+.leaflet-container { font-family: Arial, Helvetica, sans-serif; }
 @media (max-width: 1050px) { .auto-layout { grid-template-columns: minmax(0, 1fr) 280px; } }
 @media (max-width: 760px) { .auto-layout { grid-template-columns: 1fr; } .auto-summary { position: static; } .auto-product-list { max-height: none; } }
 @media (max-width: 460px) { .auto-fields { grid-template-columns: 1fr; } .auto-panel, .auto-summary { padding: 13px; } .auto-panel-heading { align-items: flex-start; } }
+@media (max-width: 520px) { .map-picker-backdrop { align-items: end; padding: 0; } .map-picker { width: 100%; max-height: 94dvh; border-radius: 15px 15px 0 0; } .map-picker-canvas { height: 55dvh; min-height: 280px; } .map-picker > footer { padding-bottom: max(14px, env(safe-area-inset-bottom)); } .map-picker > footer span { flex: 1 0 100%; } }
 
 @media (min-width: 1320px) { .local-orders-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 850px) {
