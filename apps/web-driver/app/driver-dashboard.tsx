@@ -41,6 +41,7 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
   const [drawer, setDrawer] = useState(false)
   const [refreshAt, setRefreshAt] = useState<Date | null>(null)
   const [commissionBalance, setCommissionBalance] = useState(0)
+  const [overdueCommission, setOverdueCommission] = useState(0)
 
   const load = useCallback(async (target: Section, append = false, quiet = false) => {
     if (!quiet) setLoading(true)
@@ -55,6 +56,7 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
       setHasMore(Boolean(result.hasMore))
       if (typeof result.disponible === 'boolean') setDisponible(result.disponible)
       if (Number.isFinite(Number(result.comisionPendiente))) setCommissionBalance(Number(result.comisionPendiente))
+      if (Number.isFinite(Number(result.deudaVencida))) setOverdueCommission(Number(result.deudaVencida))
       setRefreshAt(new Date())
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Error de conexión')
@@ -129,9 +131,10 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
         <div className="mobile-tabs">{tabs.map((tab) => <button key={tab.id} onClick={() => setSection(tab.id)} className={section === tab.id ? 'active' : ''}>{tab.title}{tab.id === section && <span>{orders.length}</span>}</button>)}</div>
         <div className="list-meta"><span>{section === 'history' ? `${orders.length} pedidos cargados` : `${orders.length} ${orders.length === 1 ? 'pedido' : 'pedidos'}`}</span><span>Actualizado {refreshAt ? refreshAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}</span></div>
         {notice && <p className="notice" role="status">✓ {notice}</p>}
+        {overdueCommission > 0 && <div className="error-panel" role="alert"><span>Tienes una deuda de comisión vencida por {money(overdueCommission)}. Ya pasaron 2 días desde que se generó; no podrás tomar nuevos pedidos hasta que administración registre tu pago.</span></div>}
         {error && <div className="error-panel" role="alert"><span>{error}</span><button onClick={() => void load(section)}>Reintentar</button></div>}
         {loading && orders.length === 0 ? <div className="empty-state"><div className="spinner"/><p>Cargando pedidos...</p></div> : orders.length === 0 && !error ? <div className="empty-state"><div className="empty-icon">{section === 'available' ? '✓' : section === 'current' ? '◷' : '↺'}</div><h2>{section === 'available' ? 'No hay pedidos sin driver' : section === 'current' ? 'No tienes pedidos en curso' : 'Aún no tienes pedidos en el historial'}</h2><p>{section === 'available' ? 'Aquí aparecerán los pedidos activos que todavía no tengan un driver asignado.' : 'Cuando haya actividad, la verás en este apartado.'}</p></div> : <div className="orders-grid">
-          {orders.map((order) => <OrderCard key={order.id} order={order} section={section} canTake={disponible !== false} busy={busy === order.id} onTake={() => mutate(order, `/api/driver/orders/${order.id}/take`, 'POST')} onAction={(accion) => mutate(order, `/api/driver/orders/${order.id}/action`, 'PATCH', { accion })} />)}
+          {orders.map((order) => <OrderCard key={order.id} order={order} section={section} canTake={disponible !== false && overdueCommission <= 0} takeBlockedLabel={overdueCommission > 0 ? 'Deuda vencida' : 'No disponible'} busy={busy === order.id} onTake={() => mutate(order, `/api/driver/orders/${order.id}/take`, 'POST')} onAction={(accion) => mutate(order, `/api/driver/orders/${order.id}/action`, 'PATCH', { accion })} />)}
         </div>}
         {hasMore && <button className="load-more" disabled={loading} onClick={() => void load(section, true)}>{loading ? 'Cargando...' : 'Cargar más pedidos'}</button>}
         <p className="content-footer">FoodXpres · Pucallpa</p>
@@ -140,7 +143,7 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
   </main>
 }
 
-function OrderCard({ order, section, canTake, busy, onTake, onAction }: { order: Order; section: Section; canTake: boolean; busy: boolean; onTake: () => void; onAction: (action: 'LLEGUE' | 'RECOGI' | 'ENTREGUE') => void }) {
+function OrderCard({ order, section, canTake, takeBlockedLabel, busy, onTake, onAction }: { order: Order; section: Section; canTake: boolean; takeBlockedLabel: string; busy: boolean; onTake: () => void; onAction: (action: 'LLEGUE' | 'RECOGI' | 'ENTREGUE') => void }) {
   const address = order.direccion_snapshot?.direccion || 'Dirección de entrega no disponible'
   const customerAddress = [address, order.direccion_snapshot?.referencia].filter(Boolean).join(' · ')
   const waitingForLocal = ['PENDIENTE', 'ACEPTADO', 'PREPARANDO'].includes(order.estado)
@@ -161,7 +164,7 @@ function OrderCard({ order, section, canTake, busy, onTake, onAction }: { order:
     {order.pedido_notas && <p className="order-note"><strong>Nota:</strong> {order.pedido_notas}</p>}
     {section === 'current' && (order.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' ? <div className="waiting-local">Ya avisaste que llegaste al cliente. El pedido se cerrará cuando el cliente confirme que lo recibió.</div> : waitingForLocal ? <div className="waiting-local">Pedido reservado. Esperando que el local lo acepte y lo prepare.</div> : <div className="timeline"><div className="timeline-steps"><span className="done">Pedido tomado</span><span className={progress >= 1 ? 'done' : ''}>Llegada al local</span><span className={progress >= 2 ? 'done' : ''}>En camino</span><span>Entregado</span></div><div className="timeline-track"><i style={{ width: `${progress === 0 ? 7 : progress === 1 ? 37 : 69}%` }} /></div><div className="timeline-dates"><span>Tomado: {dateTime(order.driver_asignado_en)}</span><span>{order.driver_llego_en ? `Llegada: ${dateTime(order.driver_llego_en)}` : `Listo desde: ${dateTime(order.listo_en)}`}</span>{order.recogido_en && <span>Recogido: {dateTime(order.recogido_en)}</span>}</div></div>)}
     {section === 'history' && <div className="history-stamps"><span>Pedido tomado: {dateTime(order.driver_asignado_en)}</span>{order.driver_llego_en && <span>Llegaste al local: {dateTime(order.driver_llego_en)}</span>}{order.recogido_en && <span>Recogido: {dateTime(order.recogido_en)}</span>}{order.entrega_reportada_en && <span>Avisaste llegada al cliente: {dateTime(order.entrega_reportada_en)}</span>}{order.entregado_en && <span>Entrega confirmada: {dateTime(order.entregado_en)}</span>}{order.driver_comision_monto != null && <span>Comisión del pedido: {money(order.driver_comision_monto)} (solo delivery)</span>}</div>}
-    <div className="order-card-foot"><a className="map-link" href={mapLink} target="_blank" rel="noreferrer">↗ Ruta: local → cliente</a>{section === 'available' && <button className="primary-action" onClick={onTake} disabled={busy || !canTake}>{busy ? 'Tomando pedido...' : canTake ? 'Tomar pedido' : 'No disponible'}</button>}{section === 'current' && !waitingForLocal && order.estado !== 'ENTREGA_PENDIENTE_CONFIRMACION' && <button className="primary-action" onClick={() => onAction(action)} disabled={busy}>{busy ? 'Guardando...' : actionLabel}</button>}</div>
+    <div className="order-card-foot"><a className="map-link" href={mapLink} target="_blank" rel="noreferrer">↗ Ruta: local → cliente</a>{section === 'available' && <button className="primary-action" onClick={onTake} disabled={busy || !canTake}>{busy ? 'Tomando pedido...' : canTake ? 'Tomar pedido' : takeBlockedLabel}</button>}{section === 'current' && !waitingForLocal && order.estado !== 'ENTREGA_PENDIENTE_CONFIRMACION' && <button className="primary-action" onClick={() => onAction(action)} disabled={busy}>{busy ? 'Guardando...' : actionLabel}</button>}</div>
   </article>
 }
 

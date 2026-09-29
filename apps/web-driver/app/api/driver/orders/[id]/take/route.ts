@@ -15,7 +15,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     return Response.json({ ok: true })
   } catch (error) {
     console.error('POST driver/orders/take error:', error)
-    if (error instanceof Error && /máximo de 2|ya tomado|desconectado|no disponible/i.test(error.message)) return Response.json({ ok: false, error: error.message }, { status: 409 })
+    if (error instanceof Error && /máximo de 2|ya tomado|desconectado|no disponible|deuda vencida|deuda pendiente/i.test(error.message)) return Response.json({ ok: false, error: error.message }, { status: 409 })
     return Response.json({ ok: false, error: 'No se pudo tomar el pedido' }, { status: 500 })
   }
 }

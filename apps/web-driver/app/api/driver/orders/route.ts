@@ -86,11 +86,20 @@ export async function GET(request: NextRequest) {
       disponible = status[0]?.disponible ?? false
     }
     const balanceRows = await sql`
-      SELECT COALESCE((SELECT SUM(monto) FROM comisiones_generadas
-        WHERE beneficiario_tipo = 'DRIVER' AND beneficiario_id = ${driver.id}), 0)
-        - COALESCE((SELECT SUM(monto) FROM comision_pagos
-        WHERE beneficiario_tipo = 'DRIVER' AND beneficiario_id = ${driver.id}), 0) AS saldo
-    ` as { saldo: string | number }[]
+      SELECT
+        COALESCE((SELECT SUM(monto) FROM comisiones_generadas
+          WHERE beneficiario_tipo = 'DRIVER' AND beneficiario_id = ${driver.id}), 0)
+          - COALESCE((SELECT SUM(monto) FROM comision_pagos
+          WHERE beneficiario_tipo = 'DRIVER' AND beneficiario_id = ${driver.id}), 0) AS saldo,
+        GREATEST(
+          COALESCE((SELECT SUM(monto) FROM comisiones_generadas
+            WHERE beneficiario_tipo = 'DRIVER' AND beneficiario_id = ${driver.id}
+              AND creado_en <= NOW() - INTERVAL '2 days'), 0)
+          - COALESCE((SELECT SUM(monto) FROM comision_pagos
+            WHERE beneficiario_tipo = 'DRIVER' AND beneficiario_id = ${driver.id}), 0),
+          0
+        ) AS deuda_vencida
+    ` as { saldo: string | number; deuda_vencida: string | number }[]
     return Response.json({
       ok: true,
       data: page.map((order) => ({ ...order, items: itemsByOrder.get(order.id) ?? [] })),
@@ -98,6 +107,7 @@ export async function GET(request: NextRequest) {
       nextOffset: offset + page.length,
       disponible,
       comisionPendiente: Number(balanceRows[0]?.saldo ?? 0),
+      deudaVencida: Number(balanceRows[0]?.deuda_vencida ?? 0),
     }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('GET driver/orders error:', error)

@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return localCorsJson(req, { ok: true }, {}, 'POST, OPTIONS')
   } catch (error) {
     console.error('Tomar pedido error:', error)
-    if (error instanceof Error && /máximo de 2|ya tomado|desconectado|no disponible/i.test(error.message)) return localCorsJson(req, { ok: false, error: error.message }, { status: 409 }, 'POST, OPTIONS')
+    if (error instanceof Error && /máximo de 2|ya tomado|desconectado|no disponible|deuda vencida|deuda pendiente/i.test(error.message)) return localCorsJson(req, { ok: false, error: error.message }, { status: 409 }, 'POST, OPTIONS')
     return localCorsJson(req, { ok: false, error: 'No se pudo tomar el pedido' }, { status: 500 }, 'POST, OPTIONS')
   }
 }
