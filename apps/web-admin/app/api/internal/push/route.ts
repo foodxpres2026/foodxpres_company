@@ -48,10 +48,10 @@ export async function POST(request: Request) {
     if (event === 'NEW_ORDER' || event === 'AUTOPEDIDO') {
       const [staff, drivers] = await Promise.all([
         event === 'NEW_ORDER'
-          ? sql`SELECT id FROM usuarios WHERE role = 'STAFF' AND activo = TRUE AND restaurante_id = ${order.restaurante_id}` as any[]
+          ? sql`SELECT id FROM usuarios WHERE role = 'STAFF' AND activo = TRUE AND restaurante_id = ${order.restaurante_id}`
           : Promise.resolve([]),
         sql`SELECT u.id FROM usuarios u JOIN driver_detalles d ON d.usuario_id = u.id
-          WHERE u.role = 'DRIVER' AND u.activo = TRUE AND d.disponible = TRUE` as any[],
+          WHERE u.role = 'DRIVER' AND u.activo = TRUE AND d.disponible = TRUE`,
       ])
       const sendStaff = staff.length ? enviarNotificacionAUsuarios(staff.map((row) => row.id), {
         titulo: '📦 Nuevo pedido', mensaje: `Tienes un pedido nuevo ${order.pedido_codigo} por revisar.`,
