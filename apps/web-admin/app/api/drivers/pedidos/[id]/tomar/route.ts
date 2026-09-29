@@ -12,37 +12,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   try {
     const { id } = await params
-    const updated = (await sql`
-      UPDATE sub_pedidos sp SET
-        driver_id = ${driver.id},
-        driver_asignado_en = NOW(),
-        estado = 'ASIGNADO'
-      WHERE sp.id = ${id}
-        AND sp.estado = 'LISTO'
-        AND sp.driver_id IS NULL
-        AND EXISTS (
-          SELECT 1 FROM driver_detalles d
-          WHERE d.usuario_id = ${driver.id} AND d.disponible = TRUE
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM sub_pedidos active
-          WHERE active.driver_id = ${driver.id}
-            AND active.estado IN ('ASIGNADO', 'EN_CAMINO')
-        )
-      RETURNING sp.id
-    `) as any[]
-
-    if (updated.length === 0) {
-      return localCorsJson(req, { ok: false, error: 'El pedido ya fue tomado o no estás disponible' }, { status: 409 }, 'POST, OPTIONS')
-    }
+    const updated = (await sql`SELECT tomar_pedido_driver(${id}::uuid, ${driver.id}::uuid, TRUE) AS estado`) as { estado: string }[]
 
     await sql`
       INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)
-      VALUES (${id}, 'ASIGNADO', ${driver.id}, 'Pedido aceptado por el driver')
+      VALUES (${id}, ${updated[0].estado}, ${driver.id}, 'Pedido aceptado por el driver')
     `
     return localCorsJson(req, { ok: true }, {}, 'POST, OPTIONS')
   } catch (error) {
     console.error('Tomar pedido error:', error)
+    if (error instanceof Error && /máximo de 2|ya tomado|desconectado|no disponible/i.test(error.message)) return localCorsJson(req, { ok: false, error: error.message }, { status: 409 }, 'POST, OPTIONS')
     return localCorsJson(req, { ok: false, error: 'No se pudo tomar el pedido' }, { status: 500 }, 'POST, OPTIONS')
   }
 }

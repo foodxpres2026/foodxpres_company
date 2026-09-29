@@ -45,12 +45,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       ` as any[]
       state = 'EN_CAMINO'
     } else {
-      updated = await sql`UPDATE sub_pedidos SET estado = 'ENTREGADO', entregado_en = NOW() WHERE id = ${id} AND driver_id = ${driver.id} AND estado = 'EN_CAMINO' AND recogido_en IS NOT NULL RETURNING id` as any[]
-      state = 'ENTREGADO'
+      updated = await sql`UPDATE sub_pedidos SET estado = 'ENTREGA_PENDIENTE_CONFIRMACION', entrega_reportada_en = NOW() WHERE id = ${id} AND driver_id = ${driver.id} AND estado = 'EN_CAMINO' AND recogido_en IS NOT NULL RETURNING id` as any[]
+      state = 'ENTREGA_PENDIENTE_CONFIRMACION'
     }
     if (!updated.length) return Response.json({ ok: false, error: 'La acción no corresponde al estado actual del pedido.' }, { status: 409 })
     if (!historyWritten) await sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${id}, ${state}, ${driver.id}, ${accion})`
-    if (accion === 'ENTREGUE') await sql`UPDATE driver_detalles SET disponible = TRUE, actualizado_en = NOW() WHERE usuario_id = ${driver.id}`
+    if (accion === 'ENTREGUE') await sql`
+      UPDATE driver_detalles SET disponible = TRUE, actualizado_en = NOW() WHERE usuario_id = ${driver.id}
+        AND NOT EXISTS (SELECT 1 FROM sub_pedidos WHERE driver_id = ${driver.id}
+          AND estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO'))
+    `
     return Response.json({ ok: true })
   } catch (error) {
     console.error('PATCH driver/orders/action error:', error)

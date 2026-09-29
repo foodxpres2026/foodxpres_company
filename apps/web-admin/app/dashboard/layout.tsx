@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/solicitudes', label: 'Solicitudes', icon: '🔑' },
   { href: '/dashboard/admins', label: 'Admins', icon: '🔐' },
   { href: '/dashboard/configuracion', label: 'Configuración', icon: '⚙️' },
+  { href: '/dashboard/comisiones', label: 'Comisiones', icon: '💰' },
 ]
 
 export default async function DashboardLayout({

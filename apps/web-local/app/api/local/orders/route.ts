@@ -17,13 +17,14 @@ export async function GET() {
              p.codigo AS pedido_codigo, p.total AS pedido_total, p.notas AS notas_pedido,
              CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.nombre ELSE u.nombre END AS cliente_nombre,
              CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.celular ELSE u.celular END AS cliente_celular,
-             p.vip, p.costo_vip
+             p.vip, p.costo_vip,
+             (p.usuario_id = ${staff.id} AND sp.direccion_snapshot->>'etiqueta' = 'Autopedido') AS autopedido_propio
       FROM sub_pedidos sp
       INNER JOIN pedidos p ON p.id = sp.pedido_id
       INNER JOIN usuarios u ON u.id = p.usuario_id
       INNER JOIN restaurantes r ON r.id = sp.restaurante_id
       WHERE sp.restaurante_id = ${staff.restauranteId}
-        AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGADO', 'RECHAZADO', 'CANCELADO')
+        AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO', 'RECHAZADO', 'CANCELADO')
       ORDER BY CASE WHEN sp.estado = 'PENDIENTE' THEN 0 WHEN sp.estado IN ('ACEPTADO', 'PREPARANDO') THEN 1 WHEN sp.estado = 'LISTO' THEN 2 ELSE 3 END,
                sp.creado_en DESC
       LIMIT ${PAGE_LIMIT}

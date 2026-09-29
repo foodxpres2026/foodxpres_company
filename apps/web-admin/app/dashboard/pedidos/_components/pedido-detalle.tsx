@@ -65,6 +65,7 @@ const ESTADOS_SIGUIENTES: Record<string, string[]> = {
   LISTO: ['EN_CAMINO', 'CANCELADO'],
   ASIGNADO: ['EN_CAMINO', 'CANCELADO'], // legacy
   EN_CAMINO: ['ENTREGADO', 'CANCELADO'],
+  ENTREGA_PENDIENTE_CONFIRMACION: ['ENTREGADO', 'CANCELADO'],
   ENTREGADO: [],
   RECHAZADO: [],
   CANCELADO: [],
@@ -76,6 +77,7 @@ const ESTADO_LABELS: Record<string, string> = {
   LISTO: 'Listo',
   ASIGNADO: 'En camino', // legacy
   EN_CAMINO: 'En camino',
+  ENTREGA_PENDIENTE_CONFIRMACION: 'Esperando confirmación del cliente',
   ENTREGADO: 'Entregado',
   RECHAZADO: 'Rechazado',
   CANCELADO: 'Cancelado',

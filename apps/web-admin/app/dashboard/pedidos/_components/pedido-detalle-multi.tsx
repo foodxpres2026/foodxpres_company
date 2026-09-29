@@ -69,6 +69,7 @@ const ESTADO_COLORES: Record<string, string> = {
   LISTO: 'bg-cyan-500/15 text-cyan-400',
   ASIGNADO: 'bg-orange-500/15 text-orange-400',
   EN_CAMINO: 'bg-orange-500/15 text-orange-400',
+  ENTREGA_PENDIENTE_CONFIRMACION: 'bg-yellow-500/15 text-yellow-300',
   ENTREGADO: 'bg-brand/15 text-brand',
   RECHAZADO: 'bg-red-500/15 text-red-400',
   CANCELADO: 'bg-gray-500/15 text-gray-400',
@@ -82,6 +83,7 @@ const ESTADO_LABELS: Record<string, string> = {
   LISTO: 'Listo',
   ASIGNADO: 'En camino',
   EN_CAMINO: 'En camino',
+  ENTREGA_PENDIENTE_CONFIRMACION: 'Esperando confirmación del cliente',
   ENTREGADO: 'Entregado',
   RECHAZADO: 'Rechazado',
   CANCELADO: 'Cancelado',
@@ -95,6 +97,7 @@ const ESTADOS_SIGUIENTES: Record<string, string[]> = {
   LISTO: ['EN_CAMINO', 'CANCELADO'],
   ASIGNADO: ['EN_CAMINO', 'CANCELADO'],
   EN_CAMINO: ['ENTREGADO', 'CANCELADO'],
+  ENTREGA_PENDIENTE_CONFIRMACION: ['ENTREGADO', 'CANCELADO'],
   ENTREGADO: [],
   RECHAZADO: [],
   CANCELADO: [],
@@ -114,7 +117,7 @@ export default function PedidoDetalleMulti({
   const primeraDireccion = pedido.sub_pedidos[0]?.direccion_snapshot || {}
 
   const totalAceptados = pedido.sub_pedidos.filter((sp) =>
-    ['ACEPTADO', 'PREPARANDO', 'LISTO', 'EN_CAMINO', 'ENTREGADO'].includes(
+    ['ACEPTADO', 'PREPARANDO', 'LISTO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO'].includes(
       sp.estado
     )
   ).length

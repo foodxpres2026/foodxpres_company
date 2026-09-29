@@ -38,12 +38,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       estadoHistorial = 'EN_CAMINO'
     } else {
       updated = (await sql`
-        UPDATE sub_pedidos SET estado = 'ENTREGADO', entregado_en = NOW()
+        UPDATE sub_pedidos SET estado = 'ENTREGA_PENDIENTE_CONFIRMACION', entrega_reportada_en = NOW()
         WHERE id = ${id} AND driver_id = ${driver.id}
           AND estado = 'EN_CAMINO' AND recogido_en IS NOT NULL
         RETURNING id
       `) as any[]
-      estadoHistorial = 'ENTREGADO'
+      estadoHistorial = 'ENTREGA_PENDIENTE_CONFIRMACION'
     }
 
     if (updated.length === 0) {
@@ -57,7 +57,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (parsed.data.accion === 'ENTREGUE') {
       await sql`
         UPDATE driver_detalles SET disponible = TRUE, actualizado_en = NOW()
-        WHERE usuario_id = ${driver.id}
+        WHERE usuario_id = ${driver.id} AND NOT EXISTS (
+          SELECT 1 FROM sub_pedidos WHERE driver_id = ${driver.id}
+            AND estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO')
+        )
       `
     }
     return localCorsJson(req, { ok: true }, {}, 'PATCH, OPTIONS')

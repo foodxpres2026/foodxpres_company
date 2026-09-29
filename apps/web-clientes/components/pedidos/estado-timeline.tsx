@@ -9,6 +9,7 @@ const PASOS = [
 ]
 
 const ESTADOS_ESPECIALES: Record<string, { label: string; icon: string; color: string }> = {
+  ENTREGA_PENDIENTE_CONFIRMACION: { label: 'Confirma que recibiste tu pedido', icon: '📦', color: 'text-brand' },
   RECHAZADO: { label: 'Rechazado', icon: '❌', color: 'text-danger' },
   CANCELADO: { label: 'Cancelado', icon: '🚫', color: 'text-gray-400' },
 }

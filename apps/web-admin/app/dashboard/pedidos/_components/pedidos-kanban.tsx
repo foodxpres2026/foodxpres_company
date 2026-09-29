@@ -58,6 +58,8 @@ export default function PedidosKanban({
       const estadoNormalizado =
         p.estado === 'ASIGNADO'
           ? 'EN_CAMINO'
+          : p.estado === 'ENTREGA_PENDIENTE_CONFIRMACION'
+          ? 'EN_CAMINO'
           : p.estado === 'PREPARANDO'
           ? 'ACEPTADO'
           : p.estado

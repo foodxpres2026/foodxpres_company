@@ -64,7 +64,7 @@ export async function GET(
       WHERE sp.restaurante_id = ${restaurantId}
         AND sp.estado IN (
           'PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO',
-          'ASIGNADO', 'EN_CAMINO', 'ENTREGADO', 'RECHAZADO', 'CANCELADO'
+          'ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO', 'RECHAZADO', 'CANCELADO'
         )
         ${filtroFecha}
       ORDER BY sp.creado_en DESC

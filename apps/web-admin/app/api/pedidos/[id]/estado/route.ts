@@ -90,9 +90,10 @@ export async function PATCH(
         break
       case 'ENTREGADO':
         await sql`
-          UPDATE sub_pedidos 
-          SET estado = ${estado}, entregado_en = ${now}
-          WHERE id = ${id}
+          SELECT confirmar_entrega_subpedido(
+            ${id}::uuid, ${user.id}::uuid, 'ADMIN',
+            ${notas || 'Cierre manual por administrador'}
+          )
         `
         break
       default:
@@ -162,10 +163,12 @@ export async function PATCH(
     }
 
     // Registrar en historial
-    await sql`
-      INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)
-      VALUES (${id}, ${estado}, ${user.id}, ${notas || null})
-    `
+    if (estado !== 'ENTREGADO') {
+      await sql`
+        INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)
+        VALUES (${id}, ${estado}, ${user.id}, ${notas || null})
+      `
+    }
 
     // 🔄 RECALCULAR PEDIDO PADRE
     await recalcularPedido(pedidoId)

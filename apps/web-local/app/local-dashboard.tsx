@@ -12,6 +12,7 @@ type Order = {
   creado_en: string; aceptado_en: string | null; listo_en: string | null; entregado_en: string | null
   direccion_snapshot: { direccion?: string; referencia?: string; etiqueta?: string } | null
   pedido_codigo: string; pedido_total: number | string; cliente_nombre: string; cliente_celular: string
+  autopedido_propio: boolean
   items: OrderItem[]
 }
 const sections: { id: Section; label: string }[] = [
@@ -22,11 +23,11 @@ const money = (amount: number | string) => `S/ ${Number(amount ?? 0).toFixed(2)}
 const displayDate = (value: string) => new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 const sectionMatches: Record<Section, string[]> = {
   pending: ['PENDIENTE'], preparing: ['ACEPTADO', 'PREPARANDO'], ready: ['LISTO'],
-  history: ['ASIGNADO', 'EN_CAMINO', 'ENTREGADO', 'RECHAZADO', 'CANCELADO'],
+  history: ['ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO', 'RECHAZADO', 'CANCELADO'],
 }
 const stateLabel: Record<string, string> = {
   PENDIENTE: 'Por aceptar', ACEPTADO: 'Aceptado', PREPARANDO: 'En preparación', LISTO: 'Listo',
-  ASIGNADO: 'Driver asignado', EN_CAMINO: 'En camino', ENTREGADO: 'Entregado', RECHAZADO: 'Rechazado', CANCELADO: 'Cancelado',
+  ASIGNADO: 'Driver asignado', EN_CAMINO: 'En camino', ENTREGA_PENDIENTE_CONFIRMACION: 'Esperando confirmación del cliente', ENTREGADO: 'Entregado', RECHAZADO: 'Rechazado', CANCELADO: 'Cancelado',
 }
 
 export default function LocalDashboard({ user }: { user: LocalUser }) {
@@ -42,6 +43,15 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
   const [refreshAt, setRefreshAt] = useState<Date | null>(null)
   const [drawer, setDrawer] = useState(false)
   const [autoMode, setAutoMode] = useState(false)
+  const [commissionBalance, setCommissionBalance] = useState<number | null>(null)
+
+  const loadCommissionBalance = useCallback(async () => {
+    try {
+      const response = await fetch('/api/local/commission-balance', { cache: 'no-store' })
+      const result = await response.json()
+      if (response.ok && result.ok) setCommissionBalance(Number(result.data.saldo ?? 0))
+    } catch { /* El balance no debe impedir operar los pedidos. */ }
+  }, [])
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true)
@@ -57,13 +67,16 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
   }, [])
 
   useEffect(() => { void load() }, [load])
+  useEffect(() => { void loadCommissionBalance() }, [loadCommissionBalance])
   useEffect(() => {
-    if (section === 'history') return
     const timer = window.setInterval(() => {
-      if (document.visibilityState === 'visible' && !busy) void load(true)
-    }, 15_000)
+      if (document.visibilityState === 'visible' && !busy) {
+        void loadCommissionBalance()
+        if (section !== 'history') void load(true)
+      }
+    }, section === 'history' ? 30_000 : 15_000)
     return () => window.clearInterval(timer)
-  }, [section, busy, load])
+  }, [section, busy, load, loadCommissionBalance])
 
   const counts = useMemo(() => Object.fromEntries(sections.map(({ id }) => [id, orders.filter((order) => sectionMatches[id].includes(order.estado)).length])) as Record<Section, number>, [orders])
   const visibleOrders = useMemo(() => orders.filter((order) => sectionMatches[section].includes(order.estado)), [orders, section])
@@ -88,6 +101,19 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
     finally { setBusy(null) }
   }
 
+  async function confirmAutopedido(order: Order) {
+    setBusy(order.id); setError(''); setNotice('')
+    try {
+      const response = await fetch(`/api/local/orders/${order.id}/confirm-delivery`, { method: 'POST' })
+      const result = await response.json()
+      if (!response.ok || !result.ok) throw new Error(result.error || 'No se pudo confirmar la entrega')
+      setNotice('Autopedido confirmado como recibido. Se registró la comisión correspondiente.')
+      setSelected(null)
+      await Promise.all([load(true), loadCommissionBalance()])
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Error de conexión') }
+    finally { setBusy(null) }
+  }
+
   const activeTotal = counts.pending + counts.preparing + counts.ready
   const title = sections.find((tab) => tab.id === section)?.label ?? 'Pedidos'
 
@@ -101,12 +127,12 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
       <aside className={`local-sidebar ${drawer ? 'open' : ''}`}>
         <div className="local-profile"><div className="local-avatar">{user.restauranteNombre.slice(0, 1).toUpperCase()}</div><div><strong>{user.restauranteNombre}</strong><span>{user.nombre}</span></div><button className="local-drawer-close" onClick={() => setDrawer(false)} aria-label="Cerrar menú">×</button></div>
         <nav aria-label="Pedidos del local"><button onClick={() => { setAutoMode(false); setSection('pending'); setDrawer(false) }} className={`local-nav-item ${!autoMode ? 'active' : ''}`}><span>◷</span>Pedidos<b>{activeTotal}</b></button><button onClick={() => { setAutoMode(true); setDrawer(false) }} className={`local-nav-item ${autoMode ? 'active' : ''}`}><span>＋</span>Autopedidos</button>{sections.map((tab) => <button key={tab.id} onClick={() => { setAutoMode(false); setSection(tab.id); setDrawer(false) }} className={`local-nav-item ${!autoMode && section === tab.id ? 'active' : ''}`}><span>{tab.id === 'pending' ? '◷' : tab.id === 'preparing' ? '◉' : tab.id === 'ready' ? '✓' : '↺'}</span>{tab.label}<b>{counts[tab.id]}</b></button>)}</nav>
-        <div className="local-sidebar-bottom"><span className="local-online-dot"/>Pedidos activos: {activeTotal}<button onClick={logout} disabled={busy === 'logout'}>Cerrar sesión</button></div>
+        <div className="local-sidebar-bottom"><span className="local-online-dot"/>Pedidos activos: {activeTotal}{commissionBalance !== null && <span className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</span>}<button onClick={logout} disabled={busy === 'logout'}>Cerrar sesión</button></div>
       </aside>
       {drawer && <button className="local-backdrop" onClick={() => setDrawer(false)} aria-label="Cerrar menú"/>}
       <section className="local-content">
-        {autoMode ? <AutopedidosPanel onBack={() => setAutoMode(false)} onCreated={() => void load(true)} /> : <>
-        <div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>{title}</h1><p>Gestiona los pedidos de {user.restauranteNombre}.</p></div><button className="local-refresh" onClick={() => void load()} disabled={loading}>↻ <span>Actualizar</span></button></div>
+        {autoMode ? <><div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>Autopedidos</h1>{commissionBalance !== null && <p className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</p>}</div><button className="local-refresh" onClick={() => void loadCommissionBalance()}>↻ <span>Actualizar saldo</span></button></div><AutopedidosPanel onBack={() => setAutoMode(false)} onCreated={() => { void load(true); void loadCommissionBalance() }} /></> : <>
+        <div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>{title}</h1><p>Gestiona los pedidos de {user.restauranteNombre}.</p>{commissionBalance !== null && <p className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</p>}</div><button className="local-refresh" onClick={() => { void load(); void loadCommissionBalance() }} disabled={loading}>↻ <span>Actualizar</span></button></div>
         <div className="local-mobile-tabs">{sections.map((tab) => <button key={tab.id} onClick={() => setSection(tab.id)} className={section === tab.id ? 'active' : ''}>{tab.label}<span>{counts[tab.id]}</span></button>)}</div>
         <div className="local-list-meta"><span>{visibleOrders.length} {visibleOrders.length === 1 ? 'pedido' : 'pedidos'}</span><span>Actualizado {refreshAt ? refreshAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '—'} · Auto cada 15 s</span></div>
         {notice && <div className="local-notice" role="status">✓ {notice}</div>}
@@ -124,6 +150,7 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
       <div className="local-total-line"><span>Productos</span><strong>{money(selected.subtotal)}</strong></div><div className="local-total-line"><span>Envío</span><strong>{money(selected.costo_envio)}</strong></div><div className="local-total-line grand"><span>Total del pedido</span><strong>{money(selected.pedido_total)}</strong></div></div>
       {selected.estado === 'PENDIENTE' && <div className="local-modal-actions"><label>Tiempo estimado de preparación<select value={estimate} onChange={(event) => setEstimate(event.target.value)}><option value="15">15 minutos</option><option value="20">20 minutos</option><option value="30">30 minutos</option><option value="45">45 minutos</option><option value="60">60 minutos</option></select></label><label>Motivo de rechazo (opcional)<textarea value={rejectReason} onChange={(event) => setRejectReason(event.target.value)} maxLength={200} placeholder="Ej.: No tenemos este producto"/></label><div><button className="local-reject-button" onClick={() => void act(selected, 'RECHAZAR')} disabled={busy === selected.id}>Rechazar pedido</button><button className="local-primary-button" onClick={() => void act(selected, 'ACEPTAR')} disabled={busy === selected.id}>{busy === selected.id ? 'Guardando…' : 'Aceptar pedido'}</button></div></div>}
       {['ACEPTADO', 'PREPARANDO'].includes(selected.estado) && <div className="local-modal-actions"><button className="local-primary-button full" onClick={() => void act(selected, 'LISTO')} disabled={busy === selected.id}>{busy === selected.id ? 'Guardando…' : 'Marcar como listo'}</button></div>}
+      {selected.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && selected.autopedido_propio && <div className="local-modal-actions"><p className="text-sm text-gray-400">El driver reportó la entrega de este autopedido.</p><button className="local-primary-button full" onClick={() => void confirmAutopedido(selected)} disabled={busy === selected.id}>{busy === selected.id ? 'Guardando…' : 'Confirmar que recibí el pedido'}</button></div>}
       </section></div>}
   </main>
 }

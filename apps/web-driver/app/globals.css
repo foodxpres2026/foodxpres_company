@@ -35,6 +35,7 @@ button, input { font: inherit; }
 .brand small { display: block; margin-top: 1px; color: #7c8795; font-size: 9px; letter-spacing: 1.6px; }
 .menu-button { display: none; color: #eef2ed; background: none; border: 0; font-size: 22px; cursor: pointer; }
 .top-user { display: flex; align-items: center; gap: 9px; margin-left: auto; color: #d5d9d4; font-size: 13px; }
+.driver-commission-balance { color: #8fe04e; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .online-dot { width: 8px; height: 8px; display: inline-block; border-radius: 50%; background: var(--green); box-shadow: 0 0 9px #7ed32170; }
 .logout-link { margin-left: 8px; padding: 8px 12px; color: #d5d9d4; background: transparent; border: 1px solid #323632; border-radius: 9px; cursor: pointer; }
 .driver-layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: calc(100svh - 68px); }
@@ -144,6 +145,7 @@ button, input { font: inherit; }
   .brand { gap: 7px; font-size: 14px; }
   .brand-mark { width: 28px; height: 28px; flex-basis: 28px; }
   .top-user { gap: 6px; font-size: 11px; }
+  .driver-commission-balance { font-size: 10px; }
   .logout-link { margin-left: 3px; padding: 7px 9px; font-size: 11px; }
   .driver-content { padding: 21px 13px 25px; }
   .content-heading { align-items: flex-start; gap: 12px; margin-bottom: 15px; }

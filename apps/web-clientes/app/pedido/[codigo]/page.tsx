@@ -6,6 +6,7 @@ import Header from '@/components/layout/header'
 import BottomNav from '@/components/layout/bottom-nav'
 import EstadoTimeline from '@/components/pedidos/estado-timeline'
 import { formatearFechaHora } from '@/lib/utils/fechas'
+import ConfirmarEntrega from '@/components/pedidos/confirmar-entrega'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +17,7 @@ const ESTADO_LABELS: Record<string, string> = {
   LISTO: 'Listo',
   ASIGNADO: 'En camino',
   EN_CAMINO: 'En camino',
+  ENTREGA_PENDIENTE_CONFIRMACION: 'Esperando tu confirmación',
   ENTREGADO: 'Entregado',
   RECHAZADO: 'Rechazado',
   CANCELADO: 'Cancelado',
@@ -37,7 +39,7 @@ async function getPedido(codigo: string, usuarioId: string) {
     SELECT 
       sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.distancia_km,
       sp.direccion_snapshot, sp.notas,
-      sp.creado_en, sp.aceptado_en, sp.listo_en, sp.recogido_en, sp.entregado_en,
+      sp.creado_en, sp.aceptado_en, sp.listo_en, sp.recogido_en, sp.entrega_reportada_en, sp.cliente_confirmo_en, sp.entregado_en,
       r.nombre as restaurante_nombre,
       r.celular as restaurante_celular,
       d.nombre as driver_nombre,
@@ -169,6 +171,7 @@ export default async function PedidoPage({
 
                 {/* TIMELINE DEL LOCAL */}
                 <EstadoTimeline estado={sp.estado} />
+              {sp.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && <ConfirmarEntrega subPedidoId={sp.id} />}
               </div>
 
               {/* DRIVER DESTACADO */}

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       rows = await sql`
         SELECT sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.distancia_km,
                sp.tiempo_estimado, sp.direccion_snapshot, sp.creado_en,
-               sp.listo_en, sp.recogido_en, sp.entregado_en,
+               sp.entrega_reportada_en, sp.driver_comision_monto,
                p.codigo AS pedido_codigo, p.notas AS pedido_notas,
                r.nombre AS restaurante_nombre, r.direccion_fisica AS restaurante_direccion,
                r.lat AS restaurante_lat, r.lng AS restaurante_lng,
@@ -41,13 +41,14 @@ export async function GET(request: NextRequest) {
                (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas IN ('Pedido aceptado por el driver', 'Pedido reservado por el driver') ORDER BY h.creado_en LIMIT 1) AS driver_asignado_en,
                (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE' ORDER BY h.creado_en LIMIT 1) AS driver_llego_en,
                sp.listo_en, sp.recogido_en, sp.entregado_en,
+               sp.entrega_reportada_en, sp.driver_comision_monto,
                p.codigo AS pedido_codigo, p.notas AS pedido_notas,
                r.nombre AS restaurante_nombre, r.direccion_fisica AS restaurante_direccion,
                r.lat AS restaurante_lat, r.lng AS restaurante_lng,
                r.celular AS restaurante_celular, u.nombre AS cliente_nombre, u.celular AS cliente_celular
         FROM sub_pedidos sp INNER JOIN pedidos p ON p.id = sp.pedido_id
         INNER JOIN restaurantes r ON r.id = sp.restaurante_id INNER JOIN usuarios u ON u.id = p.usuario_id
-        WHERE sp.driver_id = ${driver.id} AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO')
+        WHERE sp.driver_id = ${driver.id} AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION')
         ORDER BY sp.creado_en DESC LIMIT ${PAGE_SIZE + 1} OFFSET ${offset}
       ` as any[]
     } else {
@@ -57,13 +58,14 @@ export async function GET(request: NextRequest) {
                (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas IN ('Pedido aceptado por el driver', 'Pedido reservado por el driver') ORDER BY h.creado_en LIMIT 1) AS driver_asignado_en,
                (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE' ORDER BY h.creado_en LIMIT 1) AS driver_llego_en,
                sp.listo_en, sp.recogido_en, sp.entregado_en,
+               sp.entrega_reportada_en, sp.driver_comision_monto,
                p.codigo AS pedido_codigo, p.notas AS pedido_notas,
                r.nombre AS restaurante_nombre, r.direccion_fisica AS restaurante_direccion,
                r.lat AS restaurante_lat, r.lng AS restaurante_lng,
                r.celular AS restaurante_celular, u.nombre AS cliente_nombre, u.celular AS cliente_celular
         FROM sub_pedidos sp INNER JOIN pedidos p ON p.id = sp.pedido_id
         INNER JOIN restaurantes r ON r.id = sp.restaurante_id INNER JOIN usuarios u ON u.id = p.usuario_id
-        WHERE sp.driver_id = ${driver.id} AND sp.estado IN ('ENTREGADO', 'CANCELADO', 'RECHAZADO')
+        WHERE sp.driver_id = ${driver.id} AND sp.estado IN ('ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO', 'CANCELADO', 'RECHAZADO')
         ORDER BY COALESCE(sp.entregado_en, sp.creado_en) DESC LIMIT ${PAGE_SIZE + 1} OFFSET ${offset}
       ` as any[]
     }
@@ -83,12 +85,19 @@ export async function GET(request: NextRequest) {
       const status = await sql`SELECT disponible FROM driver_detalles WHERE usuario_id = ${driver.id} LIMIT 1` as { disponible: boolean }[]
       disponible = status[0]?.disponible ?? false
     }
+    const balanceRows = await sql`
+      SELECT COALESCE((SELECT SUM(monto) FROM comisiones_generadas
+        WHERE beneficiario_tipo = 'DRIVER' AND beneficiario_id = ${driver.id}), 0)
+        - COALESCE((SELECT SUM(monto) FROM comision_pagos
+        WHERE beneficiario_tipo = 'DRIVER' AND beneficiario_id = ${driver.id}), 0) AS saldo
+    ` as { saldo: string | number }[]
     return Response.json({
       ok: true,
       data: page.map((order) => ({ ...order, items: itemsByOrder.get(order.id) ?? [] })),
       hasMore,
       nextOffset: offset + page.length,
       disponible,
+      comisionPendiente: Number(balanceRows[0]?.saldo ?? 0),
     }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('GET driver/orders error:', error)

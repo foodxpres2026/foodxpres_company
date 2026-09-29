@@ -48,7 +48,7 @@ export async function recalcularPedido(pedidoId: string) {
   } else if (todosFinalizados || algunRechazadoOCancelado) {
     // Algunos terminaron, otros rechazados → parcial
     nuevoEstado = 'PARCIAL'
-  } else if (estados.some((e: string) => e === 'EN_CAMINO')) {
+  } else if (estados.some((e: string) => e === 'EN_CAMINO' || e === 'ENTREGA_PENDIENTE_CONFIRMACION')) {
     nuevoEstado = 'EN_CAMINO'
   } else if (estados.some((e: string) => e === 'LISTO')) {
     nuevoEstado = 'LISTO'

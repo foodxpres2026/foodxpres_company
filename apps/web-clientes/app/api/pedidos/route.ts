@@ -324,6 +324,31 @@ export async function POST(req: NextRequest) {
     const envioGlobal = envioGlobalCentimos / 100
     const total = (subtotalGlobalCentimos + envioGlobalCentimos + propinaCentimos + costoVipCentimos) / 100
 
+    // Congelar las reglas aplicables al crear el pedido evita que un cambio futuro
+    // de comisión modifique el saldo pendiente de pedidos anteriores.
+    const restauranteIds = gruposCalculados.map((grupo) => grupo.restaurante_id)
+    const [localRules, driverRules] = await Promise.all([
+      sql`SELECT DISTINCT ON (restaurante_id) restaurante_id, id, modalidad, valor
+          FROM comision_reglas WHERE beneficiario_tipo = 'LOCAL'
+            AND restaurante_id = ANY(${restauranteIds}::uuid[])
+          ORDER BY restaurante_id, creado_en DESC, id DESC` as Promise<any[]>,
+      sql`SELECT id, valor FROM comision_reglas WHERE beneficiario_tipo = 'DRIVER'
+          ORDER BY creado_en DESC, id DESC LIMIT 1` as Promise<any[]>,
+    ])
+    const localRuleById = new Map(localRules.map((rule) => [rule.restaurante_id, rule]))
+    const driverRule = driverRules[0] ?? null
+    for (const group of gruposCalculados) {
+      const rule = localRuleById.get(group.restaurante_id)
+      const localRate = Number(rule?.valor ?? 0)
+      const driverRate = Number(driverRule?.valor ?? 0)
+      group.local_rule = rule ?? null
+      group.local_commission_amount = rule
+        ? (rule.modalidad === 'FIJA' ? localRate : Math.round(group.subtotal * localRate) / 100)
+        : 0
+      group.driver_rule = driverRule
+      group.driver_commission_amount = Math.round(group.costo_envio * driverRate) / 100
+    }
+
     // ============================================
     // 5. Crear pedido PADRE
     // ============================================
@@ -357,11 +382,16 @@ export async function POST(req: NextRequest) {
       transactionQueries.push(sql`
         INSERT INTO sub_pedidos (
           id, pedido_id, restaurante_id, estado, subtotal, costo_envio,
-          distancia_km, direccion_snapshot
+          distancia_km, direccion_snapshot,
+          local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto,
+          driver_comision_regla_id, driver_comision_valor, driver_comision_monto
         ) VALUES (
           ${spId}, ${pedidoId}, ${g.restaurante_id}, 'PENDIENTE', ${g.subtotal},
           ${g.costo_envio}, ${g.distancia_km},
-          ${JSON.stringify(dirSnapshot)}::jsonb
+          ${JSON.stringify(dirSnapshot)}::jsonb,
+          ${g.local_rule?.id ?? null}, ${g.local_rule?.modalidad ?? 'FIJA'},
+          ${Number(g.local_rule?.valor ?? 0)}, ${g.local_commission_amount},
+          ${g.driver_rule?.id ?? null}, ${Number(g.driver_rule?.valor ?? 0)}, ${g.driver_commission_amount}
         )
       `)
 

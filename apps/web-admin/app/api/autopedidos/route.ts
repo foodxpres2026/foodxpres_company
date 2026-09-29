@@ -180,6 +180,18 @@ export async function POST(req: NextRequest) {
     const subtotal = subtotalCentimos / 100
     const envioCentimos = Math.round(envio.costo * 100)
     const total = (subtotalCentimos + envioCentimos) / 100
+    const [localRules, driverRules] = await Promise.all([
+      sql`SELECT id, modalidad, valor FROM comision_reglas WHERE beneficiario_tipo = 'LOCAL'
+          AND restaurante_id = ${staff.restaurantId} ORDER BY creado_en DESC, id DESC LIMIT 1`,
+      sql`SELECT id, valor FROM comision_reglas WHERE beneficiario_tipo = 'DRIVER'
+          ORDER BY creado_en DESC, id DESC LIMIT 1`,
+    ]) as any[][]
+    const localRule = localRules[0] ?? null
+    const driverRule = driverRules[0] ?? null
+    const localCommission = localRule
+      ? (localRule.modalidad === 'FIJA' ? Number(localRule.valor) : Math.round(subtotalCentimos * Number(localRule.valor) / 100) / 100)
+      : 0
+    const driverCommission = Math.round(envioCentimos * Number(driverRule?.valor ?? 0) / 100) / 100
     const pedidoId = randomUUID()
     const subPedidoId = randomUUID()
     const pedidoCodigo = orderCode()
@@ -190,8 +202,8 @@ export async function POST(req: NextRequest) {
         VALUES (${pedidoId}, ${pedidoCodigo}, ${customerId}, 'AUTOPEDIDO', ${staff.id}, ${subtotal}, ${envioCentimos / 100}, ${total}, ${data.notas || null}, 'PENDIENTE')
       `,
       sql`
-        INSERT INTO sub_pedidos (id, pedido_id, restaurante_id, estado, subtotal, costo_envio, distancia_km, direccion_snapshot)
-        VALUES (${subPedidoId}, ${pedidoId}, ${staff.restaurantId}, 'PENDIENTE', ${subtotal}, ${envioCentimos / 100}, ${envio.distancia_km}, ${JSON.stringify(dirSnapshot)}::jsonb)
+        INSERT INTO sub_pedidos (id, pedido_id, restaurante_id, estado, subtotal, costo_envio, distancia_km, direccion_snapshot, local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto, driver_comision_regla_id, driver_comision_valor, driver_comision_monto)
+        VALUES (${subPedidoId}, ${pedidoId}, ${staff.restaurantId}, 'PENDIENTE', ${subtotal}, ${envioCentimos / 100}, ${envio.distancia_km}, ${JSON.stringify(dirSnapshot)}::jsonb, ${localRule?.id ?? null}, ${localRule?.modalidad ?? 'FIJA'}, ${Number(localRule?.valor ?? 0)}, ${localCommission}, ${driverRule?.id ?? null}, ${Number(driverRule?.valor ?? 0)}, ${driverCommission})
       `,
       sql`
         INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)
