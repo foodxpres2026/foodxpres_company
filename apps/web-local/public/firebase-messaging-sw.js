@@ -20,6 +20,7 @@ messaging.onBackgroundMessage((payload) => {
     body: payload.notification?.body || 'Tienes un pedido nuevo',
     icon: '/logo-mark.png', badge: '/icons/icon-192.png',
     data: payload.data || {}, tag: payload.data?.tag || 'foodxpres-local',
+    silent: false, vibrate: [200, 100, 200], renotify: true,
   }
   return self.registration.showNotification(title, options)
 })

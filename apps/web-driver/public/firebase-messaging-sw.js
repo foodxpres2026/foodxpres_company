@@ -19,6 +19,7 @@ messaging.onBackgroundMessage((payload) => {
     body: payload.notification?.body || 'Hay un pedido disponible',
     icon: '/logo-mark.png', badge: '/icons/icon-192.png',
     data: payload.data || {}, tag: payload.data?.tag || 'foodxpres-driver',
+    silent: false, vibrate: [200, 100, 200], renotify: true,
   }
   return self.registration.showNotification(title, options)
 })
