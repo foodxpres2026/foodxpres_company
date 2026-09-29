@@ -4,10 +4,8 @@ import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
 
 const configSchema = z.object({
-  tarifa_base: z.coerce.number().min(0),
-  precio_por_km: z.coerce.number().min(0),
+  tarifa_delivery_metodo: z.enum(['DETALLADA', 'GENERAL']),
   costo_vip: z.coerce.number().min(0),
-  monto_minimo_global: z.coerce.number().min(0),
   tiempo_max_aceptacion: z.coerce.number().int().min(1),
 })
 
@@ -19,8 +17,8 @@ export async function GET() {
 
   try {
     const rows = await sql`
-      SELECT tarifa_base, precio_por_km, costo_vip, 
-             monto_minimo_global, tiempo_max_aceptacion, actualizado_en
+      SELECT tarifa_delivery_metodo, costo_vip,
+             tiempo_max_aceptacion, actualizado_en
       FROM configuracion_sistema
       WHERE id = 1
       LIMIT 1
@@ -56,10 +54,8 @@ export async function PATCH(req: NextRequest) {
 
     await sql`
       UPDATE configuracion_sistema SET
-        tarifa_base = ${d.tarifa_base},
-        precio_por_km = ${d.precio_por_km},
+        tarifa_delivery_metodo = ${d.tarifa_delivery_metodo},
         costo_vip = ${d.costo_vip},
-        monto_minimo_global = ${d.monto_minimo_global},
         tiempo_max_aceptacion = ${d.tiempo_max_aceptacion},
         actualizado_en = NOW()
       WHERE id = 1

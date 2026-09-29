@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS categorias (
 
 CREATE TABLE IF NOT EXISTS configuracion_sistema (
   id SMALLINT DEFAULT 1 NOT NULL,
+  tarifa_delivery_metodo VARCHAR(12) DEFAULT 'DETALLADA' NOT NULL,
   tarifa_base NUMERIC(6,2) DEFAULT 2.00 NOT NULL,
   precio_por_km NUMERIC(6,2) DEFAULT 2.00 NOT NULL,
   costo_vip NUMERIC(6,2) DEFAULT 2.30 NOT NULL,

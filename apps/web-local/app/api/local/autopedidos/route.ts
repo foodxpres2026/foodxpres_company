@@ -93,6 +93,12 @@ export async function POST(req: Request) {
       normalized.push({ ...item, nombre: product.nombre, unitCents: unit, opciones: choices })
     }
     const shipping = await calculateLocalShipping(staff.restauranteId, data.lat, data.lng)
+    if (!shipping.permitido || shipping.costo == null) {
+      const error = shipping.razon === 'SUPERA_DISTANCIA_MAXIMA'
+        ? `La dirección está a ${shipping.distancia_km.toFixed(1)} km. El máximo permitido es 15 km.`
+        : 'No se pudo obtener una ruta real para calcular el envío. Intenta de nuevo más tarde.'
+      return Response.json({ ok: false, error }, { status: shipping.razon === 'SUPERA_DISTANCIA_MAXIMA' ? 422 : 503 })
+    }
     const vipRows = await sql`SELECT costo_vip FROM configuracion_sistema WHERE id = 1 LIMIT 1` as any[]
     const [localRules, driverRules] = await Promise.all([
       sql`SELECT id, modalidad, valor FROM comision_reglas WHERE beneficiario_tipo = 'LOCAL'

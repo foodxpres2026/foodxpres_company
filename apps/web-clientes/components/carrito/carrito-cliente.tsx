@@ -33,9 +33,7 @@ export default function CarritoCliente({
   // 🎯 Ahora usa directamente la dirección (BD o localStorage)
   const direccionActual = useDireccionActual(direccionDeBD)
 
-  const [enviosPorLocal, setEnviosPorLocal] = useState<
-    Record<string, number>
-  >({})
+  const [enviosPorLocal, setEnviosPorLocal] = useState<Record<string, { costo: number | null; distancia_km: number | null; permitido: boolean; razon: string | null }>>({})
   const [propina, setPropina] = useState(0)
   const [otraPropina, setOtraPropina] = useState('')
   const [esOtraPropina, setEsOtraPropina] = useState(false)
@@ -98,10 +96,13 @@ export default function CarritoCliente({
       .then((r) => r.json())
       .then((data) => {
         if (data.ok) {
-          const map: Record<string, number> = {}
+          const map: Record<string, { costo: number | null; distancia_km: number | null; permitido: boolean; razon: string | null }> = {}
           for (const item of data.data) {
-            if (item.costo != null) {
-              map[item.restaurante_id] = Number(item.costo)
+            map[item.restaurante_id] = {
+              costo: item.costo == null ? null : Number(item.costo),
+              distancia_km: item.distancia_km == null ? null : Number(item.distancia_km),
+              permitido: Boolean(item.permitido),
+              razon: item.razon || null,
             }
           }
           setEnviosPorLocal(map)
@@ -121,7 +122,7 @@ export default function CarritoCliente({
     0
   )
   const envioTotal = Object.values(enviosPorLocal).reduce(
-    (s, v) => s + v,
+    (s, v) => s + (v.costo || 0),
     0
   )
   const vipMonto = vip ? costoVip : 0
@@ -145,6 +146,19 @@ export default function CarritoCliente({
 
     if (!direccionActual?.id) {
       setError('Necesitas una dirección de entrega')
+      return
+    }
+
+    const envioBloqueado = gruposArr
+      .map((grupo) => ({ grupo, envio: enviosPorLocal[grupo.restaurante_id] }))
+      .find(({ envio }) => !envio || !envio.permitido)
+    if (envioBloqueado) {
+      const { grupo, envio } = envioBloqueado
+      setError(!envio
+        ? 'Espera a que termine el cálculo de envío para todos los locales.'
+        : envio.razon === 'SUPERA_DISTANCIA_MAXIMA'
+          ? `${grupo.restaurante_nombre} supera el máximo de 15 km.`
+          : 'No se pudo obtener una ruta real por calles. Intenta de nuevo más tarde.')
       return
     }
 
@@ -288,10 +302,11 @@ export default function CarritoCliente({
               <span className="text-[11px] text-gray-400 whitespace-nowrap flex-shrink-0">
                 Delivery:{' '}
                 <strong className="text-brand">
-                  {envio != null ? `S/ ${envio.toFixed(2)}` : 'S/ —'}
+                  {envio?.costo != null ? `S/ ${envio.costo.toFixed(2)}` : 'No disponible'}
                 </strong>
               </span>
             </div>
+            {envio && !envio.permitido && <p className="px-4 pb-2 text-[11px] text-danger">{envio.razon === 'SUPERA_DISTANCIA_MAXIMA' ? `Está a ${envio.distancia_km?.toFixed(1) ?? 'más de 15'} km; el máximo es 15 km.` : 'No se pudo obtener la ruta real por calles. Intenta de nuevo más tarde.'}</p>}
 
             <div className="divide-y divide-line">
               {grupo.items.map((item) => {

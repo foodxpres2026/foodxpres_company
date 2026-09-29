@@ -300,11 +300,18 @@ export async function POST(req: NextRequest) {
         )
       }
 
+      if (!envio.permitido) {
+        const error = envio.razon === 'SUPERA_DISTANCIA_MAXIMA'
+          ? `El local está a ${envio.distancia_km.toFixed(1)} km. El máximo permitido es 15 km.`
+          : 'No se pudo obtener una ruta real para calcular el envío. Intenta de nuevo más tarde.'
+        return Response.json({ ok: false, error }, { status: envio.razon === 'SUPERA_DISTANCIA_MAXIMA' ? 422 : 503 })
+      }
+
       gruposCalculados.push({
         restaurante_id: g.restaurante_id,
         items: itemsCalculados,
         subtotal: subtotalGrupoCentimos / 100,
-        costo_envio: envio.costo,
+        costo_envio: envio.costo!,
         distancia_km: envio.distancia_km,
       })
     }

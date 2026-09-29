@@ -3,10 +3,8 @@
 import { useEffect, useState } from 'react'
 
 interface Config {
-  tarifa_base: number
-  precio_por_km: number
+  tarifa_delivery_metodo: 'DETALLADA' | 'GENERAL'
   costo_vip: number
-  monto_minimo_global: number
   tiempo_max_aceptacion: number
   actualizado_en: string
 }
@@ -24,10 +22,8 @@ export default function ConfiguracionForm() {
         if (data.ok) {
           // Postgres devuelve numeric como string → convertir a number
           setConfig({
-            tarifa_base: Number(data.data.tarifa_base),
-            precio_por_km: Number(data.data.precio_por_km),
+            tarifa_delivery_metodo: data.data.tarifa_delivery_metodo,
             costo_vip: Number(data.data.costo_vip),
-            monto_minimo_global: Number(data.data.monto_minimo_global),
             tiempo_max_aceptacion: Number(data.data.tiempo_max_aceptacion),
             actualizado_en: data.data.actualizado_en,
           })
@@ -69,52 +65,34 @@ export default function ConfiguracionForm() {
     setConfig({ ...config!, [key]: value })
   }
 
-  const ejemplo = config.tarifa_base + config.precio_por_km * 3
-
   return (
     <div className="space-y-4">
       <div className="bg-surface border border-line rounded-2xl p-5 md:p-6 space-y-4">
         <div>
           <h3 className="text-base font-bold text-white">Envío</h3>
-          <p className="text-xs text-gray-500 mt-1">
-            Fórmula: tarifa base + (precio × km recorridos)
-          </p>
+          <p className="text-xs text-gray-500 mt-1">FoodXpres cobra según la ruta real. Los pedidos a más de 15 km no se aceptan.</p>
         </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Field
-            label="Tarifa base (S/)"
-            value={config.tarifa_base}
-            onChange={(v) => update('tarifa_base', v)}
-          />
-          <Field
-            label="Precio por km (S/)"
-            value={config.precio_por_km}
-            onChange={(v) => update('precio_por_km', v)}
-          />
-        </div>
-
-        <div className="bg-surface-dark border border-line rounded-xl p-3 text-xs text-gray-400">
-          Ejemplo: 3 km → S/ {config.tarifa_base.toFixed(2)} + (
-          {config.precio_por_km.toFixed(2)} × 3) = S/ {ejemplo.toFixed(2)}
-        </div>
+        <fieldset className="space-y-3">
+          <legend className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">Tabla activa (elige una)</legend>
+          <label className="flex items-start gap-3 rounded-xl border border-line bg-surface-dark p-4 cursor-pointer">
+            <input type="radio" name="tarifa_delivery_metodo" checked={config.tarifa_delivery_metodo === 'DETALLADA'} onChange={() => update('tarifa_delivery_metodo', 'DETALLADA')} className="mt-1 accent-lime-500" />
+            <span><strong className="block text-sm text-white">Tabla FoodXpres detallada</strong><small className="text-gray-500">Usa los rangos y correcciones de la primera tabla (hasta 11 km); continúa el patrón de S/ 0.50 cada 0.5 km hasta 15 km.</small></span>
+          </label>
+          <label className="flex items-start gap-3 rounded-xl border border-line bg-surface-dark p-4 cursor-pointer">
+            <input type="radio" name="tarifa_delivery_metodo" checked={config.tarifa_delivery_metodo === 'GENERAL'} onChange={() => update('tarifa_delivery_metodo', 'GENERAL')} className="mt-1 accent-lime-500" />
+            <span><strong className="block text-sm text-white">Tabla FoodXpres general</strong><small className="text-gray-500">Usa los rangos de la segunda tabla (hasta 12 km); continúa el patrón de S/ 0.50 cada 0.5 km hasta 15 km.</small></span>
+          </label>
+        </fieldset>
       </div>
 
       <div className="bg-surface border border-line rounded-2xl p-5 md:p-6 space-y-4">
         <h3 className="text-base font-bold text-white">Pedidos</h3>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field
-            label="Costo VIP (S/)"
-            value={config.costo_vip}
-            onChange={(v) => update('costo_vip', v)}
-          />
-          <Field
-            label="Monto mínimo global (S/)"
-            value={config.monto_minimo_global}
-            onChange={(v) => update('monto_minimo_global', v)}
-          />
-        </div>
+        <Field
+          label="Costo VIP (S/)"
+          value={config.costo_vip}
+          onChange={(v) => update('costo_vip', v)}
+        />
 
         <Field
           label="Tiempo máx. de aceptación (min)"

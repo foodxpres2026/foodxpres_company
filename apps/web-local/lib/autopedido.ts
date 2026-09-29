@@ -1,10 +1,10 @@
 import { getSql } from './db'
+import { deliveryPriceForDistance, MAX_DELIVERY_DISTANCE_KM, type DeliveryPriceTable } from '../../../packages/utils/src/delivery'
 
 export async function calculateLocalShipping(restaurantId: string, clientLat: number, clientLng: number) {
   const sql = getSql()
   const rows = await sql`
-    SELECT c.tarifa_base, c.precio_por_km, c.monto_minimo_global,
-           r.lat, r.lng, r.costo_envio_minimo
+    SELECT c.tarifa_delivery_metodo, r.lat, r.lng
     FROM configuracion_sistema c CROSS JOIN restaurantes r
     WHERE c.id = 1 AND r.id = ${restaurantId} LIMIT 1
   ` as any[]
@@ -39,7 +39,17 @@ export async function calculateLocalShipping(restaurantId: string, clientLat: nu
       }
     } catch { /* Use the same Haversine fallback as web-clientes. */ }
   }
-  const bruto = Number(config.tarifa_base) + Number(config.precio_por_km) * km
-  const minimo = config.costo_envio_minimo == null ? Number(config.monto_minimo_global || 0) : Number(config.costo_envio_minimo)
-  return { costo: Math.ceil(Math.max(bruto, minimo) * 2) / 2, distancia_km: km, duracion_min: duration, fuente: source }
+  const tabla = config.tarifa_delivery_metodo as DeliveryPriceTable
+  const routeAvailable = source === 'cache' || source === 'openroute'
+  const withinLimit = km <= MAX_DELIVERY_DISTANCE_KM
+  const permitido = routeAvailable && withinLimit
+  const razon = !routeAvailable ? 'RUTA_NO_DISPONIBLE' : !withinLimit ? 'SUPERA_DISTANCIA_MAXIMA' : null
+  return {
+    costo: permitido ? deliveryPriceForDistance(km, tabla) : null,
+    distancia_km: km,
+    duracion_min: duration,
+    fuente: source,
+    permitido,
+    razon,
+  }
 }

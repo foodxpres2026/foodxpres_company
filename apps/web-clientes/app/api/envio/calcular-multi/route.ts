@@ -31,6 +31,8 @@ export async function POST(req: NextRequest) {
           costo: r?.costo ?? null,
           distancia_km: r?.distancia_km ?? null,
           duracion_min: r?.duracion_min ?? null,
+          permitido: r?.permitido ?? false,
+          razon: r?.razon ?? null,
         }
       })
     )
