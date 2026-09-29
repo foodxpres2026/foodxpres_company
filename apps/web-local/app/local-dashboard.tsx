@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { LocalUser } from '@/lib/auth'
 import AutopedidosPanel from './autopedidos-panel'
+import PushNotifications from './push-notifications'
 
 type Section = 'pending' | 'preparing' | 'ready' | 'history'
 type OrderItem = { id: string; nombre_snapshot: string; cantidad: number; subtotal: number | string; notas: string | null }
@@ -131,6 +132,7 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
       </aside>
       {drawer && <button className="local-backdrop" onClick={() => setDrawer(false)} aria-label="Cerrar menú"/>}
       <section className="local-content">
+        <PushNotifications />
         {autoMode ? <><div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>Autopedidos</h1>{commissionBalance !== null && <p className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</p>}</div><button className="local-refresh" onClick={() => void loadCommissionBalance()}>↻ <span>Actualizar saldo</span></button></div><AutopedidosPanel onBack={() => setAutoMode(false)} onCreated={() => { void load(true); void loadCommissionBalance() }} /></> : <>
         <div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>{title}</h1><p>Gestiona los pedidos de {user.restauranteNombre}.</p>{commissionBalance !== null && <p className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</p>}</div><button className="local-refresh" onClick={() => { void load(); void loadCommissionBalance() }} disabled={loading}>↻ <span>Actualizar</span></button></div>
         <div className="local-mobile-tabs">{sections.map((tab) => <button key={tab.id} onClick={() => setSection(tab.id)} className={section === tab.id ? 'active' : ''}>{tab.label}<span>{counts[tab.id]}</span></button>)}</div>

@@ -12,94 +12,59 @@ interface EnviarParams {
   data?: Record<string, string>
 }
 
-// ============================================================
-// ENVIAR NOTIFICACIÓN PUSH A UN USUARIO
-// ============================================================
-export async function enviarNotificacion({
-  usuarioId,
-  titulo,
-  mensaje,
-  url = '/mis-pedidos',
-  tag = 'foodxpres',
-  icono = '/logo-mark.png',
-  data = {},
-}: EnviarParams): Promise<{ enviados: number; fallidos: number }> {
+export async function enviarNotificacion(params: EnviarParams) {
+  return enviarNotificacionAUsuarios([params.usuarioId], params)
+}
+
+export async function enviarNotificacionAUsuarios(
+  usuarioIds: string[],
+  { titulo, mensaje, url = '/', tag = 'foodxpres', icono = '/logo-mark.png', data = {} }: Omit<EnviarParams, 'usuarioId'>
+): Promise<{ enviados: number; fallidos: number }> {
   try {
-    // 1. Traer tokens activos del usuario
-    const tokensRows = (await sql`
-      SELECT id, token
-      FROM push_subscriptions
-      WHERE usuario_id = ${usuarioId} AND activo = TRUE
-    `) as any[]
+    const uniqueIds = [...new Set(usuarioIds.filter(Boolean))]
+    if (!uniqueIds.length) return { enviados: 0, fallidos: 0 }
+    const tokensRows = await sql`
+      SELECT token FROM push_subscriptions
+      WHERE usuario_id = ANY(${uniqueIds}::uuid[]) AND activo = TRUE
+    ` as { token: string }[]
+    const tokens = [...new Set(tokensRows.map((row) => row.token))]
+    if (!tokens.length) return { enviados: 0, fallidos: 0 }
 
-    if (tokensRows.length === 0) {
-      return { enviados: 0, fallidos: 0 }
+    const messaging = getMessaging(getFirebaseAdmin())
+    const deadTokens: string[] = []
+    let enviados = 0
+    let fallidos = 0
+
+    for (let start = 0; start < tokens.length; start += 500) {
+      const batch = tokens.slice(start, start + 500)
+      const result = await messaging.sendEachForMulticast({
+        tokens: batch,
+        notification: { title: titulo, body: mensaje },
+        webpush: {
+          notification: { title: titulo, body: mensaje, icon: icono, badge: icono, tag },
+          data: { url, tag, ...data },
+        },
+      })
+      enviados += result.successCount
+      fallidos += result.failureCount
+      result.responses.forEach((item, index) => {
+        const code = item.error?.code
+        const message = item.error?.message ?? ''
+        const invalidToken = code === 'messaging/invalid-registration-token'
+          || code === 'messaging/registration-token-not-registered'
+          || (code === 'messaging/invalid-argument' && /registration token|token.*(invalid|not valid)|not a valid.*token/i.test(message))
+        if (!item.success && invalidToken) deadTokens.push(batch[index])
+      })
     }
 
-    const tokens = tokensRows.map((t) => t.token)
-
-    // 2. Preparar mensaje
-    const app = getFirebaseAdmin()
-    const messaging = getMessaging(app)
-
-    const response = await messaging.sendEachForMulticast({
-      tokens,
-      notification: {
-        title: titulo,
-        body: mensaje,
-      },
-      webpush: {
-        notification: {
-          title: titulo,
-          body: mensaje,
-          icon: icono,
-          badge: icono,
-          tag,
-        },
-        fcmOptions: {
-          link: url,
-        },
-        data: {
-          url,
-          tag,
-          ...data,
-        },
-      },
-    })
-
-    // 3. Desactivar tokens que fallaron permanentemente
-    const tokensMuertos: string[] = []
-    response.responses.forEach((resp, idx) => {
-      if (!resp.success) {
-        const code = resp.error?.code
-        // Tokens inválidos → desactivar
-        if (
-          code === 'messaging/invalid-registration-token' ||
-          code === 'messaging/registration-token-not-registered'
-        ) {
-          tokensMuertos.push(tokens[idx])
-        }
-      }
-    })
-
-    if (tokensMuertos.length > 0) {
-      await sql`
-        UPDATE push_subscriptions
-        SET activo = FALSE, actualizado_en = NOW()
-        WHERE token = ANY(${tokensMuertos}::text[])
-      `
-    }
-
-    console.log(
-      `📬 Push enviado a ${usuarioId}: ${response.successCount} ok, ${response.failureCount} fallidos`
-    )
-
-    return {
-      enviados: response.successCount,
-      fallidos: response.failureCount,
-    }
+    if (deadTokens.length) await sql`
+      UPDATE push_subscriptions SET activo = FALSE, actualizado_en = NOW()
+      WHERE token = ANY(${deadTokens}::text[])
+    `
+    console.log(`📬 Push enviado: ${enviados} ok, ${fallidos} fallidos`)
+    return { enviados, fallidos }
   } catch (error) {
     console.error('Error enviando notificación:', error)
-    return { enviados: 0, fallidos: 0 }
+    return { enviados: 0, fallidos: usuarioIds.length }
   }
 }

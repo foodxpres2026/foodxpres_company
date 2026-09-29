@@ -246,3 +246,10 @@ button, input { font: inherit; }
   .local-primary-button, .local-reject-button { flex: 1; padding-inline: 9px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+.push-notifications { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; padding: 13px 15px; background: #111811; border: 1px solid #2b4721; border-radius: 12px; color: #dcebd4; font-size: 13px; }
+.push-notifications-copy { flex: 1; min-width: 0; }
+.push-notifications-copy strong { font-weight: 600; }
+.push-notifications-copy p { margin: 4px 0 0; color: #b6e59a; }
+.push-notifications button { border: 0; border-radius: 8px; padding: 9px 14px; background: var(--green); color: #111; font-weight: 700; cursor: pointer; }
+.push-notifications button:disabled { opacity: .65; cursor: wait; }
+@media(max-width:600px) { .push-notifications { align-items: flex-start; gap: 9px; padding: 11px; font-size: 12px; } .push-notifications button { padding: 8px 10px; } }

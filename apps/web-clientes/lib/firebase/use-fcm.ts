@@ -42,7 +42,9 @@ export function useFCM(habilitado: boolean) {
       setEstado('solicitando')
 
       // Pedir permiso
-      const permiso = await Notification.requestPermission()
+      const permiso = Notification.permission === 'granted'
+        ? 'granted'
+        : await Notification.requestPermission()
       if (permiso !== 'granted') {
         setEstado('denegado')
         return
@@ -89,6 +91,15 @@ export function useFCM(habilitado: boolean) {
       setEstado('error')
     }
   }, [habilitado])
+
+  // Firebase's old-project tokens cannot receive messages from the new project.
+  // When permission was already granted, getToken() creates/refreshes the new
+  // project's token and the API upserts it for the current signed-in account.
+  useEffect(() => {
+    if (habilitado && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      void activar()
+    }
+  }, [activar, habilitado])
 
   return { estado, token, activar }
 }

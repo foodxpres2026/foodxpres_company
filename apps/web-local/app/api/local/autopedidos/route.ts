@@ -1,6 +1,7 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { getLocalSession } from '@/lib/auth'
+import { notifyInternalPush } from '@/lib/push/internal'
 import { getSql } from '@/lib/db'
 import { calculateLocalShipping } from '@/lib/autopedido'
 
@@ -128,6 +129,7 @@ export async function POST(req: Request) {
       for (const choice of item.opciones) queries.push(sql`INSERT INTO item_opciones (item_id, grupo_titulo_snapshot, choice_nombre_snapshot, precio_extra) VALUES (${itemId}, ${choice.grupo_titulo}, ${choice.choice_nombre}, ${choice.precio_extra})`)
     }
     await sql.transaction(queries)
+    await notifyInternalPush('AUTOPEDIDO', subId)
     return Response.json({ ok: true, data: { id: orderId, codigo: code, total, costo_envio: shipping.costo, distancia_km: shipping.distancia_km } }, { status: 201 })
   } catch (error) { console.error('POST local/autopedidos error:', error); return Response.json({ ok: false, error: error instanceof Error ? error.message : 'No se pudo crear el autopedido.' }, { status: 500 }) }
 }

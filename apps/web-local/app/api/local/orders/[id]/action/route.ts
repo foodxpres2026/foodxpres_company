@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { getLocalSession } from '@/lib/auth'
 import { getSql } from '@/lib/db'
+import { notifyInternalPush } from '@/lib/push/internal'
 
 const schema = z.discriminatedUnion('accion', [
   z.object({ accion: z.literal('ACEPTAR'), tiempo_estimado: z.coerce.number().int().min(1).max(180) }),
@@ -47,6 +48,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
     if (!updated.length) return Response.json({ ok: false, error: 'El pedido ya cambió de estado o no pertenece a tu local.' }, { status: 409 })
     await sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${id}, ${state}, ${staff.id}, ${note})`
+    const pushEvent = accion === 'ACEPTAR' ? 'LOCAL_ACCEPTED' : accion === 'RECHAZAR' ? 'LOCAL_REJECTED' : 'LOCAL_READY'
+    await notifyInternalPush(pushEvent, id, accion === 'RECHAZAR' ? parsed.data.motivo || undefined : undefined)
     return Response.json({ ok: true })
   } catch (error) {
     console.error('PATCH local/orders/action error:', error)

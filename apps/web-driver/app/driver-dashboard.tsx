@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DriverUser } from '@/lib/auth'
+import PushNotifications from './push-notifications'
 
 type Section = 'available' | 'current' | 'history'
 type Item = { id: string; nombre_snapshot: string; cantidad: number; subtotal: number; notas: string | null }
@@ -125,6 +126,7 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
       {drawer && <button className="drawer-backdrop" aria-label="Cerrar menú" onClick={() => setDrawer(false)} />}
 
       <section className="driver-content">
+        <PushNotifications />
         <div className="content-heading"><div><p className="eyebrow">PANEL DEL REPARTIDOR</p><h1>{heading}</h1><p className="subtitle">{section === 'available' ? 'Pedidos activos sin driver asignado. También puedes reservarlos mientras el local los prepara.' : section === 'current' ? 'Sigue los pasos del pedido hasta completar la entrega.' : 'Tus pedidos finalizados y su recorrido.'}</p></div>
           <div className="heading-actions">{section === 'available' && <button className={`availability ${disponible ? 'on' : 'off'}`} onClick={toggleAvailability} disabled={disponible === null || availabilityBusy}><i />{availabilityBusy ? 'Guardando...' : disponible ? 'Disponible · Desconectar' : 'Desconectado · Conectar'}</button>}<button className="refresh-button" onClick={() => void load(section)} disabled={loading}>↻ <span>Actualizar</span></button></div>
         </div>

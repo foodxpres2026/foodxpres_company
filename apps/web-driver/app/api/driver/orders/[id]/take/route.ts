@@ -1,5 +1,6 @@
 import { getDriverSession } from '@/lib/auth'
 import { getSql } from '@/lib/db'
+import { notifyInternalPush } from '@/lib/push/internal'
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const driver = await getDriverSession()
@@ -12,6 +13,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     const updated = await sql`SELECT tomar_pedido_driver(${id}::uuid, ${driver.id}::uuid, FALSE) AS estado` as { estado: string }[]
     if (!updated.length) return Response.json({ ok: false, error: 'No se pudo reservar el pedido.' }, { status: 409 })
     await sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${id}, ${updated[0].estado}, ${driver.id}, 'Pedido reservado por el driver')`
+    await notifyInternalPush('DRIVER_TAKEN', id)
     return Response.json({ ok: true })
   } catch (error) {
     console.error('POST driver/orders/take error:', error)

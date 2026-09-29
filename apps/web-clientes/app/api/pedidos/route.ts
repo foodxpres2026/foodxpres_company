@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
 import { calcularEnvio } from '@/lib/envio/calcular'
+import { notifyInternalPush } from '@/lib/push/internal'
 
 // ============================================
 // SCHEMAS
@@ -384,8 +385,10 @@ export async function POST(req: NextRequest) {
       lng: Number(dir.lng),
     }
 
+    const createdSubOrderIds: string[] = []
     for (const g of gruposCalculados) {
       const spId = randomUUID()
+      createdSubOrderIds.push(spId)
       transactionQueries.push(sql`
         INSERT INTO sub_pedidos (
           id, pedido_id, restaurante_id, estado, subtotal, costo_envio,
@@ -441,6 +444,7 @@ export async function POST(req: NextRequest) {
     }
 
     await sql.transaction(transactionQueries)
+    await Promise.all(createdSubOrderIds.map((subOrderId) => notifyInternalPush('NEW_ORDER', subOrderId)))
 
     return Response.json(
       {

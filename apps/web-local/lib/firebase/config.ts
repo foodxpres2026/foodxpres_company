@@ -1,4 +1,4 @@
-import { initializeApp, getApps, getApp } from 'firebase/app'
+import { getApp, getApps, initializeApp } from 'firebase/app'
 
 export const firebaseConfig = {
   apiKey: 'AIzaSyCDoKTAyCJ_J1d-7DGFyNMca7-hdlUncoA',
@@ -6,11 +6,12 @@ export const firebaseConfig = {
   projectId: 'foodxpres2026-c3168',
   storageBucket: 'foodxpres2026-c3168.firebasestorage.app',
   messagingSenderId: '117612694174',
-  appId: '1:117612694174:web:740ead9bb830526231498f',
-  measurementId: 'G-HE9XTQVC6R',
+  appId: '1:117612694174:web:d0a4f5e8381662f731498f',
+  measurementId: 'G-ZXS34PDJXT',
 }
 
-// Evitar inicialización múltiple
-export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
+export const app = getApps().some((item) => item.name === 'foodxpres-local')
+  ? getApp('foodxpres-local')
+  : initializeApp(firebaseConfig, 'foodxpres-local')
 
 export const vapidKey = 'BCnpWPWPfMaNf0XuWVDQ-BQz-JfNkCOWAJp_Nlmt5zXGzzSHXgtrUUNNBsmV3kf7BBk6GaWPKhRgnevldZAr7SY'

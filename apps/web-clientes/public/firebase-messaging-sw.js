@@ -3,21 +3,24 @@
 // Este archivo DEBE estar en /public/ con nombre exacto
 // ============================================================
 
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js')
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js')
+importScripts('https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js')
+importScripts('https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-compat.js')
 
 // Configuración (mismos valores que en .env.local)
 // ⚠️ NO se pueden usar variables de entorno aquí, hay que hardcodear
 firebase.initializeApp({
-  apiKey: 'AIzaSyBD0BZ8K834Uhq4cEwxFTftc2dHL-TqMpw',
-  authDomain: 'foodxpresrvrddev.firebaseapp.com',
-  projectId: 'foodxpresrvrddev',
-  storageBucket: 'foodxpresrvrddev.firebasestorage.app',
-  messagingSenderId: '39840031435',
-  appId: '1:39840031435:web:f29dd6e53081f66cdcf14e',
+  apiKey: 'AIzaSyCDoKTAyCJ_J1d-7DGFyNMca7-hdlUncoA',
+  authDomain: 'foodxpres2026-c3168.firebaseapp.com',
+  projectId: 'foodxpres2026-c3168',
+  storageBucket: 'foodxpres2026-c3168.firebasestorage.app',
+  messagingSenderId: '117612694174',
+  appId: '1:117612694174:web:740ead9bb830526231498f',
 })
 
 const messaging = firebase.messaging()
+// Aplica la nueva configuración en instalaciones PWA ya existentes.
+self.addEventListener('install', (event) => event.waitUntil(self.skipWaiting()))
+self.addEventListener('activate', (event) => event.waitUntil(clients.claim()))
 
 // Manejar notificaciones en background
 messaging.onBackgroundMessage((payload) => {
@@ -39,7 +42,7 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
-  const urlToOpen = event.notification.data?.url || '/'
+  const urlToOpen = new URL(event.notification.data?.url || '/', self.location.origin).href
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {

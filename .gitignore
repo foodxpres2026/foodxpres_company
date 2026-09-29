@@ -51,3 +51,7 @@ Thumbs.db
 # ============================================
 .flutter-plugins
 .dart_tool/
+
+# Firebase service-account credentials
+/backend/serviceAccountKey.json
+**/serviceAccountKey*.json

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { getDriverSession } from '@/lib/auth'
 import { getSql } from '@/lib/db'
+import { notifyInternalPush } from '@/lib/push/internal'
 
 const schema = z.object({ accion: z.enum(['LLEGUE', 'RECOGI', 'ENTREGUE']) })
 
@@ -50,6 +51,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
     if (!updated.length) return Response.json({ ok: false, error: 'La acción no corresponde al estado actual del pedido.' }, { status: 409 })
     if (!historyWritten) await sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${id}, ${state}, ${driver.id}, ${accion})`
+    if (accion === 'RECOGI') await notifyInternalPush('DRIVER_ON_THE_WAY', id)
+    if (accion === 'ENTREGUE') await notifyInternalPush('DRIVER_ARRIVED', id)
     if (accion === 'ENTREGUE') await sql`
       UPDATE driver_detalles SET disponible = TRUE, actualizado_en = NOW() WHERE usuario_id = ${driver.id}
         AND NOT EXISTS (SELECT 1 FROM sub_pedidos WHERE driver_id = ${driver.id}
