@@ -15,8 +15,8 @@ export interface SessionUser {
   nombre: string
 }
 
-type SessionPayload = { user: SessionUser; exp: number; version: number }
-type AuthRow = { role: SessionUser['role']; activo: boolean; auth_version: string | number }
+type SessionPayload = { user: SessionUser; exp: number; version: string }
+type AuthRow = { role: SessionUser['role']; activo: boolean; password_hash: string | null }
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10)
@@ -38,6 +38,10 @@ function sign(payload: string): string {
   return createHmac('sha256', secret()).update(`${SESSION_AUDIENCE}\0${payload}`).digest('hex')
 }
 
+function sessionVersion(passwordHash: string): string {
+  return createHmac('sha256', secret()).update(`${SESSION_AUDIENCE}\0password\0${passwordHash}`).digest('hex')
+}
+
 function encodeSession(payload: SessionPayload): string {
   const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url')
   return `${encoded}.${sign(encoded)}`
@@ -51,7 +55,7 @@ function decodeSession(token: string): SessionPayload | null {
     const actual = Buffer.from(signature, 'hex')
     if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) return null
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as SessionPayload
-    if (!data.user?.id || data.user.role !== 'ADMIN' || !Number.isFinite(data.exp) || data.exp <= Date.now() || !Number.isFinite(data.version)) return null
+    if (!data.user?.id || data.user.role !== 'ADMIN' || !Number.isFinite(data.exp) || data.exp <= Date.now() || !/^[a-f0-9]{64}$/.test(data.version)) return null
     return data
   } catch {
     return null
@@ -60,11 +64,11 @@ function decodeSession(token: string): SessionPayload | null {
 
 export async function setSessionCookie(user: SessionUser) {
   const rows = (await sql`
-    SELECT FLOOR(EXTRACT(EPOCH FROM actualizado_en) * 1000)::bigint AS auth_version
+    SELECT password_hash
     FROM usuarios WHERE id = ${user.id} AND role = 'ADMIN' AND activo = TRUE LIMIT 1
-  `) as { auth_version: string | number }[]
-  if (!rows[0]) throw new Error('No se pudo crear la sesión')
-  const token = encodeSession({ user, exp: Date.now() + SESSION_MAX_AGE * 1000, version: Number(rows[0].auth_version) })
+  `) as { password_hash: string | null }[]
+  if (!rows[0]?.password_hash) throw new Error('No se pudo crear la sesión')
+  const token = encodeSession({ user, exp: Date.now() + SESSION_MAX_AGE * 1000, version: sessionVersion(rows[0].password_hash) })
   const cookieStore = await cookies()
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
@@ -77,11 +81,6 @@ export async function setSessionCookie(user: SessionUser) {
 
 export async function clearSessionCookie() {
   const cookieStore = await cookies()
-  const token = cookieStore.get(COOKIE_NAME)?.value
-  const session = token ? decodeSession(token) : null
-  if (session) {
-    await sql`UPDATE usuarios SET actualizado_en = GREATEST(NOW(), actualizado_en + INTERVAL '1 millisecond') WHERE id = ${session.user.id} AND role = 'ADMIN'`
-  }
   cookieStore.delete(COOKIE_NAME)
 }
 
@@ -91,11 +90,11 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const session = token ? decodeSession(token) : null
   if (!session) return null
   const rows = (await sql`
-    SELECT role, activo, FLOOR(EXTRACT(EPOCH FROM actualizado_en) * 1000)::bigint AS auth_version
+    SELECT role, activo, password_hash
     FROM usuarios WHERE id = ${session.user.id} LIMIT 1
   `) as AuthRow[]
   const account = rows[0]
-  if (!account || account.role !== 'ADMIN' || !account.activo || Number(account.auth_version) !== session.version) return null
+  if (!account || account.role !== 'ADMIN' || !account.activo || !account.password_hash || sessionVersion(account.password_hash) !== session.version) return null
   return session.user
 }
 
