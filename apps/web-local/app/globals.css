@@ -29,7 +29,8 @@ button, input { font: inherit; }
 .local-shell { min-height: 100svh; background: #0a0a0a; }
 .local-topbar { position: sticky; z-index: 20; top: 0; display: flex; align-items: center; gap: 17px; height: 66px; padding: 0 28px; background: #111; border-bottom: 1px solid #262626; }
 .local-brand { display: flex; align-items: center; gap: 9px; color: #f3f5f1; font-size: 16px; font-weight: 800; text-decoration: none; }
-.local-brand img { width: 34px; height: 34px; object-fit: contain; }
+.local-brand-mark { display: inline-flex; width: 34px; height: 34px; flex: 0 0 34px; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--green); border-radius: 50%; background: #0a0a0a; }
+.local-brand-mark img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .local-brand > span > span { color: var(--green); }
 .local-brand small { display: block; margin-top: 1px; color: #7b8791; font-size: 9px; letter-spacing: 1.6px; }
 .local-menu-button { display: none; color: #eef1ec; background: none; border: 0; font-size: 22px; cursor: pointer; }
@@ -214,7 +215,7 @@ button, input { font: inherit; }
 @media (max-width: 600px) {
   .local-topbar { gap: 11px; padding: 0 12px; }
   .local-brand { gap: 7px; font-size: 14px; }
-  .local-brand img { width: 29px; height: 29px; }
+  .local-brand-mark { width: 29px; height: 29px; flex-basis: 29px; }
   .local-top-profile { gap: 7px; font-size: 10px; }
   .local-top-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .local-top-profile button { padding: 7px 9px; font-size: 10px; }

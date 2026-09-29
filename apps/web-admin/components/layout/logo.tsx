@@ -15,13 +15,15 @@ export default function Logo({
 }: LogoProps) {
   const contenido = (
     <div className={`flex items-center gap-2 ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={conTexto ? '/logo.png' : '/logo-mark.png'}
-        alt="FoodXpres"
-        style={conTexto ? { width: size * 2.2, height: size * 1.5 } : { width: size, height: size }}
-        className="object-contain flex-shrink-0"
-      />
+      {conTexto ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src="/logo.png" alt="FoodXpres" style={{ width: size * 2.2, height: size * 1.5 }} className="object-contain flex-shrink-0" />
+      ) : (
+        <span className="foodxpres-logo-mark" style={{ width: size, height: size }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-mark.png" alt="FoodXpres" />
+        </span>
+      )}
     </div>
   )
 

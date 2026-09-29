@@ -94,7 +94,7 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
   return <main className="local-shell">
     <header className="local-topbar">
       <button className="local-menu-button" onClick={() => setDrawer(true)} aria-label="Abrir menú">☰</button>
-      <a className="local-brand" href="/" aria-label="FoodXpres Local"><img src="/logo-mark.png" alt=""/><span>Food<span>X</span>pres <small>LOCAL</small></span></a>
+      <a className="local-brand" href="/" aria-label="FoodXpres Local"><span className="local-brand-mark"><img src="/logo-mark.png" alt=""/></span><span>Food<span>X</span>pres <small>LOCAL</small></span></a>
       <div className="local-top-profile"><span className="local-online-dot"/><span className="local-top-name">{user.restauranteNombre}</span><button onClick={logout} disabled={busy === 'logout'}>Salir</button></div>
     </header>
     <div className="local-layout">

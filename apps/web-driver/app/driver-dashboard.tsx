@@ -106,7 +106,7 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
   return <main className="driver-shell">
     <header className="driver-topbar">
       <button className="menu-button" aria-label="Abrir menú" onClick={() => setDrawer(true)}>☰</button>
-      <a className="brand" href="/" aria-label="FoodXpres Driver"><img src="/logo-mark.png" alt="" /><span>Food<span className="brand-accent">X</span>pres <small>DRIVER</small></span></a>
+      <a className="brand" href="/" aria-label="FoodXpres Driver"><span className="brand-mark"><img src="/logo-mark.png" alt="" /></span><span>Food<span className="brand-accent">X</span>pres <small>DRIVER</small></span></a>
       <div className="top-user"><span className="online-dot" />{user.nombre.split(' ')[0]}<button className="logout-link" onClick={logout} disabled={busy === 'logout'}>Salir</button></div>
     </header>
 
