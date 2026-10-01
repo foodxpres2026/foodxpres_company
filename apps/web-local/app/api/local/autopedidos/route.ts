@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     }
     const vipRows = await sql`SELECT costo_vip FROM configuracion_sistema WHERE id = 1 LIMIT 1` as any[]
     const [localRules, driverRules] = await Promise.all([
-      sql`SELECT id, modalidad, valor FROM comision_reglas WHERE beneficiario_tipo = 'LOCAL'
+      sql`SELECT id, modalidad, valor FROM comision_reglas WHERE beneficiario_tipo = 'LOCAL' AND tipo_pedido = 'AUTOPEDIDO'
           AND restaurante_id = ${staff.restauranteId} ORDER BY creado_en DESC, id DESC LIMIT 1` as Promise<any[]>,
       sql`SELECT id, valor FROM comision_reglas WHERE beneficiario_tipo = 'DRIVER'
           ORDER BY creado_en DESC, id DESC LIMIT 1` as Promise<any[]>,
@@ -120,7 +120,7 @@ export async function POST(req: Request) {
     const queries: any[] = [
       // Use existing schema only; the order snapshot marks this as a local self-order.
       sql`INSERT INTO pedidos (id, codigo, usuario_id, subtotal, total_envio, vip, costo_vip, total, notas, estado_global) VALUES (${orderId}, ${code}, ${staff.id}, ${subtotal}, ${shippingCents / 100}, ${data.vip}, ${vipCents / 100}, ${total}, ${data.notas || null}, 'PENDIENTE')`,
-      sql`INSERT INTO sub_pedidos (id, pedido_id, restaurante_id, estado, subtotal, costo_envio, distancia_km, tiempo_estimado, direccion_snapshot, notas, local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto, driver_comision_regla_id, driver_comision_valor, driver_comision_monto) VALUES (${subId}, ${orderId}, ${staff.restauranteId}, 'PENDIENTE', ${subtotal}, ${shippingCents / 100}, ${shipping.distancia_km}, ${shipping.duracion_min}, ${JSON.stringify({ etiqueta: 'Autopedido', direccion: data.direccion, referencia: data.referencia || null, lat: data.lat, lng: data.lng })}::jsonb, ${data.notas || null}, ${localRule?.id ?? null}, ${localRule?.modalidad ?? 'FIJA'}, ${Number(localRule?.valor ?? 0)}, ${localCommission}, ${driverRule?.id ?? null}, ${Number(driverRule?.valor ?? 0)}, ${driverCommission})`,
+      sql`INSERT INTO sub_pedidos (id, pedido_id, restaurante_id, tipo_pedido, estado, subtotal, costo_envio, distancia_km, tiempo_estimado, direccion_snapshot, notas, local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto, driver_comision_regla_id, driver_comision_valor, driver_comision_monto) VALUES (${subId}, ${orderId}, ${staff.restauranteId}, 'AUTOPEDIDO', 'PENDIENTE', ${subtotal}, ${shippingCents / 100}, ${shipping.distancia_km}, ${shipping.duracion_min}, ${JSON.stringify({ etiqueta: 'Autopedido', direccion: data.direccion, referencia: data.referencia || null, lat: data.lat, lng: data.lng })}::jsonb, ${data.notas || null}, ${localRule?.id ?? null}, ${localRule?.modalidad ?? 'FIJA'}, ${Number(localRule?.valor ?? 0)}, ${localCommission}, ${driverRule?.id ?? null}, ${Number(driverRule?.valor ?? 0)}, ${driverCommission})`,
       sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${subId}, 'PENDIENTE', ${staff.id}, 'Autopedido registrado por el local')`,
     ]
     for (const item of normalized) {
