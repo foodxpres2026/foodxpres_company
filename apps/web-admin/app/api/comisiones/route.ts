@@ -6,6 +6,7 @@ import { getSessionUser } from '@/lib/auth'
 const ruleSchema = z.object({
   beneficiario_tipo: z.enum(['LOCAL', 'DRIVER']),
   restaurante_id: z.string().uuid().nullable().optional(),
+  tipo_pedido: z.enum(['NORMAL', 'AUTOPEDIDO']).optional(),
   modalidad: z.enum(['FIJA', 'PORCENTAJE']),
   valor: z.coerce.number().finite().min(0).max(100000),
 })
@@ -18,8 +19,11 @@ export async function GET() {
       sql`
         SELECT r.id, r.nombre,
           (SELECT json_build_object('id', cr.id, 'modalidad', cr.modalidad, 'valor', cr.valor, 'creado_en', cr.creado_en)
-           FROM comision_reglas cr WHERE cr.beneficiario_tipo = 'LOCAL' AND cr.restaurante_id = r.id
+           FROM comision_reglas cr WHERE cr.beneficiario_tipo = 'LOCAL' AND cr.restaurante_id = r.id AND cr.tipo_pedido = 'NORMAL'
            ORDER BY cr.creado_en DESC LIMIT 1) AS regla,
+          (SELECT json_build_object('id', cr.id, 'modalidad', cr.modalidad, 'valor', cr.valor, 'creado_en', cr.creado_en)
+           FROM comision_reglas cr WHERE cr.beneficiario_tipo = 'LOCAL' AND cr.restaurante_id = r.id AND cr.tipo_pedido = 'AUTOPEDIDO'
+           ORDER BY cr.creado_en DESC LIMIT 1) AS regla_autopedido,
           COALESCE((SELECT SUM(cg.monto) FROM comisiones_generadas cg WHERE cg.beneficiario_tipo = 'LOCAL' AND cg.beneficiario_id = r.id), 0)
           - COALESCE((SELECT SUM(cp.monto) FROM comision_pagos cp WHERE cp.beneficiario_tipo = 'LOCAL' AND cp.beneficiario_id = r.id), 0) AS saldo
         FROM restaurantes r ORDER BY r.nombre
@@ -36,7 +40,7 @@ export async function GET() {
       `,
       sql`
         SELECT cr.id, cr.restaurante_id, r.nombre AS restaurante_nombre,
-               cr.modalidad, cr.valor, cr.creado_en
+               cr.tipo_pedido, cr.modalidad, cr.valor, cr.creado_en
         FROM comision_reglas cr INNER JOIN restaurantes r ON r.id = cr.restaurante_id
         WHERE cr.beneficiario_tipo = 'LOCAL'
         ORDER BY cr.creado_en DESC LIMIT 100
@@ -45,6 +49,7 @@ export async function GET() {
         SELECT cg.id, cg.beneficiario_tipo, cg.beneficiario_id, cg.base,
                cg.modalidad, cg.valor_regla, cg.monto, cg.creado_en,
                p.codigo AS pedido_codigo,
+               sp.tipo_pedido,
                CASE WHEN cg.beneficiario_tipo = 'LOCAL' THEN r.nombre ELSE d.nombre END AS beneficiario_nombre
         FROM comisiones_generadas cg
         INNER JOIN sub_pedidos sp ON sp.id = cg.sub_pedido_id
@@ -57,7 +62,7 @@ export async function GET() {
     return Response.json({ ok: true, data: { restaurants, drivers, driverRules: rules, localRules, charges } }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('GET comisiones error:', error)
-    return Response.json({ ok: false, error: 'No se pudieron cargar las comisiones. Aplica primero la migración 003.' }, { status: 500 })
+    return Response.json({ ok: false, error: 'No se pudieron cargar las comisiones. Revisa que estén aplicadas las migraciones 003 y 006.' }, { status: 500 })
   }
 }
 
@@ -67,20 +72,20 @@ export async function POST(request: NextRequest) {
   const parsed = ruleSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) return Response.json({ ok: false, error: 'Regla inválida' }, { status: 400 })
   const rule = parsed.data
-  if ((rule.beneficiario_tipo === 'DRIVER' && (rule.modalidad !== 'PORCENTAJE' || rule.restaurante_id)) ||
+  if ((rule.beneficiario_tipo === 'DRIVER' && (rule.modalidad !== 'PORCENTAJE' || rule.restaurante_id || rule.tipo_pedido === 'AUTOPEDIDO')) ||
       (rule.beneficiario_tipo === 'LOCAL' && !rule.restaurante_id) ||
       (rule.modalidad === 'PORCENTAJE' && rule.valor > 100)) {
     return Response.json({ ok: false, error: 'La modalidad o el valor no corresponde al beneficiario.' }, { status: 400 })
   }
   try {
     const rows = await sql`
-      INSERT INTO comision_reglas (beneficiario_tipo, restaurante_id, modalidad, valor, creado_por)
-      VALUES (${rule.beneficiario_tipo}, ${rule.restaurante_id ?? null}, ${rule.modalidad}, ${rule.valor}, ${user.id})
-      RETURNING id, beneficiario_tipo, restaurante_id, modalidad, valor, creado_en
+      INSERT INTO comision_reglas (beneficiario_tipo, restaurante_id, tipo_pedido, modalidad, valor, creado_por)
+      VALUES (${rule.beneficiario_tipo}, ${rule.restaurante_id ?? null}, ${rule.beneficiario_tipo === 'LOCAL' ? (rule.tipo_pedido ?? 'NORMAL') : 'NORMAL'}, ${rule.modalidad}, ${rule.valor}, ${user.id})
+      RETURNING id, beneficiario_tipo, restaurante_id, tipo_pedido, modalidad, valor, creado_en
     `
     return Response.json({ ok: true, data: rows[0] }, { status: 201 })
   } catch (error) {
     console.error('POST comisiones error:', error)
-    return Response.json({ ok: false, error: 'No se pudo guardar la regla. Aplica primero la migración 003.' }, { status: 500 })
+    return Response.json({ ok: false, error: 'No se pudo guardar la regla. Revisa que estén aplicadas las migraciones 003 y 006.' }, { status: 500 })
   }
 }

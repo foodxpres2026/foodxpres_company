@@ -12,6 +12,7 @@ import {
 } from '@/hooks/use-direccion-actual'
 import DireccionModalWrapper from '@/components/direcciones/direccion-modal-wrapper'
 import DireccionesSelector from '@/components/direcciones/direcciones-selector'
+import { ABRIR_DIRECCION_EVENT } from '@/lib/direccion-events'
 
 interface HeaderProps {
   user: {
@@ -35,6 +36,12 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    const abrirDesdeOtraSeccion = () => abrirDireccion()
+    window.addEventListener(ABRIR_DIRECCION_EVENT, abrirDesdeOtraSeccion)
+    return () => window.removeEventListener(ABRIR_DIRECCION_EVENT, abrirDesdeOtraSeccion)
+  }, [user])
 
   useEffect(() => {
     if (busquedaAbierta) {

@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
 type Rule = { id: string; modalidad: 'FIJA' | 'PORCENTAJE'; valor: number | string; creado_en: string }
-type Local = { id: string; nombre: string; regla: Rule | null; saldo: string | number }
+type Local = { id: string; nombre: string; regla: Rule | null; regla_autopedido: Rule | null; saldo: string | number }
 type Driver = { id: string; nombre: string; celular: string; saldo: string | number }
-type Data = { restaurants: Local[]; drivers: Driver[]; driverRules: Rule[]; localRules: (Rule & { restaurante_id: string; restaurante_nombre: string })[]; charges: any[] }
+type Data = { restaurants: Local[]; drivers: Driver[]; driverRules: Rule[]; localRules: (Rule & { restaurante_id: string; restaurante_nombre: string; tipo_pedido: 'NORMAL' | 'AUTOPEDIDO' })[]; charges: any[] }
 type Beneficiary = { tipo: 'LOCAL' | 'DRIVER'; id: string; nombre: string; saldo: number }
 const money = (value: number | string) => `S/ ${Number(value).toFixed(2)}`
 const date = (value: string) => new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))
@@ -15,6 +15,8 @@ export default function ComisionesClient() {
   const [localId, setLocalId] = useState('')
   const [mode, setMode] = useState<'FIJA' | 'PORCENTAJE'>('FIJA')
   const [value, setValue] = useState('0.50')
+  const [autoMode, setAutoMode] = useState<'FIJA' | 'PORCENTAJE'>('FIJA')
+  const [autoValue, setAutoValue] = useState('0.50')
   const [driverValue, setDriverValue] = useState('10')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
@@ -34,9 +36,10 @@ export default function ComisionesClient() {
       setData(next)
       setDriverValue(String(Number(next.driverRules[0]?.valor ?? 0)))
       if (!localId && next.restaurants.length) {
-        setLocalId(next.restaurants[0].id)
-        const current = next.restaurants[0].regla
-        if (current) { setMode(current.modalidad); setValue(String(Number(current.valor))) }
+        const local = next.restaurants[0]
+        setLocalId(local.id)
+        if (local.regla) { setMode(local.regla.modalidad); setValue(String(Number(local.regla.valor))) }
+        if (local.regla_autopedido) { setAutoMode(local.regla_autopedido.modalidad); setAutoValue(String(Number(local.regla_autopedido.valor))) }
       }
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Error de conexión') }
   }, [localId])
@@ -44,10 +47,11 @@ export default function ComisionesClient() {
   useEffect(() => { void load() }, [load])
   const selectedLocal = data?.restaurants.find((local) => local.id === localId)
 
-  async function saveRule(tipo: 'LOCAL' | 'DRIVER') {
+  async function saveRule(tipo: 'LOCAL' | 'DRIVER', tipoPedido: 'NORMAL' | 'AUTOPEDIDO' = 'NORMAL') {
     setBusy(true); setMessage(''); setError('')
     try {
-      const response = await fetch('/api/comisiones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ beneficiario_tipo: tipo, restaurante_id: tipo === 'LOCAL' ? localId : null, modalidad: tipo === 'DRIVER' ? 'PORCENTAJE' : mode, valor: Number(tipo === 'DRIVER' ? driverValue : value) }) })
+      const isAuto = tipoPedido === 'AUTOPEDIDO'
+      const response = await fetch('/api/comisiones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ beneficiario_tipo: tipo, restaurante_id: tipo === 'LOCAL' ? localId : null, tipo_pedido: tipo === 'LOCAL' ? tipoPedido : 'NORMAL', modalidad: tipo === 'DRIVER' ? 'PORCENTAJE' : isAuto ? autoMode : mode, valor: Number(tipo === 'DRIVER' ? driverValue : isAuto ? autoValue : value) }) })
       const result = await response.json()
       if (!response.ok || !result.ok) throw new Error(result.error || 'No se pudo guardar')
       setMessage('Nueva regla guardada. Se aplicará a los pedidos creados desde ahora.')
@@ -93,19 +97,29 @@ export default function ComisionesClient() {
 
       <section className="rounded-2xl border border-line bg-surface p-5 space-y-3">
         <div><h2 className="font-bold text-white">Últimas comisiones generadas</h2><p className="mt-1 text-xs text-gray-500">Cada fila conserva la modalidad, tasa/base y monto del pedido en que se generó.</p></div>
-        {data.charges.length ? <div className="overflow-x-auto"><table className="w-full min-w-[650px] text-left text-xs"><thead className="text-gray-500"><tr><th className="py-2">Pedido</th><th>Beneficiario</th><th>Base</th><th>Regla guardada</th><th>Monto</th><th>Fecha</th></tr></thead><tbody>{data.charges.map((charge) => <tr key={charge.id} className="border-t border-line text-gray-300"><td className="py-2">{charge.pedido_codigo}</td><td>{charge.beneficiario_nombre} · {charge.beneficiario_tipo === 'LOCAL' ? 'Local' : 'Driver'}</td><td>{money(charge.base)}</td><td>{charge.modalidad === 'FIJA' ? `${money(charge.valor_regla)} fijo` : `${Number(charge.valor_regla)}%`}</td><td className="font-bold text-brand">{money(charge.monto)}</td><td>{date(charge.creado_en)}</td></tr>)}</tbody></table></div> : <p className="text-xs text-gray-500">Aún no hay comisiones generadas.</p>}
+        {data.charges.length ? <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-xs"><thead className="text-gray-500"><tr><th className="py-2">Pedido</th><th>Tipo</th><th>Beneficiario</th><th>Base</th><th>Regla guardada</th><th>Monto</th><th>Fecha</th></tr></thead><tbody>{data.charges.map((charge) => <tr key={charge.id} className="border-t border-line text-gray-300"><td className="py-2">{charge.pedido_codigo}</td><td>{charge.tipo_pedido === 'AUTOPEDIDO' ? 'Autopedido' : 'Normal'}</td><td>{charge.beneficiario_nombre} · {charge.beneficiario_tipo === 'LOCAL' ? 'Local' : 'Driver'}</td><td>{money(charge.base)}</td><td>{charge.modalidad === 'FIJA' ? `${money(charge.valor_regla)} fijo` : `${Number(charge.valor_regla)}%`}</td><td className="font-bold text-brand">{money(charge.monto)}</td><td>{date(charge.creado_en)}</td></tr>)}</tbody></table></div> : <p className="text-xs text-gray-500">Aún no hay comisiones generadas.</p>}
       </section>
 
       <section className="rounded-2xl border border-line bg-surface p-5 space-y-4">
-        <div><h2 className="font-bold text-white">Comisión de locales</h2><p className="mt-1 text-xs text-gray-500">Se calcula solo sobre el subtotal de productos. Puedes usar monto fijo por pedido o porcentaje.</p></div>
-        <div className="grid gap-3 md:grid-cols-[1fr_170px_170px_auto] md:items-end">
-          <label className="text-xs text-gray-400">Local<select className="mt-1 block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-white" value={localId} onChange={(e) => { const id = e.target.value; setLocalId(id); const rule = data.restaurants.find((item) => item.id === id)?.regla; if (rule) { setMode(rule.modalidad); setValue(String(Number(rule.valor))) } else { setMode('FIJA'); setValue('0.50') } }}><option value="">Selecciona un local</option>{data.restaurants.map((local) => <option key={local.id} value={local.id}>{local.nombre}</option>)}</select></label>
-          <label className="text-xs text-gray-400">Modalidad<select className="mt-1 block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-white" value={mode} onChange={(e) => setMode(e.target.value as 'FIJA' | 'PORCENTAJE')}><option value="FIJA">Soles por pedido</option><option value="PORCENTAJE">Porcentaje</option></select></label>
-          <label className="text-xs text-gray-400">{mode === 'FIJA' ? 'Monto (S/)' : 'Porcentaje (%)'}<input className="mt-1 block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-white" type="number" min="0" max={mode === 'PORCENTAJE' ? '100' : undefined} step="0.01" value={value} onChange={(e) => setValue(e.target.value)} /></label>
-          <button disabled={busy || !localId} onClick={() => void saveRule('LOCAL')} className="rounded-lg bg-brand px-4 py-2 font-bold text-black disabled:opacity-50">Guardar nueva regla</button>
-        </div>
-        {selectedLocal && <p className="text-xs text-gray-500">Regla actual: {selectedLocal.regla ? `${selectedLocal.regla.modalidad === 'FIJA' ? money(selectedLocal.regla.valor) + ' por pedido' : Number(selectedLocal.regla.valor) + '%'} · desde ${date(selectedLocal.regla.creado_en)}` : 'sin configurar (S/ 0.00)'}.</p>}
-        {selectedLocal && <div><h3 className="mb-2 text-xs font-bold uppercase text-gray-500">Historial de reglas · {selectedLocal.nombre}</h3><div className="space-y-1">{data.localRules.filter((rule) => rule.restaurante_id === selectedLocal.id).map((rule) => <p key={rule.id} className="text-xs text-gray-400">{rule.modalidad === 'FIJA' ? `${money(rule.valor)} por pedido` : `${Number(rule.valor)}% del subtotal`} · {date(rule.creado_en)}</p>)}{!data.localRules.some((rule) => rule.restaurante_id === selectedLocal.id) && <p className="text-xs text-gray-500">Sin cambios registrados.</p>}</div></div>}
+        <div><h2 className="font-bold text-white">Comisiones de locales</h2><p className="mt-1 text-xs text-gray-500">Cada local tiene una regla independiente para pedidos normales y autopedidos. Ambas se calculan solo sobre el subtotal de productos: no incluyen delivery, VIP ni propina.</p></div>
+        <label className="block max-w-xl text-xs text-gray-400">Local<select className="mt-1 block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-white" value={localId} onChange={(e) => { const id = e.target.value; const local = data.restaurants.find((item) => item.id === id); setLocalId(id); setMode(local?.regla?.modalidad ?? 'FIJA'); setValue(local?.regla ? String(Number(local.regla.valor)) : '0.50'); setAutoMode(local?.regla_autopedido?.modalidad ?? 'FIJA'); setAutoValue(local?.regla_autopedido ? String(Number(local.regla_autopedido.valor)) : '0.50') }}><option value="">Selecciona un local</option>{data.restaurants.map((local) => <option key={local.id} value={local.id}>{local.nombre}</option>)}</select></label>
+        {selectedLocal && <div className="grid gap-4 lg:grid-cols-2">
+          <div className="space-y-3 rounded-xl border border-line-light bg-surface-dark p-4">
+            <div><h3 className="font-semibold text-white">Pedidos normales</h3><p className="text-xs text-gray-500">Pedidos creados por los clientes.</p></div>
+            <label className="block text-xs text-gray-400">Modalidad<select className="mt-1 block w-full rounded-lg border border-line-light bg-surface px-3 py-2 text-white" value={mode} onChange={(e) => setMode(e.target.value as 'FIJA' | 'PORCENTAJE')}><option value="FIJA">Soles por pedido</option><option value="PORCENTAJE">Porcentaje del subtotal</option></select></label>
+            <label className="block text-xs text-gray-400">{mode === 'FIJA' ? 'Monto (S/)' : 'Porcentaje (%)'}<input className="mt-1 block w-full rounded-lg border border-line-light bg-surface px-3 py-2 text-white" type="number" min="0" max={mode === 'PORCENTAJE' ? '100' : undefined} step="0.01" value={value} onChange={(e) => setValue(e.target.value)} /></label>
+            <p className="text-xs text-gray-500">Actual: {selectedLocal.regla ? `${selectedLocal.regla.modalidad === 'FIJA' ? money(selectedLocal.regla.valor) + ' por pedido' : Number(selectedLocal.regla.valor) + '% del subtotal'} · desde ${date(selectedLocal.regla.creado_en)}` : 'sin configurar (S/ 0.00)'}</p>
+            <button disabled={busy || !localId} onClick={() => void saveRule('LOCAL', 'NORMAL')} className="rounded-lg bg-brand px-4 py-2 font-bold text-black disabled:opacity-50">Guardar comisión normal</button>
+          </div>
+          <div className="space-y-3 rounded-xl border border-line-light bg-surface-dark p-4">
+            <div><h3 className="font-semibold text-white">Autopedidos preferenciales</h3><p className="text-xs text-gray-500">Pedidos creados desde el apartado de autopedidos de Local o Admin.</p></div>
+            <label className="block text-xs text-gray-400">Modalidad<select className="mt-1 block w-full rounded-lg border border-line-light bg-surface px-3 py-2 text-white" value={autoMode} onChange={(e) => setAutoMode(e.target.value as 'FIJA' | 'PORCENTAJE')}><option value="FIJA">Soles por pedido</option><option value="PORCENTAJE">Porcentaje del subtotal</option></select></label>
+            <label className="block text-xs text-gray-400">{autoMode === 'FIJA' ? 'Monto (S/)' : 'Porcentaje (%)'}<input className="mt-1 block w-full rounded-lg border border-line-light bg-surface px-3 py-2 text-white" type="number" min="0" max={autoMode === 'PORCENTAJE' ? '100' : undefined} step="0.01" value={autoValue} onChange={(e) => setAutoValue(e.target.value)} /></label>
+            <p className="text-xs text-gray-500">Actual: {selectedLocal.regla_autopedido ? `${selectedLocal.regla_autopedido.modalidad === 'FIJA' ? money(selectedLocal.regla_autopedido.valor) + ' por pedido' : Number(selectedLocal.regla_autopedido.valor) + '% del subtotal'} · desde ${date(selectedLocal.regla_autopedido.creado_en)}` : 'sin configurar (S/ 0.00)'}</p>
+            <button disabled={busy || !localId} onClick={() => void saveRule('LOCAL', 'AUTOPEDIDO')} className="rounded-lg bg-brand px-4 py-2 font-bold text-black disabled:opacity-50">Guardar comisión de autopedido</button>
+          </div>
+        </div>}
+        {selectedLocal && <div><h3 className="mb-2 text-xs font-bold uppercase text-gray-500">Historial de reglas · {selectedLocal.nombre}</h3><div className="space-y-1">{data.localRules.filter((rule) => rule.restaurante_id === selectedLocal.id).map((rule) => <p key={rule.id} className="text-xs text-gray-400">{rule.tipo_pedido === 'AUTOPEDIDO' ? 'Autopedido' : 'Pedido normal'}: {rule.modalidad === 'FIJA' ? `${money(rule.valor)} por pedido` : `${Number(rule.valor)}% del subtotal`} · {date(rule.creado_en)}</p>)}{!data.localRules.some((rule) => rule.restaurante_id === selectedLocal.id) && <p className="text-xs text-gray-500">Sin cambios registrados.</p>}</div></div>}
       </section>
 
       <section className="rounded-2xl border border-line bg-surface p-5 space-y-4">

@@ -337,7 +337,7 @@ export async function POST(req: NextRequest) {
     const restauranteIds = gruposCalculados.map((grupo) => grupo.restaurante_id)
     const [localRules, driverRules] = await Promise.all([
       sql`SELECT DISTINCT ON (restaurante_id) restaurante_id, id, modalidad, valor
-          FROM comision_reglas WHERE beneficiario_tipo = 'LOCAL'
+          FROM comision_reglas WHERE beneficiario_tipo = 'LOCAL' AND tipo_pedido = 'NORMAL'
             AND restaurante_id = ANY(${restauranteIds}::uuid[])
           ORDER BY restaurante_id, creado_en DESC, id DESC` as Promise<any[]>,
       sql`SELECT id, valor FROM comision_reglas WHERE beneficiario_tipo = 'DRIVER'
@@ -391,12 +391,12 @@ export async function POST(req: NextRequest) {
       createdSubOrderIds.push(spId)
       transactionQueries.push(sql`
         INSERT INTO sub_pedidos (
-          id, pedido_id, restaurante_id, estado, subtotal, costo_envio,
+          id, pedido_id, restaurante_id, tipo_pedido, estado, subtotal, costo_envio,
           distancia_km, direccion_snapshot,
           local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto,
           driver_comision_regla_id, driver_comision_valor, driver_comision_monto
         ) VALUES (
-          ${spId}, ${pedidoId}, ${g.restaurante_id}, 'PENDIENTE', ${g.subtotal},
+          ${spId}, ${pedidoId}, ${g.restaurante_id}, 'NORMAL', 'PENDIENTE', ${g.subtotal},
           ${g.costo_envio}, ${g.distancia_km},
           ${JSON.stringify(dirSnapshot)}::jsonb,
           ${g.local_rule?.id ?? null}, ${g.local_rule?.modalidad ?? 'FIJA'},

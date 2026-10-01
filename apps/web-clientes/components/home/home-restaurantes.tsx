@@ -8,6 +8,7 @@ import {
 } from './restaurante-card'
 import { useEnviosMultiples } from '@/hooks/use-envio'
 import { useDireccionActual, type DireccionLocal } from '@/hooks/use-direccion-actual'
+import { ABRIR_DIRECCION_EVENT } from '@/lib/direccion-events'
 
 interface Props {
   abiertos: RestauranteCardData[]
@@ -60,7 +61,11 @@ export default function HomeRestaurantes({
     <>
       {/* AVISO SIN DIRECCIÓN */}
       {sinDireccion && (
-        <div className="bg-jaguar/5 border border-jaguar/30 rounded-2xl p-4 mb-6 flex items-start gap-3">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event(ABRIR_DIRECCION_EVENT))}
+          className="w-full text-left bg-jaguar/5 border border-jaguar/30 rounded-2xl p-4 mb-6 flex items-start gap-3 hover:bg-jaguar/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jaguar"
+        >
           <span className="text-2xl">📍</span>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-jaguar text-sm">
@@ -70,7 +75,7 @@ export default function HomeRestaurantes({
               Para ver el costo de delivery de cada restaurante
             </p>
           </div>
-        </div>
+        </button>
       )}
 
       {/* SECCIÓN 1: ABIERTO AHORA */}
