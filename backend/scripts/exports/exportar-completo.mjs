@@ -18,6 +18,8 @@
 //   2. estructura-bd.json  -> lo mismo pero en JSON (para leer
 //                             por código, ej. generar tipos TS)
 //   3. datos-bd.json       -> el contenido completo de cada tabla
+//   4. respaldo-completo.sql -> tablas, datos, constraints, índices,
+//                              secuencias, funciones y triggers para restaurar
 // ============================================================
 
 import { neon } from '@neondatabase/serverless'
@@ -114,8 +116,16 @@ async function columnasDe(tabla) {
       numeric_scale,
       is_nullable,
       column_default,
+      format_type(a.atttypid, a.atttypmod) AS tipo_sql,
+      a.attidentity AS identidad,
+      a.attgenerated AS generada,
+      pg_get_expr(ad.adbin, ad.adrelid) AS expresion_generada,
       ordinal_position
     FROM information_schema.columns
+    JOIN pg_namespace n ON n.nspname = table_schema
+    JOIN pg_class c ON c.relnamespace = n.oid AND c.relname = table_name
+    JOIN pg_attribute a ON a.attrelid = c.oid AND a.attname = column_name
+    LEFT JOIN pg_attrdef ad ON ad.adrelid = c.oid AND ad.adnum = a.attnum
     WHERE table_schema = 'public' AND table_name = ${tabla}
     ORDER BY ordinal_position
   `
@@ -155,6 +165,176 @@ async function indicesDe(tabla) {
   `
 }
 
+async function constraintsSqlDe(tabla) {
+  return await sql`
+    SELECT con.conname AS nombre, pg_get_constraintdef(con.oid, true) AS definicion
+    FROM pg_constraint con
+    JOIN pg_class c ON c.oid = con.conrelid
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = ${tabla}
+    ORDER BY con.conname
+  `
+}
+
+async function indicesSqlDe(tabla) {
+  return await sql`
+    SELECT i.indexname, i.indexdef
+    FROM pg_indexes i
+    WHERE i.schemaname = 'public' AND i.tablename = ${tabla}
+      AND NOT EXISTS (
+        SELECT 1 FROM pg_constraint c
+        WHERE c.conindid = (
+          SELECT ci.oid FROM pg_class ci
+          JOIN pg_namespace ns ON ns.oid = ci.relnamespace
+          WHERE ns.nspname = i.schemaname AND ci.relname = i.indexname
+        )
+      )
+    ORDER BY i.indexname
+  `
+}
+
+async function listarSecuencias() {
+  return await sql`
+    SELECT schemaname, sequencename, data_type, start_value, min_value,
+           max_value, increment_by, cycle, cache_size, last_value,
+           EXISTS (
+             SELECT 1 FROM pg_class c
+             JOIN pg_namespace n ON n.oid = c.relnamespace
+             JOIN pg_depend d ON d.objid = c.oid AND d.deptype = 'i'
+             WHERE n.nspname = pg_sequences.schemaname
+               AND c.relname = pg_sequences.sequencename
+           ) AS es_identidad
+    FROM pg_sequences WHERE schemaname = 'public' ORDER BY sequencename
+  `
+}
+
+async function listarExtensiones() {
+  return await sql`
+    SELECT extname FROM pg_extension
+    WHERE extname <> 'plpgsql'
+    ORDER BY extname
+  `
+}
+
+async function listarFunciones() {
+  return await sql`
+    SELECT pg_get_functiondef(p.oid) AS definicion
+    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.prokind IN ('f', 'p')
+    ORDER BY p.proname, p.oid
+  `
+}
+
+async function listarTriggers() {
+  return await sql`
+    SELECT pg_get_triggerdef(t.oid, true) AS definicion,
+           c.relname AS tabla
+    FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND NOT t.tgisinternal
+    ORDER BY c.relname, t.tgname
+  `
+}
+
+function identificar(nombre) {
+  return `"${String(nombre).replace(/"/g, '""')}"`
+}
+
+function literalSql(valor, tipo) {
+  if (valor === null || valor === undefined) return 'NULL'
+  if (typeof valor === 'boolean') return valor ? 'TRUE' : 'FALSE'
+  if (typeof valor === 'number') return Number.isFinite(valor) ? String(valor) : 'NULL'
+  if (valor instanceof Date) return `'${valor.toISOString()}'`
+  if (valor instanceof Uint8Array) {
+    return `decode('${Buffer.from(valor).toString('hex')}', 'hex')`
+  }
+  if (Array.isArray(valor)) {
+    const elementos = valor.map((item) => literalSql(item, tipo.replace(/\[\]$/, '')))
+    return elementos.length ? `ARRAY[${elementos.join(', ')}]` : `'{}'`
+  }
+  const texto = typeof valor === 'object' ? JSON.stringify(valor) : String(valor)
+  return `'${texto.replace(/'/g, "''")}'`
+}
+
+function crearSqlRespaldo({ tablas, columnasPorTabla, filasPorTabla, restriccionesPorTabla, indicesPorTabla, secuencias, extensiones, funciones, triggers }) {
+  const lineas = [
+    '-- Respaldo generado automáticamente por exportar-completo.mjs',
+    `-- Fecha: ${new Date().toISOString()}`,
+    '-- Restaurar únicamente en una base de datos vacía.',
+    'CREATE SCHEMA IF NOT EXISTS public;',
+    'SET search_path TO public;',
+    '',
+  ]
+
+  for (const extension of extensiones) {
+    lineas.push(`CREATE EXTENSION IF NOT EXISTS ${identificar(extension.extname)};`)
+  }
+
+  for (const secuencia of secuencias) {
+    if (secuencia.es_identidad) continue
+    const nombre = identificar(secuencia.sequencename)
+    const tipo = secuencia.data_type.toUpperCase()
+    lineas.push(
+      `CREATE SEQUENCE IF NOT EXISTS public.${nombre} AS ${tipo} INCREMENT BY ${secuencia.increment_by} MINVALUE ${secuencia.min_value} MAXVALUE ${secuencia.max_value} START WITH ${secuencia.start_value} CACHE ${secuencia.cache_size} ${secuencia.cycle ? 'CYCLE' : 'NO CYCLE'};`
+    )
+  }
+
+  for (const tabla of tablas) {
+    const columnas = columnasPorTabla[tabla]
+    const definiciones = columnas.map((columna) => {
+      const tipo = columna.tipo_sql || formatearTipo(columna)
+      let definicion = `  ${identificar(columna.column_name)} ${tipo}`
+      if (columna.identidad) {
+        definicion += ` GENERATED ${columna.identidad === 'a' ? 'ALWAYS' : 'BY DEFAULT'} AS IDENTITY`
+      } else if (columna.generada) {
+        definicion += ` GENERATED ALWAYS AS (${columna.expresion_generada}) STORED`
+      } else if (columna.column_default !== null) {
+        definicion += ` DEFAULT ${columna.column_default}`
+      }
+      if (columna.is_nullable === 'NO') definicion += ' NOT NULL'
+      return definicion
+    })
+    lineas.push(`CREATE TABLE public.${identificar(tabla)} (\n${definiciones.join(',\n')}\n);`, '')
+  }
+
+  for (const tabla of tablas) {
+    const columnas = columnasPorTabla[tabla].filter((columna) => !columna.generada)
+    if (!columnas.length) continue
+    const nombres = columnas.map((columna) => identificar(columna.column_name))
+    const filas = filasPorTabla[tabla]
+    for (let inicio = 0; inicio < filas.length; inicio += 50) {
+      const fragmento = filas.slice(inicio, inicio + 50)
+      const valores = fragmento.map((fila) => `(${columnas.map((columna) => literalSql(fila[columna.column_name], columna.tipo_sql || formatearTipo(columna))).join(', ')})`)
+      const hayIdentidad = columnas.some((columna) => Boolean(columna.identidad))
+      lineas.push(
+        `INSERT INTO public.${identificar(tabla)} (${nombres.join(', ')})${hayIdentidad ? ' OVERRIDING SYSTEM VALUE' : ''} VALUES\n${valores.join(',\n')};`,
+        ''
+      )
+    }
+  }
+
+  for (const tabla of tablas) {
+    for (const restriccion of restriccionesPorTabla[tabla]) {
+      lineas.push(`ALTER TABLE public.${identificar(tabla)} ADD CONSTRAINT ${identificar(restriccion.nombre)} ${restriccion.definicion};`)
+    }
+    for (const indice of indicesPorTabla[tabla]) lineas.push(`${indice.indexdef};`)
+  }
+
+  for (const secuencia of secuencias) {
+    if (secuencia.last_value !== null) {
+      lineas.push(`SELECT setval('public.${secuencia.sequencename.replace(/'/g, "''")}', ${secuencia.last_value}, true);`)
+    }
+  }
+
+  for (const funcion of funciones) lineas.push(`${funcion.definicion};`, '')
+  for (const trigger of triggers) {
+    lineas.push(`${trigger.definicion};`)
+  }
+
+  return `${lineas.join('\n')}\n`
+}
+
 // ------------------------------------------------------------
 // 6. Formatear tipo de columna como en un CREATE TABLE
 // ------------------------------------------------------------
@@ -179,6 +359,10 @@ async function main() {
 
   const estructura = {}
   const datos = { exportado_en: new Date().toISOString(), tablas: {} }
+  const columnasPorTabla = {}
+  const filasPorTabla = {}
+  const restriccionesPorTabla = {}
+  const indicesPorTabla = {}
   let totalFilas = 0
 
   let mdEstructura = `# Estructura real de la base de datos\n\n`
@@ -188,15 +372,21 @@ async function main() {
   for (const tabla of tablas) {
     console.log(`📋 Procesando ${tabla}...`)
 
-    const [columnas, constraints, indices, filas] = await Promise.all([
+    const [columnas, constraints, indices, restriccionesSql, indicesSql, filas] = await Promise.all([
       columnasDe(tabla),
       constraintsDe(tabla),
       indicesDe(tabla),
-      sql.query(`SELECT * FROM ${tabla}`),
+      constraintsSqlDe(tabla),
+      indicesSqlDe(tabla),
+      sql.query(`SELECT * FROM public.${identificar(tabla)}`),
     ])
 
     estructura[tabla] = { columnas, constraints, indices, total_filas: filas.length }
     datos.tablas[tabla] = filas
+    columnasPorTabla[tabla] = columnas
+    filasPorTabla[tabla] = filas
+    restriccionesPorTabla[tabla] = restriccionesSql
+    indicesPorTabla[tabla] = indicesSql
     totalFilas += filas.length
 
     // --- Markdown de esta tabla ---
@@ -227,9 +417,29 @@ async function main() {
     console.log(`   ✅ ${columnas.length} columnas, ${filas.length} filas`)
   }
 
+  console.log('\n🧩 Recopilando funciones, secuencias y triggers...')
+  const [secuencias, extensiones, funciones, triggers] = await Promise.all([
+    listarSecuencias(),
+    listarExtensiones(),
+    listarFunciones(),
+    listarTriggers(),
+  ])
+  const respaldoSql = crearSqlRespaldo({
+    tablas,
+    columnasPorTabla,
+    filasPorTabla,
+    restriccionesPorTabla,
+    indicesPorTabla,
+    secuencias,
+    extensiones,
+    funciones,
+    triggers,
+  })
+
   writeFileSync(resolve(schemaDir, 'estructura-bd.md'), mdEstructura)
   writeFileSync(resolve(schemaDir, 'estructura-bd.json'), JSON.stringify(estructura, null, 2))
   writeFileSync(resolve(privateDir, 'datos-bd.json'), JSON.stringify(datos, null, 2))
+  writeFileSync(resolve(privateDir, 'respaldo-completo.sql'), respaldoSql)
 
   console.log(`\n🎉 Exportación completa:`)
   console.log(`   Tablas: ${tablas.length}`)
@@ -238,6 +448,7 @@ async function main() {
   console.log(`     - backend/database/schema/estructura-bd.md`)
   console.log(`     - backend/database/schema/estructura-bd.json`)
   console.log(`     - backend/database/private-data/datos-bd.json (privado; ignorado por Git)`)
+  console.log(`     - backend/database/private-data/respaldo-completo.sql (privado; restaurable en una BD vacía)`)
 }
 
 main().catch((err) => {

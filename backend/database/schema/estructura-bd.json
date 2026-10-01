@@ -10,6 +10,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -21,6 +25,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(40)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -32,6 +40,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(60)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -43,6 +55,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(10)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -54,6 +70,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 5
       }
     ],
@@ -85,6 +105,492 @@
     ],
     "total_filas": 10
   },
+  "comision_pagos": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "beneficiario_tipo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 10,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "character varying(10)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "beneficiario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "monto",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "registrado_por",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "nota",
+        "data_type": "text",
+        "udt_name": "text",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "pagado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
+        "ordinal_position": 7
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "comision_pagos_registrado_por_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "registrado_por",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "comision_pagos_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "comision_pagos_pkey",
+        "indexdef": "CREATE UNIQUE INDEX comision_pagos_pkey ON public.comision_pagos USING btree (id)"
+      },
+      {
+        "indexname": "idx_comision_pagos_beneficiario",
+        "indexdef": "CREATE INDEX idx_comision_pagos_beneficiario ON public.comision_pagos USING btree (beneficiario_tipo, beneficiario_id, pagado_en DESC)"
+      }
+    ],
+    "total_filas": 0
+  },
+  "comision_reglas": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "beneficiario_tipo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 10,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "character varying(10)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "restaurante_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "modalidad",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 12,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "character varying(12)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "valor",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 4,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "numeric(10,4)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "creado_por",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "clock_timestamp()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "clock_timestamp()",
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "tipo_pedido",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 12,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "'NORMAL'::character varying",
+        "tipo_sql": "character varying(12)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "'NORMAL'::character varying",
+        "ordinal_position": 8
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "comision_reglas_restaurante_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "restaurante_id",
+        "tabla_referenciada": "restaurantes",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "comision_reglas_creado_por_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "creado_por",
+        "tabla_referenciada": "usuarios",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "comision_reglas_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "comision_reglas_pkey",
+        "indexdef": "CREATE UNIQUE INDEX comision_reglas_pkey ON public.comision_reglas USING btree (id)"
+      },
+      {
+        "indexname": "idx_comision_reglas_local_fecha",
+        "indexdef": "CREATE INDEX idx_comision_reglas_local_fecha ON public.comision_reglas USING btree (restaurante_id, creado_en DESC) WHERE ((beneficiario_tipo)::text = 'LOCAL'::text)"
+      },
+      {
+        "indexname": "idx_comision_reglas_driver_fecha",
+        "indexdef": "CREATE INDEX idx_comision_reglas_driver_fecha ON public.comision_reglas USING btree (creado_en DESC) WHERE ((beneficiario_tipo)::text = 'DRIVER'::text)"
+      },
+      {
+        "indexname": "idx_comision_reglas_local_tipo_fecha",
+        "indexdef": "CREATE INDEX idx_comision_reglas_local_tipo_fecha ON public.comision_reglas USING btree (restaurante_id, tipo_pedido, creado_en DESC, id DESC) WHERE ((beneficiario_tipo)::text = 'LOCAL'::text)"
+      }
+    ],
+    "total_filas": 3
+  },
+  "comisiones_generadas": {
+    "columnas": [
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
+        "ordinal_position": 1
+      },
+      {
+        "column_name": "sub_pedido_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 2
+      },
+      {
+        "column_name": "beneficiario_tipo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 10,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "character varying(10)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 3
+      },
+      {
+        "column_name": "beneficiario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 4
+      },
+      {
+        "column_name": "base",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 5
+      },
+      {
+        "column_name": "modalidad",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 12,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "character varying(12)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 6
+      },
+      {
+        "column_name": "valor_regla",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 4,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "numeric(10,4)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 7
+      },
+      {
+        "column_name": "monto",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "NO",
+        "column_default": null,
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 8
+      },
+      {
+        "column_name": "creado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
+        "ordinal_position": 9
+      }
+    ],
+    "constraints": [
+      {
+        "constraint_name": "comisiones_generadas_sub_pedido_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "sub_pedido_id",
+        "tabla_referenciada": "sub_pedidos",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "comisiones_generadas_pkey",
+        "constraint_type": "PRIMARY KEY",
+        "column_name": "id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "comisiones_generadas_sub_pedido_id_beneficiario_tipo_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "sub_pedido_id",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      },
+      {
+        "constraint_name": "comisiones_generadas_sub_pedido_id_beneficiario_tipo_key",
+        "constraint_type": "UNIQUE",
+        "column_name": "beneficiario_tipo",
+        "tabla_referenciada": null,
+        "columna_referenciada": null
+      }
+    ],
+    "indices": [
+      {
+        "indexname": "comisiones_generadas_pkey",
+        "indexdef": "CREATE UNIQUE INDEX comisiones_generadas_pkey ON public.comisiones_generadas USING btree (id)"
+      },
+      {
+        "indexname": "comisiones_generadas_sub_pedido_id_beneficiario_tipo_key",
+        "indexdef": "CREATE UNIQUE INDEX comisiones_generadas_sub_pedido_id_beneficiario_tipo_key ON public.comisiones_generadas USING btree (sub_pedido_id, beneficiario_tipo)"
+      },
+      {
+        "indexname": "idx_comisiones_beneficiario",
+        "indexdef": "CREATE INDEX idx_comisiones_beneficiario ON public.comisiones_generadas USING btree (beneficiario_tipo, beneficiario_id, creado_en DESC)"
+      }
+    ],
+    "total_filas": 0
+  },
   "configuracion_sistema": {
     "columnas": [
       {
@@ -96,6 +602,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "1",
+        "tipo_sql": "smallint",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "1",
         "ordinal_position": 1
       },
       {
@@ -107,6 +617,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "2.00",
+        "tipo_sql": "numeric(6,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "2.00",
         "ordinal_position": 2
       },
       {
@@ -118,6 +632,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "2.00",
+        "tipo_sql": "numeric(6,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "2.00",
         "ordinal_position": 3
       },
       {
@@ -129,6 +647,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "2.30",
+        "tipo_sql": "numeric(6,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "2.30",
         "ordinal_position": 4
       },
       {
@@ -140,6 +662,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "5.00",
+        "tipo_sql": "numeric(6,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "5.00",
         "ordinal_position": 5
       },
       {
@@ -151,6 +677,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "5",
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "5",
         "ordinal_position": 6
       },
       {
@@ -162,7 +692,26 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 7
+      },
+      {
+        "column_name": "tarifa_delivery_metodo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 12,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "'DETALLADA'::character varying",
+        "tipo_sql": "character varying(12)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "'DETALLADA'::character varying",
+        "ordinal_position": 8
       }
     ],
     "constraints": [
@@ -193,6 +742,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -204,6 +757,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -215,6 +772,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(40)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -226,6 +787,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -237,6 +802,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       },
       {
@@ -248,6 +817,10 @@
         "numeric_scale": 6,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "numeric(9,6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 6
       },
       {
@@ -259,6 +832,10 @@
         "numeric_scale": 6,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "numeric(9,6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 7
       },
       {
@@ -270,6 +847,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "false",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "false",
         "ordinal_position": 8
       },
       {
@@ -281,6 +862,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 9
       },
       {
@@ -292,6 +877,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 10
       }
     ],
@@ -321,7 +910,7 @@
         "indexdef": "CREATE INDEX idx_direcciones_usuario ON public.direcciones USING btree (usuario_id)"
       }
     ],
-    "total_filas": 33
+    "total_filas": 41
   },
   "driver_detalles": {
     "columnas": [
@@ -334,6 +923,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 1
       },
       {
@@ -345,6 +938,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(60)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -356,6 +953,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(20)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -367,6 +968,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(40)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -378,6 +983,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "true",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "true",
         "ordinal_position": 5
       },
       {
@@ -389,6 +998,10 @@
         "numeric_scale": 6,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "numeric(9,6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 6
       },
       {
@@ -400,6 +1013,10 @@
         "numeric_scale": 6,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "numeric(9,6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 7
       },
       {
@@ -411,6 +1028,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 8
       }
     ],
@@ -436,7 +1057,7 @@
         "indexdef": "CREATE UNIQUE INDEX driver_detalles_pkey ON public.driver_detalles USING btree (usuario_id)"
       }
     ],
-    "total_filas": 10
+    "total_filas": 14
   },
   "favoritos": {
     "columnas": [
@@ -449,6 +1070,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 1
       },
       {
@@ -460,6 +1085,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -471,6 +1100,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 3
       }
     ],
@@ -523,6 +1156,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -534,6 +1171,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -545,6 +1186,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(120)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -556,6 +1201,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "false",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "false",
         "ordinal_position": 4
       },
       {
@@ -567,6 +1216,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 5
       },
       {
@@ -578,6 +1231,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "1",
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "1",
         "ordinal_position": 6
       },
       {
@@ -589,6 +1246,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 7
       }
     ],
@@ -618,7 +1279,7 @@
         "indexdef": "CREATE INDEX idx_grupos_opciones_plato ON public.grupos_opciones USING btree (plato_id)"
       }
     ],
-    "total_filas": 11
+    "total_filas": 106
   },
   "horarios_atencion": {
     "columnas": [
@@ -631,6 +1292,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -642,6 +1307,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -653,6 +1322,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(3)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -664,6 +1337,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "time without time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -675,6 +1352,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "time without time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       }
     ],
@@ -718,7 +1399,7 @@
         "indexdef": "CREATE UNIQUE INDEX horarios_atencion_restaurante_id_dia_key ON public.horarios_atencion USING btree (restaurante_id, dia)"
       }
     ],
-    "total_filas": 42
+    "total_filas": 49
   },
   "item_opciones": {
     "columnas": [
@@ -731,6 +1412,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -742,6 +1427,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -753,6 +1442,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(120)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -764,6 +1457,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(80)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -775,6 +1472,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "numeric(8,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 5
       }
     ],
@@ -804,7 +1505,7 @@
         "indexdef": "CREATE INDEX idx_item_opciones_item ON public.item_opciones USING btree (item_id)"
       }
     ],
-    "total_filas": 3
+    "total_filas": 24
   },
   "notificaciones": {
     "columnas": [
@@ -817,6 +1518,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -828,6 +1533,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -839,6 +1548,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -850,6 +1563,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(30)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -861,6 +1578,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(120)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       },
       {
@@ -872,6 +1593,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 6
       },
       {
@@ -883,6 +1608,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "false",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "false",
         "ordinal_position": 7
       },
       {
@@ -894,6 +1623,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 8
       }
     ],
@@ -943,6 +1676,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -954,6 +1691,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -965,6 +1706,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(80)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -976,6 +1721,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "numeric(8,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 4
       },
       {
@@ -987,6 +1736,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 5
       }
     ],
@@ -1016,7 +1769,7 @@
         "indexdef": "CREATE INDEX idx_opciones_choices_grupo ON public.opciones_choices USING btree (grupo_id)"
       }
     ],
-    "total_filas": 40
+    "total_filas": 374
   },
   "otp_codes": {
     "columnas": [
@@ -1029,6 +1782,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -1040,6 +1797,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(9)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -1051,6 +1812,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -1062,6 +1827,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -1073,6 +1842,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "false",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "false",
         "ordinal_position": 5
       },
       {
@@ -1084,6 +1857,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 6
       }
     ],
@@ -1119,6 +1896,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -1130,6 +1911,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -1141,6 +1926,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(20)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -1152,6 +1941,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -1163,6 +1956,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       },
       {
@@ -1174,6 +1971,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 6
       }
     ],
@@ -1210,7 +2011,7 @@
         "indexdef": "CREATE INDEX idx_historial_subpedido ON public.pedido_estado_historial USING btree (sub_pedido_id)"
       }
     ],
-    "total_filas": 194
+    "total_filas": 229
   },
   "pedido_items": {
     "columnas": [
@@ -1223,6 +2024,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -1234,6 +2039,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -1245,6 +2054,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -1256,6 +2069,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(120)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -1267,6 +2084,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "numeric(8,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       },
       {
@@ -1278,6 +2099,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 6
       },
       {
@@ -1289,6 +2114,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 7
       },
       {
@@ -1300,6 +2129,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 8
       },
       {
@@ -1311,6 +2144,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 9
       }
     ],
@@ -1347,7 +2184,7 @@
         "indexdef": "CREATE INDEX idx_items_subpedido ON public.pedido_items USING btree (sub_pedido_id)"
       }
     ],
-    "total_filas": 156
+    "total_filas": 166
   },
   "pedidos": {
     "columnas": [
@@ -1360,6 +2197,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -1371,6 +2212,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(20)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -1382,6 +2227,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -1393,6 +2242,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 4
       },
       {
@@ -1404,6 +2257,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 5
       },
       {
@@ -1415,6 +2272,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 6
       },
       {
@@ -1426,6 +2287,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "false",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "false",
         "ordinal_position": 7
       },
       {
@@ -1437,6 +2302,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 8
       },
       {
@@ -1448,6 +2317,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 9
       },
       {
@@ -1459,6 +2332,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 10
       },
       {
@@ -1470,6 +2347,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "'PENDIENTE'::character varying",
+        "tipo_sql": "character varying(20)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "'PENDIENTE'::character varying",
         "ordinal_position": 11
       },
       {
@@ -1481,6 +2362,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 12
       },
       {
@@ -1492,6 +2377,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 13
       }
     ],
@@ -1536,7 +2425,7 @@
         "indexdef": "CREATE INDEX idx_pedidos_usuario ON public.pedidos USING btree (usuario_id)"
       }
     ],
-    "total_filas": 62
+    "total_filas": 70
   },
   "platos": {
     "columnas": [
@@ -1549,6 +2438,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -1560,6 +2453,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -1571,6 +2468,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -1582,6 +2483,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(120)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -1593,6 +2498,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       },
       {
@@ -1604,6 +2513,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "numeric(8,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 6
       },
       {
@@ -1615,6 +2528,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 7
       },
       {
@@ -1626,6 +2543,10 @@
         "numeric_scale": 0,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 8
       },
       {
@@ -1637,6 +2558,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "true",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "true",
         "ordinal_position": 9
       },
       {
@@ -1648,6 +2573,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 10
       },
       {
@@ -1659,6 +2588,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 11
       },
       {
@@ -1670,6 +2603,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 12
       }
     ],
@@ -1710,7 +2647,7 @@
         "indexdef": "CREATE INDEX idx_platos_subcategoria ON public.platos USING btree (subcategoria_id)"
       }
     ],
-    "total_filas": 40
+    "total_filas": 119
   },
   "promociones": {
     "columnas": [
@@ -1723,6 +2660,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -1734,6 +2675,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(40)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -1745,6 +2690,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(80)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -1756,6 +2705,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(120)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -1767,6 +2720,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       },
       {
@@ -1778,6 +2735,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(40)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 6
       },
       {
@@ -1789,6 +2750,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 7
       },
       {
@@ -1800,6 +2765,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(160)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 8
       },
       {
@@ -1811,6 +2780,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 9
       },
       {
@@ -1822,6 +2795,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "true",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "true",
         "ordinal_position": 10
       },
       {
@@ -1833,6 +2810,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 11
       },
       {
@@ -1844,6 +2825,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 12
       }
     ],
@@ -1879,6 +2864,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -1890,6 +2879,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -1901,6 +2894,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -1912,6 +2909,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -1923,6 +2924,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "true",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "true",
         "ordinal_position": 5
       },
       {
@@ -1934,6 +2939,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 6
       },
       {
@@ -1945,6 +2954,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 7
       }
     ],
@@ -1985,7 +2998,7 @@
         "indexdef": "CREATE INDEX idx_push_subs_usuario ON public.push_subscriptions USING btree (usuario_id, activo)"
       }
     ],
-    "total_filas": 1
+    "total_filas": 7
   },
   "push_tokens": {
     "columnas": [
@@ -1998,6 +3011,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -2009,6 +3026,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -2020,6 +3041,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -2031,6 +3056,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(20)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -2042,6 +3071,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 5
       }
     ],
@@ -2095,6 +3128,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -2106,6 +3143,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -2117,6 +3158,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(60)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -2128,6 +3173,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(120)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -2139,6 +3188,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(160)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       },
       {
@@ -2150,6 +3203,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 6
       },
       {
@@ -2161,6 +3218,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 7
       },
       {
@@ -2172,6 +3233,10 @@
         "numeric_scale": 6,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "numeric(9,6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 8
       },
       {
@@ -2183,6 +3248,10 @@
         "numeric_scale": 6,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "numeric(9,6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 9
       },
       {
@@ -2194,6 +3263,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(9)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 10
       },
       {
@@ -2205,6 +3278,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 11
       },
       {
@@ -2216,6 +3293,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 12
       },
       {
@@ -2227,6 +3308,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(20)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 13
       },
       {
@@ -2238,6 +3323,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "5.00",
+        "tipo_sql": "numeric(8,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "5.00",
         "ordinal_position": 14
       },
       {
@@ -2249,6 +3338,10 @@
         "numeric_scale": 1,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "numeric(2,1)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 15
       },
       {
@@ -2260,6 +3353,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 16
       },
       {
@@ -2271,6 +3368,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "true",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "true",
         "ordinal_position": 17
       },
       {
@@ -2282,6 +3383,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 18
       },
       {
@@ -2293,6 +3398,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 19
       },
       {
@@ -2304,6 +3413,10 @@
         "numeric_scale": 2,
         "is_nullable": "YES",
         "column_default": "NULL::numeric",
+        "tipo_sql": "numeric(6,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "NULL::numeric",
         "ordinal_position": 20
       }
     ],
@@ -2351,7 +3464,7 @@
         "indexdef": "CREATE UNIQUE INDEX restaurantes_usuario_id_key ON public.restaurantes USING btree (usuario_id)"
       }
     ],
-    "total_filas": 6
+    "total_filas": 7
   },
   "restaurantes_categorias": {
     "columnas": [
@@ -2364,6 +3477,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 1
       },
       {
@@ -2375,6 +3492,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       }
     ],
@@ -2414,7 +3535,7 @@
         "indexdef": "CREATE UNIQUE INDEX restaurantes_categorias_pkey ON public.restaurantes_categorias USING btree (restaurante_id, categoria_id)"
       }
     ],
-    "total_filas": 10
+    "total_filas": 12
   },
   "rutas_cache": {
     "columnas": [
@@ -2427,6 +3548,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -2438,6 +3563,10 @@
         "numeric_scale": 6,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "numeric(9,6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -2449,6 +3578,10 @@
         "numeric_scale": 6,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "numeric(9,6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -2460,6 +3593,10 @@
         "numeric_scale": 6,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "numeric(9,6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -2471,6 +3608,10 @@
         "numeric_scale": 6,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "numeric(9,6)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       },
       {
@@ -2482,6 +3623,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "numeric(6,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 6
       },
       {
@@ -2493,6 +3638,10 @@
         "numeric_scale": 0,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 7
       },
       {
@@ -2504,6 +3653,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 8
       }
     ],
@@ -2558,7 +3711,7 @@
         "indexdef": "CREATE INDEX idx_rutas_cache_lookup ON public.rutas_cache USING btree (restaurante_lat, restaurante_lng, cliente_lat, cliente_lng)"
       }
     ],
-    "total_filas": 40
+    "total_filas": 80
   },
   "solicitudes_recuperacion": {
     "columnas": [
@@ -2571,6 +3724,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -2582,6 +3739,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(9)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -2593,6 +3754,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -2604,6 +3769,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "'PENDIENTE'::character varying",
+        "tipo_sql": "character varying(20)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "'PENDIENTE'::character varying",
         "ordinal_position": 4
       },
       {
@@ -2615,6 +3784,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       },
       {
@@ -2626,6 +3799,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 6
       },
       {
@@ -2637,6 +3814,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 7
       },
       {
@@ -2648,6 +3829,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 8
       }
     ],
@@ -2701,6 +3886,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -2712,6 +3901,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -2723,6 +3916,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -2734,6 +3931,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -2745,6 +3946,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "'PENDIENTE'::character varying",
+        "tipo_sql": "character varying(20)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "'PENDIENTE'::character varying",
         "ordinal_position": 5
       },
       {
@@ -2756,6 +3961,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 6
       },
       {
@@ -2767,6 +3976,10 @@
         "numeric_scale": 2,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 7
       },
       {
@@ -2778,6 +3991,10 @@
         "numeric_scale": 2,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "numeric(6,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 8
       },
       {
@@ -2789,6 +4006,10 @@
         "numeric_scale": 0,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 9
       },
       {
@@ -2800,6 +4021,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "jsonb",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 10
       },
       {
@@ -2811,6 +4036,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 11
       },
       {
@@ -2822,6 +4051,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 12
       },
       {
@@ -2833,6 +4066,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 13
       },
       {
@@ -2844,6 +4081,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 14
       },
       {
@@ -2855,6 +4096,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 15
       },
       {
@@ -2866,6 +4111,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 16
       },
       {
@@ -2877,6 +4126,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 17
       },
       {
@@ -2888,6 +4141,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": "false",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "false",
         "ordinal_position": 18
       },
       {
@@ -2899,7 +4156,221 @@
         "numeric_scale": 2,
         "is_nullable": "YES",
         "column_default": "0",
+        "tipo_sql": "numeric(8,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 19
+      },
+      {
+        "column_name": "local_comision_regla_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 20
+      },
+      {
+        "column_name": "local_comision_modalidad",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 12,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "character varying(12)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 21
+      },
+      {
+        "column_name": "local_comision_valor",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 4,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "numeric(10,4)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 22
+      },
+      {
+        "column_name": "local_comision_monto",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 23
+      },
+      {
+        "column_name": "driver_comision_regla_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 24
+      },
+      {
+        "column_name": "driver_comision_valor",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 4,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "numeric(10,4)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 25
+      },
+      {
+        "column_name": "driver_comision_monto",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "character_maximum_length": null,
+        "numeric_precision": 10,
+        "numeric_scale": 2,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "numeric(10,2)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 26
+      },
+      {
+        "column_name": "entrega_reportada_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 27
+      },
+      {
+        "column_name": "cliente_confirmo_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 28
+      },
+      {
+        "column_name": "driver_asignado_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 29
+      },
+      {
+        "column_name": "driver_llego_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 30
+      },
+      {
+        "column_name": "entrega_cerrada_admin_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 31
+      },
+      {
+        "column_name": "entrega_cerrada_local_en",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "character_maximum_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "YES",
+        "column_default": null,
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
+        "ordinal_position": 32
+      },
+      {
+        "column_name": "tipo_pedido",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "character_maximum_length": 12,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": "NO",
+        "column_default": "'NORMAL'::character varying",
+        "tipo_sql": "character varying(12)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "'NORMAL'::character varying",
+        "ordinal_position": 33
       }
     ],
     "constraints": [
@@ -2922,6 +4393,20 @@
         "constraint_type": "FOREIGN KEY",
         "column_name": "restaurante_id",
         "tabla_referenciada": "restaurantes",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "sub_pedidos_local_comision_regla_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "local_comision_regla_id",
+        "tabla_referenciada": "comision_reglas",
+        "columna_referenciada": "id"
+      },
+      {
+        "constraint_name": "sub_pedidos_driver_comision_regla_id_fkey",
+        "constraint_type": "FOREIGN KEY",
+        "column_name": "driver_comision_regla_id",
+        "tabla_referenciada": "comision_reglas",
         "columna_referenciada": "id"
       },
       {
@@ -2948,9 +4433,13 @@
       {
         "indexname": "idx_subpedidos_rest",
         "indexdef": "CREATE INDEX idx_subpedidos_rest ON public.sub_pedidos USING btree (restaurante_id, estado)"
+      },
+      {
+        "indexname": "idx_subpedidos_confirmacion_cliente",
+        "indexdef": "CREATE INDEX idx_subpedidos_confirmacion_cliente ON public.sub_pedidos USING btree (pedido_id, estado) WHERE ((estado)::text = 'ENTREGA_PENDIENTE_CONFIRMACION'::text)"
       }
     ],
-    "total_filas": 76
+    "total_filas": 84
   },
   "subcategorias": {
     "columnas": [
@@ -2963,6 +4452,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -2974,6 +4467,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 2
       },
       {
@@ -2985,6 +4482,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(80)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -2996,6 +4497,10 @@
         "numeric_scale": 0,
         "is_nullable": "NO",
         "column_default": "0",
+        "tipo_sql": "integer",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "0",
         "ordinal_position": 4
       },
       {
@@ -3007,6 +4512,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 5
       }
     ],
@@ -3036,7 +4545,7 @@
         "indexdef": "CREATE INDEX idx_subcategorias_rest ON public.subcategorias USING btree (restaurante_id)"
       }
     ],
-    "total_filas": 22
+    "total_filas": 47
   },
   "usuarios": {
     "columnas": [
@@ -3049,6 +4558,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "gen_random_uuid()",
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "gen_random_uuid()",
         "ordinal_position": 1
       },
       {
@@ -3060,6 +4573,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "'CUSTOMER'::character varying",
+        "tipo_sql": "character varying(20)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "'CUSTOMER'::character varying",
         "ordinal_position": 2
       },
       {
@@ -3071,6 +4588,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(255)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 3
       },
       {
@@ -3082,6 +4603,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(9)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 4
       },
       {
@@ -3093,6 +4618,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "character varying(255)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 5
       },
       {
@@ -3104,6 +4633,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": null,
+        "tipo_sql": "character varying(120)",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 6
       },
       {
@@ -3115,6 +4648,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "text",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 7
       },
       {
@@ -3126,6 +4663,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "true",
+        "tipo_sql": "boolean",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "true",
         "ordinal_position": 8
       },
       {
@@ -3137,6 +4678,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 9
       },
       {
@@ -3148,6 +4693,10 @@
         "numeric_scale": null,
         "is_nullable": "NO",
         "column_default": "now()",
+        "tipo_sql": "timestamp with time zone",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": "now()",
         "ordinal_position": 10
       },
       {
@@ -3159,6 +4708,10 @@
         "numeric_scale": null,
         "is_nullable": "YES",
         "column_default": null,
+        "tipo_sql": "uuid",
+        "identidad": "",
+        "generada": "",
+        "expresion_generada": null,
         "ordinal_position": 11
       }
     ],
@@ -3218,6 +4771,6 @@
         "indexdef": "CREATE INDEX idx_usuarios_restaurante ON public.usuarios USING btree (restaurante_id)"
       }
     ],
-    "total_filas": 39
+    "total_filas": 48
   }
 }

@@ -1,8 +1,8 @@
 # Estructura real de la base de datos
 
-> Generado automáticamente el 2026-09-25T18:26:54.843Z. Refleja EXACTAMENTE lo que hay en la BD, no lo que dice ningún archivo .sql viejo.
+> Generado automáticamente el 2026-10-01T21:29:13.071Z. Refleja EXACTAMENTE lo que hay en la BD, no lo que dice ningún archivo .sql viejo.
 
-**Total de tablas:** 25
+**Total de tablas:** 28
 
 ---
 
@@ -26,6 +26,84 @@
 
 ---
 
+## `comision_pagos`  (0 filas)
+
+| Columna | Tipo | Nullable | Default |
+|---|---|---|---|
+| id | UUID | no | gen_random_uuid() |
+| beneficiario_tipo | VARCHAR(10) | no | — |
+| beneficiario_id | UUID | no | — |
+| monto | NUMERIC(10,2) | no | — |
+| registrado_por | UUID | no | — |
+| nota | TEXT | sí | — |
+| pagado_en | TIMESTAMP WITH TIME ZONE | no | now() |
+
+**Primary key:** id
+
+**Foreign keys:**
+- `registrado_por` → `usuarios.id`
+
+**Índices:**
+- `comision_pagos_pkey`: `CREATE UNIQUE INDEX comision_pagos_pkey ON public.comision_pagos USING btree (id)`
+- `idx_comision_pagos_beneficiario`: `CREATE INDEX idx_comision_pagos_beneficiario ON public.comision_pagos USING btree (beneficiario_tipo, beneficiario_id, pagado_en DESC)`
+
+---
+
+## `comision_reglas`  (3 filas)
+
+| Columna | Tipo | Nullable | Default |
+|---|---|---|---|
+| id | UUID | no | gen_random_uuid() |
+| beneficiario_tipo | VARCHAR(10) | no | — |
+| restaurante_id | UUID | sí | — |
+| modalidad | VARCHAR(12) | no | — |
+| valor | NUMERIC(10,4) | no | — |
+| creado_por | UUID | sí | — |
+| creado_en | TIMESTAMP WITH TIME ZONE | no | clock_timestamp() |
+| tipo_pedido | VARCHAR(12) | no | 'NORMAL'::character varying |
+
+**Primary key:** id
+
+**Foreign keys:**
+- `restaurante_id` → `restaurantes.id`
+- `creado_por` → `usuarios.id`
+
+**Índices:**
+- `comision_reglas_pkey`: `CREATE UNIQUE INDEX comision_reglas_pkey ON public.comision_reglas USING btree (id)`
+- `idx_comision_reglas_local_fecha`: `CREATE INDEX idx_comision_reglas_local_fecha ON public.comision_reglas USING btree (restaurante_id, creado_en DESC) WHERE ((beneficiario_tipo)::text = 'LOCAL'::text)`
+- `idx_comision_reglas_driver_fecha`: `CREATE INDEX idx_comision_reglas_driver_fecha ON public.comision_reglas USING btree (creado_en DESC) WHERE ((beneficiario_tipo)::text = 'DRIVER'::text)`
+- `idx_comision_reglas_local_tipo_fecha`: `CREATE INDEX idx_comision_reglas_local_tipo_fecha ON public.comision_reglas USING btree (restaurante_id, tipo_pedido, creado_en DESC, id DESC) WHERE ((beneficiario_tipo)::text = 'LOCAL'::text)`
+
+---
+
+## `comisiones_generadas`  (0 filas)
+
+| Columna | Tipo | Nullable | Default |
+|---|---|---|---|
+| id | UUID | no | gen_random_uuid() |
+| sub_pedido_id | UUID | no | — |
+| beneficiario_tipo | VARCHAR(10) | no | — |
+| beneficiario_id | UUID | no | — |
+| base | NUMERIC(10,2) | no | — |
+| modalidad | VARCHAR(12) | no | — |
+| valor_regla | NUMERIC(10,4) | no | — |
+| monto | NUMERIC(10,2) | no | — |
+| creado_en | TIMESTAMP WITH TIME ZONE | no | now() |
+
+**Primary key:** id
+
+**Foreign keys:**
+- `sub_pedido_id` → `sub_pedidos.id`
+
+**Unique:** sub_pedido_id, beneficiario_tipo
+
+**Índices:**
+- `comisiones_generadas_pkey`: `CREATE UNIQUE INDEX comisiones_generadas_pkey ON public.comisiones_generadas USING btree (id)`
+- `comisiones_generadas_sub_pedido_id_beneficiario_tipo_key`: `CREATE UNIQUE INDEX comisiones_generadas_sub_pedido_id_beneficiario_tipo_key ON public.comisiones_generadas USING btree (sub_pedido_id, beneficiario_tipo)`
+- `idx_comisiones_beneficiario`: `CREATE INDEX idx_comisiones_beneficiario ON public.comisiones_generadas USING btree (beneficiario_tipo, beneficiario_id, creado_en DESC)`
+
+---
+
 ## `configuracion_sistema`  (1 filas)
 
 | Columna | Tipo | Nullable | Default |
@@ -37,6 +115,7 @@
 | monto_minimo_global | NUMERIC(6,2) | no | 5.00 |
 | tiempo_max_aceptacion | INTEGER | no | 5 |
 | actualizado_en | TIMESTAMP WITH TIME ZONE | no | now() |
+| tarifa_delivery_metodo | VARCHAR(12) | no | 'DETALLADA'::character varying |
 
 **Primary key:** id
 
@@ -45,7 +124,7 @@
 
 ---
 
-## `direcciones`  (33 filas)
+## `direcciones`  (41 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -71,7 +150,7 @@
 
 ---
 
-## `driver_detalles`  (10 filas)
+## `driver_detalles`  (14 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -113,7 +192,7 @@
 
 ---
 
-## `grupos_opciones`  (11 filas)
+## `grupos_opciones`  (106 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -136,7 +215,7 @@
 
 ---
 
-## `horarios_atencion`  (42 filas)
+## `horarios_atencion`  (49 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -159,7 +238,7 @@
 
 ---
 
-## `item_opciones`  (3 filas)
+## `item_opciones`  (24 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -205,7 +284,7 @@
 
 ---
 
-## `opciones_choices`  (40 filas)
+## `opciones_choices`  (374 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -245,7 +324,7 @@
 
 ---
 
-## `pedido_estado_historial`  (194 filas)
+## `pedido_estado_historial`  (229 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -268,7 +347,7 @@
 
 ---
 
-## `pedido_items`  (156 filas)
+## `pedido_items`  (166 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -294,7 +373,7 @@
 
 ---
 
-## `pedidos`  (62 filas)
+## `pedidos`  (70 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -327,7 +406,7 @@
 
 ---
 
-## `platos`  (40 filas)
+## `platos`  (119 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -382,7 +461,7 @@
 
 ---
 
-## `push_subscriptions`  (1 filas)
+## `push_subscriptions`  (7 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -432,7 +511,7 @@
 
 ---
 
-## `restaurantes`  (6 filas)
+## `restaurantes`  (7 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -471,7 +550,7 @@
 
 ---
 
-## `restaurantes_categorias`  (10 filas)
+## `restaurantes_categorias`  (12 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -489,7 +568,7 @@
 
 ---
 
-## `rutas_cache`  (40 filas)
+## `rutas_cache`  (80 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -539,7 +618,7 @@
 
 ---
 
-## `sub_pedidos`  (76 filas)
+## `sub_pedidos`  (84 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -562,6 +641,20 @@
 | entregado_en | TIMESTAMP WITH TIME ZONE | sí | — |
 | se_quedo_propina | BOOLEAN | sí | false |
 | propina_vip_monto | NUMERIC(8,2) | sí | 0 |
+| local_comision_regla_id | UUID | sí | — |
+| local_comision_modalidad | VARCHAR(12) | sí | — |
+| local_comision_valor | NUMERIC(10,4) | sí | — |
+| local_comision_monto | NUMERIC(10,2) | sí | — |
+| driver_comision_regla_id | UUID | sí | — |
+| driver_comision_valor | NUMERIC(10,4) | sí | — |
+| driver_comision_monto | NUMERIC(10,2) | sí | — |
+| entrega_reportada_en | TIMESTAMP WITH TIME ZONE | sí | — |
+| cliente_confirmo_en | TIMESTAMP WITH TIME ZONE | sí | — |
+| driver_asignado_en | TIMESTAMP WITH TIME ZONE | sí | — |
+| driver_llego_en | TIMESTAMP WITH TIME ZONE | sí | — |
+| entrega_cerrada_admin_en | TIMESTAMP WITH TIME ZONE | sí | — |
+| entrega_cerrada_local_en | TIMESTAMP WITH TIME ZONE | sí | — |
+| tipo_pedido | VARCHAR(12) | no | 'NORMAL'::character varying |
 
 **Primary key:** id
 
@@ -569,16 +662,19 @@
 - `driver_id` → `usuarios.id`
 - `pedido_id` → `pedidos.id`
 - `restaurante_id` → `restaurantes.id`
+- `local_comision_regla_id` → `comision_reglas.id`
+- `driver_comision_regla_id` → `comision_reglas.id`
 
 **Índices:**
 - `sub_pedidos_pkey`: `CREATE UNIQUE INDEX sub_pedidos_pkey ON public.sub_pedidos USING btree (id)`
 - `idx_subpedidos_driver`: `CREATE INDEX idx_subpedidos_driver ON public.sub_pedidos USING btree (driver_id, estado)`
 - `idx_subpedidos_pedido`: `CREATE INDEX idx_subpedidos_pedido ON public.sub_pedidos USING btree (pedido_id)`
 - `idx_subpedidos_rest`: `CREATE INDEX idx_subpedidos_rest ON public.sub_pedidos USING btree (restaurante_id, estado)`
+- `idx_subpedidos_confirmacion_cliente`: `CREATE INDEX idx_subpedidos_confirmacion_cliente ON public.sub_pedidos USING btree (pedido_id, estado) WHERE ((estado)::text = 'ENTREGA_PENDIENTE_CONFIRMACION'::text)`
 
 ---
 
-## `subcategorias`  (22 filas)
+## `subcategorias`  (47 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -599,7 +695,7 @@
 
 ---
 
-## `usuarios`  (39 filas)
+## `usuarios`  (48 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
