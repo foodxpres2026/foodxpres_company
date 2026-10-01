@@ -4,12 +4,13 @@ import RestauranteForm, {
   type RestauranteFormData,
 } from '../_components/restaurante-form'
 import { type HorarioDia } from '../_components/horarios-form'
+import CuentaLocalForm from '../_components/cuenta-local-form'
 
 const DIAS = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'] as const
 
 async function getData(id: string) {
   const rows = await sql`
-    SELECT id, slug, nombre, subtitulo, direccion_fisica, referencia,
+    SELECT id, slug, nombre, subtitulo, direccion_fisica, referencia, usuario_id,
            celular, lat, lng, tiempo_estimado, monto_minimo,
            costo_envio_minimo,
            banner_url, logo_url, activo
@@ -49,7 +50,16 @@ async function getData(id: string) {
   `
   const categoriaIds = (categoriasRows as any[]).map((r) => r.categoria_id)
 
-  return { restaurante, horarios, categoriaIds }
+  const cuentaRows = await sql`
+    SELECT u.email
+    FROM usuarios u
+    WHERE u.role = 'STAFF'
+      AND (u.restaurante_id = ${id} OR u.id = ${restaurante.usuario_id})
+    ORDER BY (u.restaurante_id = ${id}) DESC NULLS LAST
+    LIMIT 1
+  `
+
+  return { restaurante, horarios, categoriaIds, emailCuenta: String((cuentaRows[0] as any)?.email ?? '') }
 }
 
 export default async function EditarRestaurantePage({
@@ -61,7 +71,7 @@ export default async function EditarRestaurantePage({
   const data = await getData(id)
   if (!data) notFound()
 
-  const { restaurante, horarios, categoriaIds } = data
+  const { restaurante, horarios, categoriaIds, emailCuenta } = data
 
   const initialData: Partial<RestauranteFormData> = {
     slug: restaurante.slug,
@@ -83,12 +93,15 @@ export default async function EditarRestaurantePage({
   }
 
   return (
-    <RestauranteForm
-      mode="edit"
-      restauranteId={restaurante.id}
-      initialData={initialData}
-      initialHorarios={horarios}
-      initialCategorias={categoriaIds}
-    />
+    <div className="space-y-6">
+      <RestauranteForm
+        mode="edit"
+        restauranteId={restaurante.id}
+        initialData={initialData}
+        initialHorarios={horarios}
+        initialCategorias={categoriaIds}
+      />
+      <CuentaLocalForm restauranteId={restaurante.id} emailInicial={emailCuenta} />
+    </div>
   )
 }
