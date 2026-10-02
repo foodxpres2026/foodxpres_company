@@ -13,7 +13,7 @@ export async function GET() {
     const orders = await sql`
       SELECT sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.notas AS notas_local,
              sp.motivo_rechazo, sp.creado_en, sp.aceptado_en, sp.listo_en,
-             sp.entregado_en, sp.direccion_snapshot,
+             sp.entregado_en, sp.entrega_cerrada_local_en, sp.direccion_snapshot,
              p.codigo AS pedido_codigo, p.total AS pedido_total, p.notas AS notas_pedido,
              CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.nombre ELSE u.nombre END AS cliente_nombre,
              CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.celular ELSE u.celular END AS cliente_celular,

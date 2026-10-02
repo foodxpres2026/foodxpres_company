@@ -10,7 +10,7 @@ type OrderItem = { id: string; nombre_snapshot: string; cantidad: number; subtot
 type Order = {
   id: string; estado: string; subtotal: number | string; costo_envio: number | string
   notas_local: string | null; notas_pedido: string | null; motivo_rechazo: string | null
-  creado_en: string; aceptado_en: string | null; listo_en: string | null; entregado_en: string | null
+  creado_en: string; aceptado_en: string | null; listo_en: string | null; entregado_en: string | null; entrega_cerrada_local_en: string | null
   direccion_snapshot: { direccion?: string; referencia?: string; etiqueta?: string } | null
   pedido_codigo: string; pedido_total: number | string; cliente_nombre: string; cliente_celular: string
   autopedido_propio: boolean
@@ -153,6 +153,7 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
       {selected.estado === 'PENDIENTE' && <div className="local-modal-actions"><label>Tiempo estimado de preparación<select value={estimate} onChange={(event) => setEstimate(event.target.value)}><option value="15">15 minutos</option><option value="20">20 minutos</option><option value="30">30 minutos</option><option value="45">45 minutos</option><option value="60">60 minutos</option></select></label><label>Motivo de rechazo (opcional)<textarea value={rejectReason} onChange={(event) => setRejectReason(event.target.value)} maxLength={200} placeholder="Ej.: No tenemos este producto"/></label><div><button className="local-reject-button" onClick={() => void act(selected, 'RECHAZAR')} disabled={busy === selected.id}>Rechazar pedido</button><button className="local-primary-button" onClick={() => void act(selected, 'ACEPTAR')} disabled={busy === selected.id}>{busy === selected.id ? 'Guardando…' : 'Aceptar pedido'}</button></div></div>}
       {['ACEPTADO', 'PREPARANDO'].includes(selected.estado) && <div className="local-modal-actions"><button className="local-primary-button full" onClick={() => void act(selected, 'LISTO')} disabled={busy === selected.id}>{busy === selected.id ? 'Guardando…' : 'Marcar como listo'}</button></div>}
       {selected.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && selected.autopedido_propio && <div className="local-modal-actions"><p className="text-sm text-gray-400">El driver reportó la entrega de este autopedido.</p><button className="local-primary-button full" onClick={() => void confirmAutopedido(selected)} disabled={busy === selected.id}>{busy === selected.id ? 'Guardando…' : 'Confirmar que recibí el pedido'}</button></div>}
+      {selected.estado === 'ENTREGADO' && selected.autopedido_propio && !selected.entrega_cerrada_local_en && <div className="local-modal-actions"><p className="text-sm text-gray-400">El driver ya finalizó este autopedido. La confirmación de recepción es opcional.</p><button className="local-primary-button full" onClick={() => void confirmAutopedido(selected)} disabled={busy === selected.id}>{busy === selected.id ? 'Guardando…' : 'Confirmar recepción (opcional)'}</button></div>}
       </section></div>}
   </main>
 }

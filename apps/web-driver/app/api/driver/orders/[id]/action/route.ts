@@ -62,21 +62,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       historyWritten = true
     } else {
       updated = await sql`
-        UPDATE sub_pedidos SET estado = 'ENTREGA_PENDIENTE_CONFIRMACION', entrega_reportada_en = NOW()
-        WHERE id = ${id} AND driver_id = ${driver.id} AND estado = 'EN_CAMINO'
-          AND recogido_en IS NOT NULL
-          AND EXISTS (
-            SELECT 1 FROM pedido_estado_historial h
-            WHERE h.sub_pedido_id = sub_pedidos.id AND h.cambiado_por = ${driver.id} AND h.notas = 'LLEGUE_CLIENTE'
-          )
-        RETURNING id
+        SELECT confirmar_entrega_subpedido(${id}::uuid, ${driver.id}::uuid, 'DRIVER', NULL) AS id
       ` as any[]
-      state = 'ENTREGA_PENDIENTE_CONFIRMACION'
+      state = 'ENTREGADO'
+      historyWritten = true
     }
     if (!updated.length) return Response.json({ ok: false, error: 'La acción no corresponde al estado actual del pedido.' }, { status: 409 })
     if (!historyWritten) await sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${id}, ${state}, ${driver.id}, ${accion})`
     if (accion === 'RECOGI') await notifyInternalPush('DRIVER_ON_THE_WAY', id)
     if (accion === 'LLEGUE_CLIENTE') await notifyInternalPush('DRIVER_ARRIVED', id)
+    if (accion === 'ENTREGUE') await notifyInternalPush('DRIVER_DELIVERED', id)
     if (accion === 'ENTREGUE') await sql`
       UPDATE driver_detalles SET disponible = TRUE, actualizado_en = NOW() WHERE usuario_id = ${driver.id}
         AND NOT EXISTS (SELECT 1 FROM sub_pedidos WHERE driver_id = ${driver.id}

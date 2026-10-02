@@ -7,6 +7,7 @@ import BottomNav from '@/components/layout/bottom-nav'
 import EstadoTimeline from '@/components/pedidos/estado-timeline'
 import { formatearFechaHora } from '@/lib/utils/fechas'
 import ConfirmarEntrega from '@/components/pedidos/confirmar-entrega'
+import ActualizarPedido from '@/components/pedidos/actualizar-pedido'
 
 export const dynamic = 'force-dynamic'
 
@@ -110,6 +111,7 @@ export default async function PedidoPage({
   return (
     <>
       <Header user={user} direccionDeBD={direccionDeBD} />
+      <ActualizarPedido />
 
       <main className="max-w-3xl mx-auto px-4 py-5 pb-24 md:pb-8">
         {/* HEADER */}
@@ -172,6 +174,8 @@ export default async function PedidoPage({
                 {/* TIMELINE DEL LOCAL */}
                 <EstadoTimeline estado={sp.estado} />
               {sp.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && <ConfirmarEntrega subPedidoId={sp.id} />}
+              {sp.estado === 'ENTREGADO' && sp.cliente_confirmo_en && <p className="mt-3 text-xs font-medium text-brand">✓ Confirmaste que recibiste este pedido.</p>}
+              {sp.estado === 'ENTREGADO' && !sp.cliente_confirmo_en && <ConfirmarEntrega subPedidoId={sp.id} yaFinalizado />}
               </div>
 
               {/* DRIVER DESTACADO */}

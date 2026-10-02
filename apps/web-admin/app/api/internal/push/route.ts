@@ -11,7 +11,7 @@ import {
 } from '@/lib/firebase/notificaciones-pedido'
 
 const schema = z.object({
-  event: z.enum(['NEW_ORDER', 'AUTOPEDIDO', 'LOCAL_ACCEPTED', 'LOCAL_REJECTED', 'LOCAL_READY', 'DRIVER_TAKEN', 'DRIVER_ON_THE_WAY', 'DRIVER_ARRIVED']),
+  event: z.enum(['NEW_ORDER', 'AUTOPEDIDO', 'LOCAL_ACCEPTED', 'LOCAL_REJECTED', 'LOCAL_READY', 'DRIVER_TAKEN', 'DRIVER_ON_THE_WAY', 'DRIVER_ARRIVED', 'DRIVER_DELIVERED']),
   subOrderId: z.string().uuid(),
   detail: z.string().trim().max(200).optional(),
 })
@@ -84,6 +84,12 @@ export async function POST(request: Request) {
       titulo: '📍 El repartidor llegó',
       mensaje: `El driver ya llegó con tu pedido de ${order.restaurante_nombre}. Confirma la recepción cuando lo recibas.`,
       url: '/mis-pedidos', tag: `pedido-llego-${order.id}`,
+    })
+    if (event === 'DRIVER_DELIVERED') await enviarNotificacion({
+      usuarioId: order.cliente_id,
+      titulo: '📦 Pedido marcado como entregado',
+      mensaje: `El driver marcó como entregado tu pedido ${order.pedido_codigo}. Si ya lo recibiste, puedes confirmarlo en el detalle del pedido.`,
+      url: `/pedido/${order.pedido_codigo}`, tag: `pedido-entregado-${order.id}`,
     })
     return Response.json({ ok: true })
   } catch (error) {
