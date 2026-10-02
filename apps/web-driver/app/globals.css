@@ -121,7 +121,7 @@ button, input { font: inherit; }
 .order-note { padding: 10px 11px; color: #aeb6b0; background: #101010; border-radius: 8px; font-size: 11px; }
 .timeline { margin-top: 12px; padding: 13px; background: #101010; border: 1px solid #282828; border-radius: 10px; }
 .timeline-steps { display: flex; justify-content: space-between; gap: 6px; color: #707a7b; font-size: 9px; }
-.timeline-steps span { max-width: 24%; }
+.timeline-steps span { max-width: 19%; }
 .timeline-steps .done { color: #b5d895; }
 .timeline-track { height: 5px; margin: 10px 0; overflow: hidden; background: #333; border-radius: 5px; }
 .timeline-track i { display: block; height: 100%; background: var(--green); border-radius: inherit; transition: width .2s; }

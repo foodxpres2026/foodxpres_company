@@ -3,7 +3,7 @@ import { getDriverSession } from '@/lib/auth'
 import { getSql } from '@/lib/db'
 import { notifyInternalPush } from '@/lib/push/internal'
 
-const schema = z.object({ accion: z.enum(['LLEGUE', 'RECOGI', 'ENTREGUE']) })
+const schema = z.object({ accion: z.enum(['LLEGUE', 'RECOGI', 'LLEGUE_CLIENTE', 'ENTREGUE']) })
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const driver = await getDriverSession()
@@ -45,14 +45,38 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         RETURNING sp.id
       ` as any[]
       state = 'EN_CAMINO'
+    } else if (accion === 'LLEGUE_CLIENTE') {
+      updated = await sql`
+        INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)
+        SELECT sp.id, 'EN_CAMINO', ${driver.id}, 'LLEGUE_CLIENTE'
+        FROM sub_pedidos sp
+        WHERE sp.id = ${id} AND sp.driver_id = ${driver.id}
+          AND sp.estado = 'EN_CAMINO' AND sp.recogido_en IS NOT NULL
+          AND NOT EXISTS (
+            SELECT 1 FROM pedido_estado_historial h
+            WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = ${driver.id} AND h.notas = 'LLEGUE_CLIENTE'
+          )
+        RETURNING sub_pedido_id AS id
+      ` as any[]
+      state = 'EN_CAMINO'
+      historyWritten = true
     } else {
-      updated = await sql`UPDATE sub_pedidos SET estado = 'ENTREGA_PENDIENTE_CONFIRMACION', entrega_reportada_en = NOW() WHERE id = ${id} AND driver_id = ${driver.id} AND estado = 'EN_CAMINO' AND recogido_en IS NOT NULL RETURNING id` as any[]
+      updated = await sql`
+        UPDATE sub_pedidos SET estado = 'ENTREGA_PENDIENTE_CONFIRMACION', entrega_reportada_en = NOW()
+        WHERE id = ${id} AND driver_id = ${driver.id} AND estado = 'EN_CAMINO'
+          AND recogido_en IS NOT NULL
+          AND EXISTS (
+            SELECT 1 FROM pedido_estado_historial h
+            WHERE h.sub_pedido_id = sub_pedidos.id AND h.cambiado_por = ${driver.id} AND h.notas = 'LLEGUE_CLIENTE'
+          )
+        RETURNING id
+      ` as any[]
       state = 'ENTREGA_PENDIENTE_CONFIRMACION'
     }
     if (!updated.length) return Response.json({ ok: false, error: 'La acción no corresponde al estado actual del pedido.' }, { status: 409 })
     if (!historyWritten) await sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${id}, ${state}, ${driver.id}, ${accion})`
     if (accion === 'RECOGI') await notifyInternalPush('DRIVER_ON_THE_WAY', id)
-    if (accion === 'ENTREGUE') await notifyInternalPush('DRIVER_ARRIVED', id)
+    if (accion === 'LLEGUE_CLIENTE') await notifyInternalPush('DRIVER_ARRIVED', id)
     if (accion === 'ENTREGUE') await sql`
       UPDATE driver_detalles SET disponible = TRUE, actualizado_en = NOW() WHERE usuario_id = ${driver.id}
         AND NOT EXISTS (SELECT 1 FROM sub_pedidos WHERE driver_id = ${driver.id}

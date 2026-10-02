@@ -10,6 +10,7 @@ type Order = {
   id: string; estado: string; subtotal: number | string; costo_envio: number | string; distancia_km: number | string | null
   tiempo_estimado: number | null; direccion_snapshot: { direccion?: string; etiqueta?: string; referencia?: string; lat?: number; lng?: number } | null
   creado_en: string; driver_asignado_en: string | null; driver_llego_en: string | null; listo_en: string | null
+  driver_llego_cliente_en?: string | null
   recogido_en: string | null; entregado_en: string | null; pedido_codigo: string; pedido_notas: string | null
   entrega_reportada_en?: string | null; driver_comision_monto?: number | string | null
   restaurante_nombre: string; restaurante_direccion: string; restaurante_celular: string | null
@@ -79,7 +80,7 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
       const response = await fetch(endpoint, { method, headers: body ? { 'Content-Type': 'application/json' } : undefined, body: body ? JSON.stringify(body) : undefined })
       const result = await response.json()
       if (!response.ok || !result.ok) throw new Error(result.error ?? 'No se pudo actualizar el pedido')
-      setNotice(method === 'POST' ? 'Pedido tomado. Ya aparece en “En curso”.' : 'Avance del pedido guardado.')
+      setNotice(method === 'POST' ? 'Pedido tomado. Ya aparece en “En curso”.' : body && 'accion' in body && body.accion === 'LLEGUE_CLIENTE' ? 'Llegada al cliente registrada. Cuando le entregues el pedido, marca el siguiente paso.' : body && 'accion' in body && body.accion === 'ENTREGUE' ? 'Entrega reportada. El pedido quedará finalizado cuando el cliente confirme que lo recibió.' : 'Avance del pedido guardado.')
       if (method === 'POST') {
         setSection('current')
       } else {
@@ -145,17 +146,21 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
   </main>
 }
 
-function OrderCard({ order, driverName, section, canTake, takeBlockedLabel, busy, onTake, onAction }: { order: Order; driverName: string; section: Section; canTake: boolean; takeBlockedLabel: string; busy: boolean; onTake: () => void; onAction: (action: 'LLEGUE' | 'RECOGI' | 'ENTREGUE') => void }) {
+function OrderCard({ order, driverName, section, canTake, takeBlockedLabel, busy, onTake, onAction }: { order: Order; driverName: string; section: Section; canTake: boolean; takeBlockedLabel: string; busy: boolean; onTake: () => void; onAction: (action: 'LLEGUE' | 'RECOGI' | 'LLEGUE_CLIENTE' | 'ENTREGUE') => void }) {
   const [whatsappTarget, setWhatsappTarget] = useState<'restaurant' | 'customer' | null>(null)
   const address = order.direccion_snapshot?.direccion || 'Dirección de entrega no disponible'
   const customerAddress = [address, order.direccion_snapshot?.referencia].filter(Boolean).join(' · ')
   const waitingForLocal = ['PENDIENTE', 'ACEPTADO', 'PREPARANDO'].includes(order.estado)
-  const progress = order.estado === 'EN_CAMINO' ? 2 : order.driver_llego_en ? 1 : 0
+  const progress = order.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' ? 4
+    : order.estado === 'EN_CAMINO' ? order.driver_llego_cliente_en ? 3 : 2
+    : order.driver_llego_en ? 1 : 0
   const localPoint = order.restaurante_lat != null && order.restaurante_lng != null ? `${Number(order.restaurante_lat)},${Number(order.restaurante_lng)}` : order.restaurante_direccion || order.restaurante_nombre
   const customerPoint = order.direccion_snapshot?.lat != null && order.direccion_snapshot?.lng != null ? `${Number(order.direccion_snapshot.lat)},${Number(order.direccion_snapshot.lng)}` : address
   const mapLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(localPoint)}&destination=${encodeURIComponent(customerPoint)}&travelmode=driving`
-  const action = order.estado === 'EN_CAMINO' ? 'ENTREGUE' : order.driver_llego_en ? 'RECOGI' : 'LLEGUE'
-  const actionLabel = action === 'LLEGUE' ? 'Llegué al local' : action === 'RECOGI' ? 'Recibí los productos' : 'Llegué al cliente · Entregar'
+  const action = order.estado === 'EN_CAMINO'
+    ? order.driver_llego_cliente_en ? 'ENTREGUE' : 'LLEGUE_CLIENTE'
+    : order.driver_llego_en ? 'RECOGI' : 'LLEGUE'
+  const actionLabel = action === 'LLEGUE' ? 'Llegué al local' : action === 'RECOGI' ? 'Recibí los productos' : action === 'LLEGUE_CLIENTE' ? 'Llegué al cliente' : 'Entregué el pedido'
   const total = Number(order.subtotal) + Number(order.costo_envio)
   const statusLabel = order.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' ? 'Esperando confirmación del cliente' : order.estado.replaceAll('_', ' ')
   return <article className="order-card">
@@ -165,8 +170,8 @@ function OrderCard({ order, driverName, section, canTake, takeBlockedLabel, busy
     <div className="place-row"><span className="place-icon customer">●</span><div className="place-body"><strong>{order.cliente_nombre}</strong><span>{customerAddress}</span><div className="contact-links">{order.cliente_celular && <><a href={phoneLink(order.cliente_celular)}>Llamar · {order.cliente_celular}</a><button type="button" className="whatsapp-link" onClick={() => setWhatsappTarget('customer')}>WhatsApp</button></>}</div></div></div>
     {!!order.items.length && <div className="items-box"><strong>Detalle del pedido</strong>{order.items.map((item) => <div className="item-line" key={item.id}><span>{item.cantidad} × {item.nombre_snapshot}</span><span>{money(item.subtotal)}</span>{item.notas && <small>{item.notas}</small>}</div>)}</div>}
     {order.pedido_notas && <p className="order-note"><strong>Nota:</strong> {order.pedido_notas}</p>}
-    {section === 'current' && (order.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' ? <div className="waiting-local">Ya avisaste que llegaste al cliente. El pedido se cerrará cuando el cliente confirme que lo recibió.</div> : waitingForLocal ? <div className="waiting-local">Pedido reservado. Esperando que el local lo acepte y lo prepare.</div> : <div className="timeline"><div className="timeline-steps"><span className="done">Pedido tomado</span><span className={progress >= 1 ? 'done' : ''}>Llegada al local</span><span className={progress >= 2 ? 'done' : ''}>En camino</span><span>Entregado</span></div><div className="timeline-track"><i style={{ width: `${progress === 0 ? 7 : progress === 1 ? 37 : 69}%` }} /></div><div className="timeline-dates"><span>Tomado: {dateTime(order.driver_asignado_en)}</span><span>{order.driver_llego_en ? `Llegada: ${dateTime(order.driver_llego_en)}` : `Listo desde: ${dateTime(order.listo_en)}`}</span>{order.recogido_en && <span>Recogido: {dateTime(order.recogido_en)}</span>}</div></div>)}
-    {section === 'history' && <div className="history-stamps"><span>Pedido tomado: {dateTime(order.driver_asignado_en)}</span>{order.driver_llego_en && <span>Llegaste al local: {dateTime(order.driver_llego_en)}</span>}{order.recogido_en && <span>Recogido: {dateTime(order.recogido_en)}</span>}{order.entrega_reportada_en && <span>Avisaste llegada al cliente: {dateTime(order.entrega_reportada_en)}</span>}{order.entregado_en && <span>Entrega confirmada: {dateTime(order.entregado_en)}</span>}{order.driver_comision_monto != null && <span>Comisión del pedido: {money(order.driver_comision_monto)} (solo delivery)</span>}</div>}
+    {section === 'current' && (order.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' ? <div className="waiting-local">Entrega reportada {order.entrega_reportada_en ? `el ${dateTime(order.entrega_reportada_en)}. ` : ''}El pedido se cerrará cuando el cliente confirme que lo recibió.</div> : waitingForLocal ? <div className="waiting-local">Pedido reservado. Esperando que el local lo acepte y lo prepare.</div> : <div className="timeline"><div className="timeline-steps"><span className="done">Pedido tomado</span><span className={progress >= 1 ? 'done' : ''}>Llegada al local</span><span className={progress >= 2 ? 'done' : ''}>En camino</span><span className={progress >= 3 ? 'done' : ''}>Llegada al cliente</span><span className={progress >= 4 ? 'done' : ''}>Entrega reportada</span></div><div className="timeline-track"><i style={{ width: `${[7, 25, 45, 65, 85][progress]}%` }} /></div><div className="timeline-dates"><span>Tomado: {dateTime(order.driver_asignado_en)}</span><span>{order.driver_llego_en ? `Llegada al local: ${dateTime(order.driver_llego_en)}` : `Listo desde: ${dateTime(order.listo_en)}`}</span>{order.recogido_en && <span>Recogido: {dateTime(order.recogido_en)}</span>}{order.driver_llego_cliente_en && <span>Llegada al cliente: {dateTime(order.driver_llego_cliente_en)}</span>}</div></div>)}
+    {section === 'history' && <div className="history-stamps"><span>Pedido tomado: {dateTime(order.driver_asignado_en)}</span>{order.driver_llego_en && <span>Llegaste al local: {dateTime(order.driver_llego_en)}</span>}{order.recogido_en && <span>Recogido: {dateTime(order.recogido_en)}</span>}{order.driver_llego_cliente_en && <span>Llegaste al cliente: {dateTime(order.driver_llego_cliente_en)}</span>}{order.entrega_reportada_en && <span>Reportaste la entrega: {dateTime(order.entrega_reportada_en)}</span>}{order.entregado_en && <span>Entrega confirmada: {dateTime(order.entregado_en)}</span>}{order.driver_comision_monto != null && <span>Comisión del pedido: {money(order.driver_comision_monto)} (solo delivery)</span>}</div>}
     <div className="order-card-foot"><a className="map-link" href={mapLink} target="_blank" rel="noreferrer">↗ Ruta: local → cliente</a>{section === 'available' && <button className="primary-action" onClick={onTake} disabled={busy || !canTake}>{busy ? 'Tomando pedido...' : canTake ? 'Tomar pedido' : takeBlockedLabel}</button>}{section === 'current' && !waitingForLocal && order.estado !== 'ENTREGA_PENDIENTE_CONFIRMACION' && <button className="primary-action" onClick={() => onAction(action)} disabled={busy}>{busy ? 'Guardando...' : actionLabel}</button>}</div>
     {whatsappTarget && <WhatsAppMessageModal key={`${order.id}-${whatsappTarget}`} order={order} driverName={driverName} target={whatsappTarget} onClose={() => setWhatsappTarget(null)} />}
   </article>
