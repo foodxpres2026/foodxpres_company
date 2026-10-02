@@ -89,7 +89,7 @@ export async function POST(
       password_temporal: nuevaPassword,
       celular: sol.celular,
       whatsapp_url: `https://wa.me/51${sol.celular}?text=${encodeURIComponent(
-        `Hola! Tu nueva contraseña de FoodXpres es: ${nuevaPassword}\n\nInicia sesión y cámbiala cuando quieras. 🐯`
+        `Hola! Tu nueva contraseña de FOODXPRES es: ${nuevaPassword}\n\nInicia sesión y cámbiala cuando quieras. 🐯`
       )}`,
     })
   } catch (error) {

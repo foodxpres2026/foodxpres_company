@@ -26,7 +26,7 @@ export default function LoginPanel() {
     <main className="login-shell">
       <div className="login-wrap">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="logo" src="/logo.png" alt="FoodXpres" />
+        <img className="logo" src="/logo.png" alt="FOODXPRES" />
         <header className="heading">
           <h1>Acceso para drivers</h1>
           <p>Ingresa con tu cuenta de repartidor</p>
@@ -45,7 +45,7 @@ export default function LoginPanel() {
               <button className="submit" type="submit" disabled={loading}>{loading ? 'Ingresando...' : 'Ingresar'}</button>
           </form>
         </section>
-        <p className="footer">FoodXpres © {new Date().getFullYear()} · Pucallpa</p>
+        <p className="footer">FOODXPRES © {new Date().getFullYear()} · Pucallpa</p>
       </div>
     </main>
   )

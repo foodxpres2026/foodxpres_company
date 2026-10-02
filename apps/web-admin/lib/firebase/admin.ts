@@ -25,7 +25,7 @@ export function getFirebaseAdmin(): App {
     throw new Error('Configura FIREBASE_SERVICE_ACCOUNT_BASE64 o coloca backend/serviceAccountKey.json para desarrollo local')
   }
   if (serviceAccount.project_id !== 'foodxpres2026-c3168') {
-    throw new Error('La cuenta de servicio no corresponde al proyecto Firebase de FoodXpres')
+    throw new Error('La cuenta de servicio no corresponde al proyecto Firebase de FOODXPRES')
   }
 
   app = initializeApp({

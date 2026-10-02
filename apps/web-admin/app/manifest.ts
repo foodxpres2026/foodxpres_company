@@ -3,9 +3,9 @@ import type { MetadataRoute } from 'next'
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: '/admin',
-    name: 'FoodXpres Admin',
-    short_name: 'FoodXpres Admin',
-    description: 'Panel de administración de FoodXpres',
+    name: 'FOODXPRES Admin',
+    short_name: 'FOODXPRES Admin',
+    description: 'Panel de administración de FOODXPRES',
     start_url: '/',
     scope: '/',
     display: 'standalone',

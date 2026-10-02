@@ -38,7 +38,7 @@ export async function generateMetadata({
 
   const description =
     restaurante.subtitulo?.trim() ||
-    `Explora el menú de ${restaurante.nombre} y pide por delivery en Pucallpa con FoodXpres.`
+    `Explora el menú de ${restaurante.nombre} y pide por delivery en Pucallpa con FOODXPRES.`
   const image = restaurante.banner_url || restaurante.logo_url
 
   return {
@@ -46,11 +46,11 @@ export async function generateMetadata({
     description,
     alternates: { canonical: `/restaurante/${encodeURIComponent(slug)}` },
     openGraph: {
-      title: `${restaurante.nombre} | FoodXpres`,
+      title: `${restaurante.nombre} | FOODXPRES`,
       description,
       type: 'website',
       locale: 'es_PE',
-      siteName: 'FoodXpres',
+      siteName: 'FOODXPRES',
       url: `/restaurante/${encodeURIComponent(slug)}`,
       ...(image ? { images: [{ url: image, alt: restaurante.nombre }] } : {}),
     },

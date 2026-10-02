@@ -3,10 +3,10 @@ import './globals.css'
 import 'leaflet/dist/leaflet.css'
 
 export const metadata: Metadata = {
-  title: 'FoodXpres Local', description: 'Acceso para locales asociados a FoodXpres',
-  applicationName: 'FoodXpres Local', manifest: '/manifest.webmanifest',
+  title: 'FOODXPRES Local', description: 'Acceso para locales asociados a FOODXPRES',
+  applicationName: 'FOODXPRES Local', manifest: '/manifest.webmanifest',
   icons: { icon: '/icons/icon-192.png', apple: '/icons/icon-192.png' },
-  appleWebApp: { capable: true, title: 'FoodXpres Local', statusBarStyle: 'black-translucent' },
+  appleWebApp: { capable: true, title: 'FOODXPRES Local', statusBarStyle: 'black-translucent' },
 }
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#7ed321', viewportFit: 'cover' }

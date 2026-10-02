@@ -8,15 +8,15 @@ export const metadata: Metadata = {
     `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || 'localhost:3000'}`,
   ),
   title: {
-    default: 'FoodXpres | Delivery de comida en Pucallpa',
-    template: '%s | FoodXpres',
+    default: 'FOODXPRES | Delivery de comida en Pucallpa',
+    template: '%s | FOODXPRES',
   },
   description:
-    'Pide comida de restaurantes de Pucallpa con FoodXpres. Explora menús, encuentra tus platos favoritos y recibe tu pedido por delivery.',
-  applicationName: 'FoodXpres',
+    'Pide comida de restaurantes de Pucallpa con FOODXPRES. Explora menús, encuentra tus platos favoritos y recibe tu pedido por delivery.',
+  applicationName: 'FOODXPRES',
   icons: { icon: '/icons/icon-192.png', apple: '/icons/icon-192.png' },
   keywords: [
-    'FoodXpres',
+    'FOODXPRES',
     'delivery Pucallpa',
     'comida a domicilio Pucallpa',
     'restaurantes Pucallpa',
@@ -26,21 +26,21 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    title: 'FoodXpres',
+    title: 'FOODXPRES',
     statusBarStyle: 'black-translucent',
   },
   openGraph: {
-    title: 'FoodXpres | Delivery de comida en Pucallpa',
+    title: 'FOODXPRES | Delivery de comida en Pucallpa',
     description:
       'Pide comida de restaurantes de Pucallpa y recibe tu pedido por delivery.',
     type: 'website',
     locale: 'es_PE',
-    siteName: 'FoodXpres',
+    siteName: 'FOODXPRES',
     url: '/',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'FoodXpres | Delivery de comida en Pucallpa',
+    title: 'FOODXPRES | Delivery de comida en Pucallpa',
     description:
       'Pide comida de restaurantes de Pucallpa y recibe tu pedido por delivery.',
   },
@@ -67,7 +67,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-title" content="FoodXpres" />
+        <meta name="apple-mobile-web-app-title" content="FOODXPRES" />
       </head>
       <body className="antialiased min-h-screen">
         <ToastProvider>{children}</ToastProvider>

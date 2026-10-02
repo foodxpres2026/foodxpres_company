@@ -45,7 +45,7 @@ export default function PushNotifications() {
     void import('firebase/messaging').then(async ({ getMessaging, isSupported, onMessage }) => {
       if (await isSupported()) unsubscribe = onMessage(getMessaging(app), (payload) => {
         playPushSound()
-        setMessage(`${payload.notification?.title ?? 'FoodXpres'}: ${payload.notification?.body ?? 'Hay un pedido disponible.'}`)
+        setMessage(`${payload.notification?.title ?? 'FOODXPRES'}: ${payload.notification?.body ?? 'Hay un pedido disponible.'}`)
         window.setTimeout(() => setMessage(''), 8000)
       })
     }).catch(() => undefined)

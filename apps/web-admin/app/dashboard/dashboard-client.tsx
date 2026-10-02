@@ -139,7 +139,7 @@ export default function DashboardClient() {
           Hola, Admin 👋
         </h1>
         <p className="text-gray-500 text-sm mt-1">
-          Resumen de FoodXpres en tiempo real
+          Resumen de FOODXPRES en tiempo real
         </p>
       </div>
 

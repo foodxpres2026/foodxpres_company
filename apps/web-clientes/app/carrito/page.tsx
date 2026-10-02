@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Mi pedido · FoodXpres',
+  title: 'Mi pedido · FOODXPRES',
   description: 'Revisa y confirma tu pedido',
 }
 import { sql } from '@/lib/db'

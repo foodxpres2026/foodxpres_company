@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Buscar · FoodXpres',
+  title: 'Buscar · FOODXPRES',
   description: 'Busca restaurantes, platos y productos',
 }
 import { Suspense } from 'react'

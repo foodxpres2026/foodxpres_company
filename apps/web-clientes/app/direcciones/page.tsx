@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Mis direcciones · FoodXpres',
+  title: 'Mis direcciones · FOODXPRES',
   description: 'Gestiona tus direcciones de entrega',
 }
 import Link from 'next/link'

@@ -132,7 +132,7 @@ export default function PerfilCliente({ user }: Props) {
 
       {/* INFO EXTRA */}
       <p className="text-center text-xs text-gray-700 pt-2">
-        FoodXpres 🐯 · Hecho en Pucallpa
+        FOODXPRES 🐯 · Hecho en Pucallpa
       </p>
 
       {/* MODALES */}

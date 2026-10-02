@@ -70,17 +70,17 @@ export default function ConfiguracionForm() {
       <div className="bg-surface border border-line rounded-2xl p-5 md:p-6 space-y-4">
         <div>
           <h3 className="text-base font-bold text-white">Envío</h3>
-          <p className="text-xs text-gray-500 mt-1">FoodXpres cobra según la ruta real. Los pedidos a más de 15 km no se aceptan.</p>
+          <p className="text-xs text-gray-500 mt-1">FOODXPRES cobra según la ruta real. Los pedidos a más de 15 km no se aceptan.</p>
         </div>
         <fieldset className="space-y-3">
           <legend className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">Tabla activa (elige una)</legend>
           <label className="flex items-start gap-3 rounded-xl border border-line bg-surface-dark p-4 cursor-pointer">
             <input type="radio" name="tarifa_delivery_metodo" checked={config.tarifa_delivery_metodo === 'DETALLADA'} onChange={() => update('tarifa_delivery_metodo', 'DETALLADA')} className="mt-1 accent-lime-500" />
-            <span><strong className="block text-sm text-white">Tabla FoodXpres detallada</strong><small className="text-gray-500">Usa los rangos y correcciones de la primera tabla (hasta 11 km); continúa el patrón de S/ 0.50 cada 0.5 km hasta 15 km.</small></span>
+            <span><strong className="block text-sm text-white">Tabla FOODXPRES detallada</strong><small className="text-gray-500">Usa los rangos y correcciones de la primera tabla (hasta 11 km); continúa el patrón de S/ 0.50 cada 0.5 km hasta 15 km.</small></span>
           </label>
           <label className="flex items-start gap-3 rounded-xl border border-line bg-surface-dark p-4 cursor-pointer">
             <input type="radio" name="tarifa_delivery_metodo" checked={config.tarifa_delivery_metodo === 'GENERAL'} onChange={() => update('tarifa_delivery_metodo', 'GENERAL')} className="mt-1 accent-lime-500" />
-            <span><strong className="block text-sm text-white">Tabla FoodXpres general</strong><small className="text-gray-500">Usa los rangos de la segunda tabla (hasta 12 km); continúa el patrón de S/ 0.50 cada 0.5 km hasta 15 km.</small></span>
+            <span><strong className="block text-sm text-white">Tabla FOODXPRES general</strong><small className="text-gray-500">Usa los rangos de la segunda tabla (hasta 12 km); continúa el patrón de S/ 0.50 cada 0.5 km hasta 15 km.</small></span>
           </label>
         </fieldset>
       </div>

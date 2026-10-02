@@ -113,13 +113,13 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
   return <main className="driver-shell">
     <header className="driver-topbar">
       <button className="menu-button" aria-label="Abrir menú" onClick={() => setDrawer(true)}>☰</button>
-      <a className="brand" href="/" aria-label="FoodXpres Driver"><span className="brand-mark"><img src="/logo-mark.png" alt="" /></span><span>Food<span className="brand-accent">X</span>pres <small>DRIVER</small></span></a>
+      <a className="brand" href="/" aria-label="FOODXPRES Driver"><span className="brand-mark"><img src="/logo-mark.png" alt="" /></span><span>FOOD<span className="brand-accent">X</span>PRES <small>DRIVER</small></span></a>
       <div className="top-user"><span className="online-dot" />{user.nombre.split(' ')[0]}<span className="driver-commission-balance">Debe {money(commissionBalance)}</span><button className="logout-link" onClick={logout} disabled={busy === 'logout'}>Salir</button></div>
     </header>
 
     <div className="driver-layout">
       <aside className={`driver-sidebar ${drawer ? 'is-open' : ''}`}>
-        <div className="sidebar-profile"><div className="avatar">{user.nombre.slice(0, 1).toUpperCase()}</div><div><strong>{user.nombre}</strong><span>Repartidor FoodXpres</span></div><button className="drawer-close" onClick={() => setDrawer(false)} aria-label="Cerrar menú">×</button></div>
+        <div className="sidebar-profile"><div className="avatar">{user.nombre.slice(0, 1).toUpperCase()}</div><div><strong>{user.nombre}</strong><span>Repartidor FOODXPRES</span></div><button className="drawer-close" onClick={() => setDrawer(false)} aria-label="Cerrar menú">×</button></div>
         <nav aria-label="Secciones de pedidos">{tabs.map((tab) => <button key={tab.id} className={`side-tab ${section === tab.id ? 'active' : ''}`} onClick={() => { setSection(tab.id); setDrawer(false) }}><span>{tab.id === 'available' ? '◈' : tab.id === 'current' ? '◷' : '↺'}</span>{tab.title}</button>)}</nav>
         <div className="sidebar-note"><span className="online-dot" /> Actualización automática cada 10 s</div>
         <button className="sidebar-logout" onClick={logout} disabled={busy === 'logout'}>Cerrar sesión</button>
@@ -140,7 +140,7 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
           {orders.map((order) => <OrderCard key={order.id} order={order} driverName={user.nombre} section={section} canTake={disponible !== false && overdueCommission <= 0} takeBlockedLabel={overdueCommission > 0 ? 'Deuda vencida' : 'No disponible'} busy={busy === order.id} onTake={() => mutate(order, `/api/driver/orders/${order.id}/take`, 'POST')} onAction={(accion) => mutate(order, `/api/driver/orders/${order.id}/action`, 'PATCH', { accion })} />)}
         </div>}
         {hasMore && <button className="load-more" disabled={loading} onClick={() => void load(section, true)}>{loading ? 'Cargando...' : 'Cargar más pedidos'}</button>}
-        <p className="content-footer">FoodXpres · Pucallpa</p>
+        <p className="content-footer">FOODXPRES · Pucallpa</p>
       </section>
     </div>
   </main>
@@ -185,14 +185,14 @@ type MessageTemplate = { id: string; title: string; description: string; message
 function WhatsAppMessageModal({ order, driverName, target, onClose }: { order: Order; driverName: string; target: MessageTarget; onClose: () => void }) {
   const orderCode = order.pedido_codigo || order.id.slice(0, 8).toUpperCase()
   const templates: MessageTemplate[] = target === 'restaurant' ? [
-    { id: 'pending', title: 'Pedido pendiente de aceptar', description: 'Avisar al local para que revise el pedido.', message: (o, driver) => `Buenas, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor de FoodXpres. El pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre} aún figura pendiente de aceptación. ¿Podrían revisarlo cuando tengan un momento para evitar demoras? Muchas gracias.` },
-    { id: 'arrived', title: 'Llegué al restaurante', description: 'Avisar que el driver ya está esperando.', message: (o, driver) => `Buenas, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor de FoodXpres. Ya llegué al local para recoger el pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre}. Quedo atento a que esté listo. ¡Gracias!` },
+    { id: 'pending', title: 'Pedido pendiente de aceptar', description: 'Avisar al local para que revise el pedido.', message: (o, driver) => `Buenas, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor de FOODXPRES. El pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre} aún figura pendiente de aceptación. ¿Podrían revisarlo cuando tengan un momento para evitar demoras? Muchas gracias.` },
+    { id: 'arrived', title: 'Llegué al restaurante', description: 'Avisar que el driver ya está esperando.', message: (o, driver) => `Buenas, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor de FOODXPRES. Ya llegué al local para recoger el pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre}. Quedo atento a que esté listo. ¡Gracias!` },
     { id: 'ready', title: 'Consulta si está listo', description: 'Preguntar por el estado de preparación.', message: (o, driver) => `Hola, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor asignado al pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre}. ¿Me confirman, por favor, si ya está listo para recoger? Gracias.` },
   ] : [
-    { id: 'arrived-restaurant', title: 'Llegué al restaurante', description: 'Contar al cliente que estás esperando su pedido.', message: (o, driver) => `Hola, ${o.cliente_nombre} 👋\nSoy ${driver}, repartidor de FoodXpres. Ya llegué a ${o.restaurante_nombre} para recoger tu pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()}. Estoy esperando que el local me lo entregue; te avisaré apenas salga hacia tu dirección. 🛵` },
-    { id: 'on-the-way', title: 'Pedido en camino', description: 'Avisar que saliste del restaurante.', message: (o, driver) => `Hola, ${o.cliente_nombre} 👋\nSoy ${driver}, repartidor de FoodXpres. Ya recogí tu pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.restaurante_nombre} y voy en camino a tu dirección. ¡Nos vemos pronto! 🛵` },
-    { id: 'arrived-customer', title: 'Llegué a tu ubicación', description: 'Avisar que estás en la dirección de entrega.', message: (o, driver) => `Hola, ${o.cliente_nombre} 👋\nSoy ${driver}, repartidor de FoodXpres. Ya llegué a la dirección que indicaste para el pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()}. Estoy aquí para entregártelo; avísame si necesitas que te llame o si debo ubicar alguna referencia. 📍` },
-    { id: 'unavailable', title: 'Producto no disponible', description: 'Informar el inconveniente y la cancelación prevista.', message: (o, driver) => `Hola, ${o.cliente_nombre}. Soy ${driver}, repartidor de FoodXpres. El local ${o.restaurante_nombre} me informó que un producto de tu pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} no está disponible. Por ese motivo, el pedido será cancelado. Lamento mucho el inconveniente; puedes coordinar cualquier consulta directamente con el local.` },
+    { id: 'arrived-restaurant', title: 'Llegué al restaurante', description: 'Contar al cliente que estás esperando su pedido.', message: (o, driver) => `Hola, ${o.cliente_nombre} 👋\nSoy ${driver}, repartidor de FOODXPRES. Ya llegué a ${o.restaurante_nombre} para recoger tu pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()}. Estoy esperando que el local me lo entregue; te avisaré apenas salga hacia tu dirección. 🛵` },
+    { id: 'on-the-way', title: 'Pedido en camino', description: 'Avisar que saliste del restaurante.', message: (o, driver) => `Hola, ${o.cliente_nombre} 👋\nSoy ${driver}, repartidor de FOODXPRES. Ya recogí tu pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.restaurante_nombre} y voy en camino a tu dirección. ¡Nos vemos pronto! 🛵` },
+    { id: 'arrived-customer', title: 'Llegué a tu ubicación', description: 'Avisar que estás en la dirección de entrega.', message: (o, driver) => `Hola, ${o.cliente_nombre} 👋\nSoy ${driver}, repartidor de FOODXPRES. Ya llegué a la dirección que indicaste para el pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()}. Estoy aquí para entregártelo; avísame si necesitas que te llame o si debo ubicar alguna referencia. 📍` },
+    { id: 'unavailable', title: 'Producto no disponible', description: 'Informar el inconveniente y la cancelación prevista.', message: (o, driver) => `Hola, ${o.cliente_nombre}. Soy ${driver}, repartidor de FOODXPRES. El local ${o.restaurante_nombre} me informó que un producto de tu pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} no está disponible. Por ese motivo, el pedido será cancelado. Lamento mucho el inconveniente; puedes coordinar cualquier consulta directamente con el local.` },
   ]
   const [selectedId, setSelectedId] = useState(templates[0].id)
   const [message, setMessage] = useState(() => templates[0].message(order, driverName))

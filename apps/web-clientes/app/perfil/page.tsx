@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Mi perfil · FoodXpres',
+  title: 'Mi perfil · FOODXPRES',
   description: 'Gestiona tu cuenta',
 }
 import { sql } from '@/lib/db'

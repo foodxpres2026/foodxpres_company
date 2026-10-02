@@ -112,7 +112,7 @@ export default function LoginForm() {
         </form>
 
         <p className="text-center text-xs text-gray-600 mt-6">
-          FoodXpres © {new Date().getFullYear()} · Pucallpa
+          FOODXPRES © {new Date().getFullYear()} · Pucallpa
         </p>
       </div>
     </div>
