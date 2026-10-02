@@ -17,17 +17,24 @@ export default function MapPicker({ title, lat, lng, onClose, onSelect }: Props)
       // @ts-expect-error Leaflet's bundled defaults are assigned below.
       delete L.Icon.Default.prototype._getIconUrl
       L.Icon.Default.mergeOptions({ iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png', iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png' })
-      const map = L.map(mapNode.current!).setView([initial.current.lat, initial.current.lng], 16)
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map)
+      const map = L.map(mapNode.current!, { zoomControl: true }).setView([initial.current.lat, initial.current.lng], 16)
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+      }).addTo(map)
       const marker = L.marker([initial.current.lat, initial.current.lng], { draggable: true }).addTo(map)
       const update = (point: { lat: number; lng: number }) => { marker.setLatLng([point.lat, point.lng]); setCoords({ lat: point.lat, lng: point.lng }); onSelectRef.current(point.lat, point.lng) }
       marker.on('dragend', () => update(marker.getLatLng()))
       map.on('click', (event: any) => update(event.latlng))
       mapRef.current = map; markerRef.current = marker
-      const observer = new ResizeObserver(() => map.invalidateSize({ pan: false }))
+      // Igual que en Clientes: el modal puede terminar de medir/animar después
+      // de que Leaflet cree el mapa. Recalcular en dos frames evita que quede
+      // visible el contenedor sin las teselas.
+      const invalidateSize = () => map.invalidateSize({ pan: false })
+      requestAnimationFrame(() => requestAnimationFrame(invalidateSize))
+      const observer = new ResizeObserver(invalidateSize)
       observer.observe(mapNode.current!)
       map.on('unload', () => observer.disconnect())
-      requestAnimationFrame(() => map.invalidateSize({ pan: false }))
     }).catch(() => setError('No se pudo cargar el mapa. Revisa tu conexión.'))
     return () => { cancelled = true; if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; markerRef.current = null } }
   }, [])
