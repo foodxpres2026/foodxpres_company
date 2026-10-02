@@ -24,7 +24,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)
         SELECT sp.id, 'ASIGNADO', ${driver.id}, 'LLEGUE'
         FROM sub_pedidos sp
-        WHERE sp.id = ${id} AND sp.driver_id = ${driver.id} AND sp.estado IN ('LISTO', 'ASIGNADO')
+        WHERE sp.id = ${id} AND sp.driver_id = ${driver.id}
+          AND sp.estado IN ('ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO')
           AND NOT EXISTS (
             SELECT 1 FROM pedido_estado_historial h
             WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = ${driver.id} AND h.notas = 'LLEGUE'
@@ -33,11 +34,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       ` as any[]
       state = 'ASIGNADO'
       historyWritten = true
-      if (updated.length) await sql`UPDATE sub_pedidos SET estado = 'ASIGNADO' WHERE id = ${id} AND driver_id = ${driver.id} AND estado = 'LISTO'`
     } else if (accion === 'RECOGI') {
       updated = await sql`
         UPDATE sub_pedidos sp SET estado = 'EN_CAMINO', recogido_en = NOW()
-        WHERE sp.id = ${id} AND sp.driver_id = ${driver.id} AND sp.estado = 'ASIGNADO'
+        WHERE sp.id = ${id} AND sp.driver_id = ${driver.id}
+          AND sp.estado IN ('ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO')
           AND EXISTS (
             SELECT 1 FROM pedido_estado_historial h
             WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = ${driver.id} AND h.notas = 'LLEGUE'
