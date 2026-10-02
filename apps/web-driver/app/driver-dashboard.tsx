@@ -21,10 +21,10 @@ const tabs: { id: Section; title: string }[] = [
 ]
 const money = (value: number | string | null | undefined) => `S/ ${Number(value ?? 0).toFixed(2)}`
 const phoneLink = (phone: string | null) => phone ? `tel:${phone.replace(/[^\d+]/g, '')}` : undefined
-const whatsappLink = (phone: string | null) => {
+const whatsappLink = (phone: string | null, message: string) => {
   if (!phone) return undefined
   const digits = phone.replace(/\D/g, '')
-  return `https://wa.me/${digits.startsWith('51') ? digits : `51${digits}`}`
+  return `https://wa.me/${digits.startsWith('51') ? digits : `51${digits}`}?text=${encodeURIComponent(message)}`
 }
 const dateTime = (value: string | null) => value ? new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'
 
@@ -136,7 +136,7 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
         {overdueCommission > 0 && <div className="error-panel" role="alert"><span>Tienes una deuda de comisión vencida por {money(overdueCommission)}. Ya pasaron 2 días desde que se generó; no podrás tomar nuevos pedidos hasta que administración registre tu pago.</span></div>}
         {error && <div className="error-panel" role="alert"><span>{error}</span><button onClick={() => void load(section)}>Reintentar</button></div>}
         {loading && orders.length === 0 ? <div className="empty-state"><div className="spinner"/><p>Cargando pedidos...</p></div> : orders.length === 0 && !error ? <div className="empty-state"><div className="empty-icon">{section === 'available' ? '✓' : section === 'current' ? '◷' : '↺'}</div><h2>{section === 'available' ? 'No hay pedidos sin driver' : section === 'current' ? 'No tienes pedidos en curso' : 'Aún no tienes pedidos en el historial'}</h2><p>{section === 'available' ? 'Aquí aparecerán los pedidos activos que todavía no tengan un driver asignado.' : 'Cuando haya actividad, la verás en este apartado.'}</p></div> : <div className="orders-grid">
-          {orders.map((order) => <OrderCard key={order.id} order={order} section={section} canTake={disponible !== false && overdueCommission <= 0} takeBlockedLabel={overdueCommission > 0 ? 'Deuda vencida' : 'No disponible'} busy={busy === order.id} onTake={() => mutate(order, `/api/driver/orders/${order.id}/take`, 'POST')} onAction={(accion) => mutate(order, `/api/driver/orders/${order.id}/action`, 'PATCH', { accion })} />)}
+          {orders.map((order) => <OrderCard key={order.id} order={order} driverName={user.nombre} section={section} canTake={disponible !== false && overdueCommission <= 0} takeBlockedLabel={overdueCommission > 0 ? 'Deuda vencida' : 'No disponible'} busy={busy === order.id} onTake={() => mutate(order, `/api/driver/orders/${order.id}/take`, 'POST')} onAction={(accion) => mutate(order, `/api/driver/orders/${order.id}/action`, 'PATCH', { accion })} />)}
         </div>}
         {hasMore && <button className="load-more" disabled={loading} onClick={() => void load(section, true)}>{loading ? 'Cargando...' : 'Cargar más pedidos'}</button>}
         <p className="content-footer">FoodXpres · Pucallpa</p>
@@ -145,7 +145,8 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
   </main>
 }
 
-function OrderCard({ order, section, canTake, takeBlockedLabel, busy, onTake, onAction }: { order: Order; section: Section; canTake: boolean; takeBlockedLabel: string; busy: boolean; onTake: () => void; onAction: (action: 'LLEGUE' | 'RECOGI' | 'ENTREGUE') => void }) {
+function OrderCard({ order, driverName, section, canTake, takeBlockedLabel, busy, onTake, onAction }: { order: Order; driverName: string; section: Section; canTake: boolean; takeBlockedLabel: string; busy: boolean; onTake: () => void; onAction: (action: 'LLEGUE' | 'RECOGI' | 'ENTREGUE') => void }) {
+  const [whatsappTarget, setWhatsappTarget] = useState<'restaurant' | 'customer' | null>(null)
   const address = order.direccion_snapshot?.direccion || 'Dirección de entrega no disponible'
   const customerAddress = [address, order.direccion_snapshot?.referencia].filter(Boolean).join(' · ')
   const waitingForLocal = ['PENDIENTE', 'ACEPTADO', 'PREPARANDO'].includes(order.estado)
@@ -160,13 +161,65 @@ function OrderCard({ order, section, canTake, takeBlockedLabel, busy, onTake, on
   return <article className="order-card">
     <div className="order-card-head"><div><span className="order-id">PEDIDO {order.pedido_codigo || order.id.slice(0, 8).toUpperCase()}</span><span className={`state-pill ${order.estado.toLowerCase()}`}>{statusLabel}</span></div><span className="order-date">{dateTime(order.driver_asignado_en ?? order.listo_en ?? order.creado_en)}</span></div>
     <div className="order-money"><div><span>Productos</span><strong>{money(order.subtotal)}</strong></div><div><span>Costo de envío</span><strong>{money(order.costo_envio)}</strong></div><div className="money-total"><span>Total pedido</span><strong>{money(total)}</strong></div></div>
-    <div className="place-row"><span className="place-icon">⌂</span><div className="place-body"><strong>{order.restaurante_nombre}</strong><span>{order.restaurante_direccion || 'Dirección no disponible'}</span><div className="contact-links">{order.restaurante_celular && <><a href={phoneLink(order.restaurante_celular)}>Llamar · {order.restaurante_celular}</a><a className="whatsapp-link" href={whatsappLink(order.restaurante_celular)} target="_blank" rel="noreferrer">WhatsApp</a></>}</div></div></div>
-    <div className="place-row"><span className="place-icon customer">●</span><div className="place-body"><strong>{order.cliente_nombre}</strong><span>{customerAddress}</span><div className="contact-links">{order.cliente_celular && <><a href={phoneLink(order.cliente_celular)}>Llamar · {order.cliente_celular}</a><a className="whatsapp-link" href={whatsappLink(order.cliente_celular)} target="_blank" rel="noreferrer">WhatsApp</a></>}</div></div></div>
+    <div className="place-row"><span className="place-icon">⌂</span><div className="place-body"><strong>{order.restaurante_nombre}</strong><span>{order.restaurante_direccion || 'Dirección no disponible'}</span><div className="contact-links">{order.restaurante_celular && <><a href={phoneLink(order.restaurante_celular)}>Llamar · {order.restaurante_celular}</a><button type="button" className="whatsapp-link" onClick={() => setWhatsappTarget('restaurant')}>WhatsApp</button></>}</div></div></div>
+    <div className="place-row"><span className="place-icon customer">●</span><div className="place-body"><strong>{order.cliente_nombre}</strong><span>{customerAddress}</span><div className="contact-links">{order.cliente_celular && <><a href={phoneLink(order.cliente_celular)}>Llamar · {order.cliente_celular}</a><button type="button" className="whatsapp-link" onClick={() => setWhatsappTarget('customer')}>WhatsApp</button></>}</div></div></div>
     {!!order.items.length && <div className="items-box"><strong>Detalle del pedido</strong>{order.items.map((item) => <div className="item-line" key={item.id}><span>{item.cantidad} × {item.nombre_snapshot}</span><span>{money(item.subtotal)}</span>{item.notas && <small>{item.notas}</small>}</div>)}</div>}
     {order.pedido_notas && <p className="order-note"><strong>Nota:</strong> {order.pedido_notas}</p>}
     {section === 'current' && (order.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' ? <div className="waiting-local">Ya avisaste que llegaste al cliente. El pedido se cerrará cuando el cliente confirme que lo recibió.</div> : waitingForLocal ? <div className="waiting-local">Pedido reservado. Esperando que el local lo acepte y lo prepare.</div> : <div className="timeline"><div className="timeline-steps"><span className="done">Pedido tomado</span><span className={progress >= 1 ? 'done' : ''}>Llegada al local</span><span className={progress >= 2 ? 'done' : ''}>En camino</span><span>Entregado</span></div><div className="timeline-track"><i style={{ width: `${progress === 0 ? 7 : progress === 1 ? 37 : 69}%` }} /></div><div className="timeline-dates"><span>Tomado: {dateTime(order.driver_asignado_en)}</span><span>{order.driver_llego_en ? `Llegada: ${dateTime(order.driver_llego_en)}` : `Listo desde: ${dateTime(order.listo_en)}`}</span>{order.recogido_en && <span>Recogido: {dateTime(order.recogido_en)}</span>}</div></div>)}
     {section === 'history' && <div className="history-stamps"><span>Pedido tomado: {dateTime(order.driver_asignado_en)}</span>{order.driver_llego_en && <span>Llegaste al local: {dateTime(order.driver_llego_en)}</span>}{order.recogido_en && <span>Recogido: {dateTime(order.recogido_en)}</span>}{order.entrega_reportada_en && <span>Avisaste llegada al cliente: {dateTime(order.entrega_reportada_en)}</span>}{order.entregado_en && <span>Entrega confirmada: {dateTime(order.entregado_en)}</span>}{order.driver_comision_monto != null && <span>Comisión del pedido: {money(order.driver_comision_monto)} (solo delivery)</span>}</div>}
     <div className="order-card-foot"><a className="map-link" href={mapLink} target="_blank" rel="noreferrer">↗ Ruta: local → cliente</a>{section === 'available' && <button className="primary-action" onClick={onTake} disabled={busy || !canTake}>{busy ? 'Tomando pedido...' : canTake ? 'Tomar pedido' : takeBlockedLabel}</button>}{section === 'current' && !waitingForLocal && order.estado !== 'ENTREGA_PENDIENTE_CONFIRMACION' && <button className="primary-action" onClick={() => onAction(action)} disabled={busy}>{busy ? 'Guardando...' : actionLabel}</button>}</div>
+    {whatsappTarget && <WhatsAppMessageModal key={`${order.id}-${whatsappTarget}`} order={order} driverName={driverName} target={whatsappTarget} onClose={() => setWhatsappTarget(null)} />}
   </article>
 }
 
+type MessageTarget = 'restaurant' | 'customer'
+type MessageTemplate = { id: string; title: string; description: string; message: (order: Order, driverName: string) => string }
+
+function WhatsAppMessageModal({ order, driverName, target, onClose }: { order: Order; driverName: string; target: MessageTarget; onClose: () => void }) {
+  const orderCode = order.pedido_codigo || order.id.slice(0, 8).toUpperCase()
+  const templates: MessageTemplate[] = target === 'restaurant' ? [
+    { id: 'pending', title: 'Pedido pendiente de aceptar', description: 'Avisar al local para que revise el pedido.', message: (o, driver) => `Buenas, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor de FoodXpres. El pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre} aún figura pendiente de aceptación. ¿Podrían revisarlo cuando tengan un momento para evitar demoras? Muchas gracias.` },
+    { id: 'arrived', title: 'Llegué al restaurante', description: 'Avisar que el driver ya está esperando.', message: (o, driver) => `Buenas, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor de FoodXpres. Ya llegué al local para recoger el pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre}. Quedo atento a que esté listo. ¡Gracias!` },
+    { id: 'ready', title: 'Consulta si está listo', description: 'Preguntar por el estado de preparación.', message: (o, driver) => `Hola, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor asignado al pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre}. ¿Me confirman, por favor, si ya está listo para recoger? Gracias.` },
+  ] : [
+    { id: 'arrived-restaurant', title: 'Llegué al restaurante', description: 'Contar al cliente que estás esperando su pedido.', message: (o, driver) => `Hola, ${o.cliente_nombre} 👋\nSoy ${driver}, repartidor de FoodXpres. Ya llegué a ${o.restaurante_nombre} para recoger tu pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()}. Estoy esperando que el local me lo entregue; te avisaré apenas salga hacia tu dirección. 🛵` },
+    { id: 'on-the-way', title: 'Pedido en camino', description: 'Avisar que saliste del restaurante.', message: (o, driver) => `Hola, ${o.cliente_nombre} 👋\nSoy ${driver}, repartidor de FoodXpres. Ya recogí tu pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.restaurante_nombre} y voy en camino a tu dirección. ¡Nos vemos pronto! 🛵` },
+    { id: 'arrived-customer', title: 'Llegué a tu ubicación', description: 'Avisar que estás en la dirección de entrega.', message: (o, driver) => `Hola, ${o.cliente_nombre} 👋\nSoy ${driver}, repartidor de FoodXpres. Ya llegué a la dirección que indicaste para el pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()}. Estoy aquí para entregártelo; avísame si necesitas que te llame o si debo ubicar alguna referencia. 📍` },
+    { id: 'unavailable', title: 'Producto no disponible', description: 'Informar el inconveniente y la cancelación prevista.', message: (o, driver) => `Hola, ${o.cliente_nombre}. Soy ${driver}, repartidor de FoodXpres. El local ${o.restaurante_nombre} me informó que un producto de tu pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} no está disponible. Por ese motivo, el pedido será cancelado. Lamento mucho el inconveniente; puedes coordinar cualquier consulta directamente con el local.` },
+  ]
+  const [selectedId, setSelectedId] = useState(templates[0].id)
+  const [message, setMessage] = useState(() => templates[0].message(order, driverName))
+  const template = templates.find((item) => item.id === selectedId) ?? templates[0]
+  const phone = target === 'restaurant' ? order.restaurante_celular : order.cliente_celular
+  const recipient = target === 'restaurant' ? order.restaurante_nombre : order.cliente_nombre
+  function chooseTemplate(id: string) {
+    const next = templates.find((item) => item.id === id)
+    if (!next) return
+    setSelectedId(id)
+    setMessage(next.message(order, driverName))
+  }
+  function send() {
+    const link = whatsappLink(phone, message)
+    if (!link || !message.trim()) return
+    window.open(link, '_blank', 'noopener,noreferrer')
+    onClose()
+  }
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
+
+  return <div className="whatsapp-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
+    <section className="whatsapp-modal" role="dialog" aria-modal="true" aria-labelledby={`whatsapp-title-${order.id}`}>
+      <header><div className="whatsapp-modal-icon">✉</div><div><h2 id={`whatsapp-title-${order.id}`}>Mensaje por WhatsApp</h2><p>Para {recipient} · Pedido {orderCode}</p></div><button type="button" className="whatsapp-modal-close" onClick={onClose} aria-label="Cerrar">×</button></header>
+      <label className="whatsapp-template-label" htmlFor={`whatsapp-template-${order.id}`}>Elige un mensaje</label>
+      <select id={`whatsapp-template-${order.id}`} value={selectedId || template.id} onChange={(event) => chooseTemplate(event.target.value)}>{templates.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select>
+      <p className="whatsapp-template-description">{template.description}</p>
+      <label className="whatsapp-template-label" htmlFor={`whatsapp-message-${order.id}`}>Vista previa · puedes editarlo</label>
+      <textarea id={`whatsapp-message-${order.id}`} value={message} onChange={(event) => setMessage(event.target.value)} rows={7} maxLength={1500} />
+      <div className="whatsapp-modal-meta"><span>Se abrirá WhatsApp con {phone}</span><span>{message.length}/1500</span></div>
+      <footer><button type="button" className="whatsapp-cancel" onClick={onClose}>Cancelar</button><button type="button" className="whatsapp-send" onClick={send} disabled={!message.trim()}>Abrir WhatsApp <span>↗</span></button></footer>
+    </section>
+  </div>
+}
