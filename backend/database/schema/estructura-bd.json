@@ -103,7 +103,7 @@
         "indexdef": "CREATE UNIQUE INDEX categorias_slug_key ON public.categorias USING btree (slug)"
       }
     ],
-    "total_filas": 10
+    "total_filas": 13
   },
   "comision_pagos": {
     "columnas": [
@@ -239,7 +239,7 @@
         "indexdef": "CREATE INDEX idx_comision_pagos_beneficiario ON public.comision_pagos USING btree (beneficiario_tipo, beneficiario_id, pagado_en DESC)"
       }
     ],
-    "total_filas": 0
+    "total_filas": 4
   },
   "comision_reglas": {
     "columnas": [
@@ -589,7 +589,7 @@
         "indexdef": "CREATE INDEX idx_comisiones_beneficiario ON public.comisiones_generadas USING btree (beneficiario_tipo, beneficiario_id, creado_en DESC)"
       }
     ],
-    "total_filas": 0
+    "total_filas": 6
   },
   "configuracion_sistema": {
     "columnas": [
@@ -910,7 +910,7 @@
         "indexdef": "CREATE INDEX idx_direcciones_usuario ON public.direcciones USING btree (usuario_id)"
       }
     ],
-    "total_filas": 41
+    "total_filas": 2
   },
   "driver_detalles": {
     "columnas": [
@@ -1057,7 +1057,7 @@
         "indexdef": "CREATE UNIQUE INDEX driver_detalles_pkey ON public.driver_detalles USING btree (usuario_id)"
       }
     ],
-    "total_filas": 14
+    "total_filas": 5
   },
   "favoritos": {
     "columnas": [
@@ -1279,7 +1279,7 @@
         "indexdef": "CREATE INDEX idx_grupos_opciones_plato ON public.grupos_opciones USING btree (plato_id)"
       }
     ],
-    "total_filas": 106
+    "total_filas": 95
   },
   "horarios_atencion": {
     "columnas": [
@@ -1399,7 +1399,7 @@
         "indexdef": "CREATE UNIQUE INDEX horarios_atencion_restaurante_id_dia_key ON public.horarios_atencion USING btree (restaurante_id, dia)"
       }
     ],
-    "total_filas": 49
+    "total_filas": 14
   },
   "item_opciones": {
     "columnas": [
@@ -1505,7 +1505,7 @@
         "indexdef": "CREATE INDEX idx_item_opciones_item ON public.item_opciones USING btree (item_id)"
       }
     ],
-    "total_filas": 24
+    "total_filas": 13
   },
   "notificaciones": {
     "columnas": [
@@ -1769,7 +1769,7 @@
         "indexdef": "CREATE INDEX idx_opciones_choices_grupo ON public.opciones_choices USING btree (grupo_id)"
       }
     ],
-    "total_filas": 374
+    "total_filas": 334
   },
   "otp_codes": {
     "columnas": [
@@ -2011,7 +2011,7 @@
         "indexdef": "CREATE INDEX idx_historial_subpedido ON public.pedido_estado_historial USING btree (sub_pedido_id)"
       }
     ],
-    "total_filas": 229
+    "total_filas": 32
   },
   "pedido_items": {
     "columnas": [
@@ -2184,7 +2184,7 @@
         "indexdef": "CREATE INDEX idx_items_subpedido ON public.pedido_items USING btree (sub_pedido_id)"
       }
     ],
-    "total_filas": 166
+    "total_filas": 4
   },
   "pedidos": {
     "columnas": [
@@ -2425,7 +2425,7 @@
         "indexdef": "CREATE INDEX idx_pedidos_usuario ON public.pedidos USING btree (usuario_id)"
       }
     ],
-    "total_filas": 70
+    "total_filas": 4
   },
   "platos": {
     "columnas": [
@@ -2647,7 +2647,7 @@
         "indexdef": "CREATE INDEX idx_platos_subcategoria ON public.platos USING btree (subcategoria_id)"
       }
     ],
-    "total_filas": 119
+    "total_filas": 79
   },
   "promociones": {
     "columnas": [
@@ -2998,7 +2998,7 @@
         "indexdef": "CREATE INDEX idx_push_subs_usuario ON public.push_subscriptions USING btree (usuario_id, activo)"
       }
     ],
-    "total_filas": 7
+    "total_filas": 4
   },
   "push_tokens": {
     "columnas": [
@@ -3464,7 +3464,7 @@
         "indexdef": "CREATE UNIQUE INDEX restaurantes_usuario_id_key ON public.restaurantes USING btree (usuario_id)"
       }
     ],
-    "total_filas": 7
+    "total_filas": 2
   },
   "restaurantes_categorias": {
     "columnas": [
@@ -3535,7 +3535,7 @@
         "indexdef": "CREATE UNIQUE INDEX restaurantes_categorias_pkey ON public.restaurantes_categorias USING btree (restaurante_id, categoria_id)"
       }
     ],
-    "total_filas": 12
+    "total_filas": 4
   },
   "rutas_cache": {
     "columnas": [
@@ -3711,7 +3711,7 @@
         "indexdef": "CREATE INDEX idx_rutas_cache_lookup ON public.rutas_cache USING btree (restaurante_lat, restaurante_lng, cliente_lat, cliente_lng)"
       }
     ],
-    "total_filas": 80
+    "total_filas": 11
   },
   "solicitudes_recuperacion": {
     "columnas": [
@@ -3873,7 +3873,7 @@
         "indexdef": "CREATE INDEX idx_solicitudes_estado ON public.solicitudes_recuperacion USING btree (estado, creado_en DESC)"
       }
     ],
-    "total_filas": 1
+    "total_filas": 0
   },
   "sub_pedidos": {
     "columnas": [
@@ -4439,7 +4439,7 @@
         "indexdef": "CREATE INDEX idx_subpedidos_confirmacion_cliente ON public.sub_pedidos USING btree (pedido_id, estado) WHERE ((estado)::text = 'ENTREGA_PENDIENTE_CONFIRMACION'::text)"
       }
     ],
-    "total_filas": 84
+    "total_filas": 4
   },
   "subcategorias": {
     "columnas": [
@@ -4545,7 +4545,7 @@
         "indexdef": "CREATE INDEX idx_subcategorias_rest ON public.subcategorias USING btree (restaurante_id)"
       }
     ],
-    "total_filas": 47
+    "total_filas": 27
   },
   "usuarios": {
     "columnas": [
@@ -4771,6 +4771,6 @@
         "indexdef": "CREATE INDEX idx_usuarios_restaurante ON public.usuarios USING btree (restaurante_id)"
       }
     ],
-    "total_filas": 48
+    "total_filas": 11
   }
 }

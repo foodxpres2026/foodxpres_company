@@ -1,12 +1,12 @@
 # Estructura real de la base de datos
 
-> Generado automáticamente el 2026-10-01T21:29:13.071Z. Refleja EXACTAMENTE lo que hay en la BD, no lo que dice ningún archivo .sql viejo.
+> Generado automáticamente el 2026-10-02T04:07:21.928Z. Refleja EXACTAMENTE lo que hay en la BD, no lo que dice ningún archivo .sql viejo.
 
 **Total de tablas:** 28
 
 ---
 
-## `categorias`  (10 filas)
+## `categorias`  (13 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -26,7 +26,7 @@
 
 ---
 
-## `comision_pagos`  (0 filas)
+## `comision_pagos`  (4 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -76,7 +76,7 @@
 
 ---
 
-## `comisiones_generadas`  (0 filas)
+## `comisiones_generadas`  (6 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -124,7 +124,7 @@
 
 ---
 
-## `direcciones`  (41 filas)
+## `direcciones`  (2 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -150,7 +150,7 @@
 
 ---
 
-## `driver_detalles`  (14 filas)
+## `driver_detalles`  (5 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -192,7 +192,7 @@
 
 ---
 
-## `grupos_opciones`  (106 filas)
+## `grupos_opciones`  (95 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -215,7 +215,7 @@
 
 ---
 
-## `horarios_atencion`  (49 filas)
+## `horarios_atencion`  (14 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -238,7 +238,7 @@
 
 ---
 
-## `item_opciones`  (24 filas)
+## `item_opciones`  (13 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -284,7 +284,7 @@
 
 ---
 
-## `opciones_choices`  (374 filas)
+## `opciones_choices`  (334 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -324,7 +324,7 @@
 
 ---
 
-## `pedido_estado_historial`  (229 filas)
+## `pedido_estado_historial`  (32 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -347,7 +347,7 @@
 
 ---
 
-## `pedido_items`  (166 filas)
+## `pedido_items`  (4 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -373,7 +373,7 @@
 
 ---
 
-## `pedidos`  (70 filas)
+## `pedidos`  (4 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -406,7 +406,7 @@
 
 ---
 
-## `platos`  (119 filas)
+## `platos`  (79 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -461,7 +461,7 @@
 
 ---
 
-## `push_subscriptions`  (7 filas)
+## `push_subscriptions`  (4 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -511,7 +511,7 @@
 
 ---
 
-## `restaurantes`  (7 filas)
+## `restaurantes`  (2 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -550,7 +550,7 @@
 
 ---
 
-## `restaurantes_categorias`  (12 filas)
+## `restaurantes_categorias`  (4 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -568,7 +568,7 @@
 
 ---
 
-## `rutas_cache`  (80 filas)
+## `rutas_cache`  (11 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -592,7 +592,7 @@
 
 ---
 
-## `solicitudes_recuperacion`  (1 filas)
+## `solicitudes_recuperacion`  (0 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -618,7 +618,7 @@
 
 ---
 
-## `sub_pedidos`  (84 filas)
+## `sub_pedidos`  (4 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -674,7 +674,7 @@
 
 ---
 
-## `subcategorias`  (47 filas)
+## `subcategorias`  (27 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
@@ -695,7 +695,7 @@
 
 ---
 
-## `usuarios`  (48 filas)
+## `usuarios`  (11 filas)
 
 | Columna | Tipo | Nullable | Default |
 |---|---|---|---|
