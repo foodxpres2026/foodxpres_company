@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Categoria {
@@ -17,6 +18,40 @@ export default function CategoriasChips({
   const router = useRouter()
   const searchParams = useSearchParams()
   const activa = searchParams.get('categoria')
+  const stripRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef({ pointerId: -1, startX: 0, scrollLeft: 0, moved: false })
+
+  function iniciarArrastre(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      scrollLeft: event.currentTarget.scrollLeft,
+      moved: false,
+    }
+  }
+
+  function arrastrar(event: React.PointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current
+    if (drag.pointerId !== event.pointerId) return
+    const delta = event.clientX - drag.startX
+    if (Math.abs(delta) > 4) drag.moved = true
+    if (drag.moved) {
+      event.preventDefault()
+      if (stripRef.current) stripRef.current.scrollLeft = drag.scrollLeft - delta
+    }
+  }
+
+  function terminarArrastre(event: React.PointerEvent<HTMLDivElement>) {
+    if (dragRef.current.pointerId === event.pointerId) dragRef.current.pointerId = -1
+  }
+
+  function evitarClickTrasArrastre(event: React.MouseEvent<HTMLDivElement>) {
+    if (!dragRef.current.moved) return
+    event.preventDefault()
+    event.stopPropagation()
+    dragRef.current.moved = false
+  }
 
   function seleccionar(slug: string | null) {
     if (!slug) {
@@ -27,7 +62,15 @@ export default function CategoriasChips({
   }
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
+    <div
+      ref={stripRef}
+      onPointerDown={iniciarArrastre}
+      onPointerMove={arrastrar}
+      onPointerUp={terminarArrastre}
+      onPointerCancel={terminarArrastre}
+      onClickCapture={evitarClickTrasArrastre}
+      className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide md:cursor-grab md:active:cursor-grabbing md:select-none"
+    >
       {/* Chip "Todos" */}
       <button
         type="button"

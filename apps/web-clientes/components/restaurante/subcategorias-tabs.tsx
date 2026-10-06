@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface Subcategoria {
   id: string
@@ -14,6 +14,40 @@ export default function SubcategoriasTabs({
   subcategorias: Subcategoria[]
 }) {
   const [activa, setActiva] = useState<string>(subcategorias[0]?.id || '')
+  const stripRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef({ pointerId: -1, startX: 0, scrollLeft: 0, moved: false })
+
+  function iniciarArrastre(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      scrollLeft: event.currentTarget.scrollLeft,
+      moved: false,
+    }
+  }
+
+  function arrastrar(event: React.PointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current
+    if (drag.pointerId !== event.pointerId) return
+    const delta = event.clientX - drag.startX
+    if (Math.abs(delta) > 4) drag.moved = true
+    if (drag.moved) {
+      event.preventDefault()
+      if (stripRef.current) stripRef.current.scrollLeft = drag.scrollLeft - delta
+    }
+  }
+
+  function terminarArrastre(event: React.PointerEvent<HTMLDivElement>) {
+    if (dragRef.current.pointerId === event.pointerId) dragRef.current.pointerId = -1
+  }
+
+  function evitarClickTrasArrastre(event: React.MouseEvent<HTMLDivElement>) {
+    if (!dragRef.current.moved) return
+    event.preventDefault()
+    event.stopPropagation()
+    dragRef.current.moved = false
+  }
 
   // Scroll a la sección al click
   function irA(id: string) {
@@ -56,7 +90,15 @@ export default function SubcategoriasTabs({
 
   return (
     <div className="sticky top-[57px] z-30 bg-surface-dark/95 backdrop-blur-lg border-b border-line -mx-4 px-4 py-3">
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+      <div
+        ref={stripRef}
+        onPointerDown={iniciarArrastre}
+        onPointerMove={arrastrar}
+        onPointerUp={terminarArrastre}
+        onPointerCancel={terminarArrastre}
+        onClickCapture={evitarClickTrasArrastre}
+        className="flex gap-2 overflow-x-auto scrollbar-hide md:cursor-grab md:active:cursor-grabbing md:select-none"
+      >
         {subcategorias.map((sub) => {
           const isActive = activa === sub.id
           return (
