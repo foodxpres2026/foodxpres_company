@@ -95,7 +95,7 @@ function LoginForm() {
 
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
-                Contraseña
+                Contraseña o PIN
               </label>
               <input
                 type="password"
@@ -103,9 +103,12 @@ function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                placeholder="••••••••"
+                placeholder="PIN de 4 dígitos o contraseña actual"
                 className="w-full px-4 py-4 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
               />
+              <p className="text-xs text-gray-600 mt-2">
+                Las cuentas nuevas usan un PIN de 4 dígitos. Si ya tenías una contraseña, todavía puedes ingresar con ella y cambiarla desde tu perfil.
+              </p>
               <div className="text-right mt-2">
                 <Link
                   href="/recuperar"

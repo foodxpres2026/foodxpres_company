@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { autenticarCliente, setSessionCookie } from '@/lib/auth'
+import { checkCustomerAuthRateLimit, rateLimitResponse } from '@/lib/auth-rate-limit'
 
 const schema = z.object({
   celular: z.string().regex(/^9\d{8}$/),
@@ -20,6 +21,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { celular, password } = parsed.data
+    const rateLimit = await checkCustomerAuthRateLimit(req, 'login', celular)
+    if (rateLimit.status !== 'allowed') return rateLimitResponse(rateLimit)
+
     const user = await autenticarCliente(celular, password)
 
     if (!user) {

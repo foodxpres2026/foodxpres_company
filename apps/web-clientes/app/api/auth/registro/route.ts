@@ -2,11 +2,12 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { sql } from '@/lib/db'
 import { registrarCliente, setSessionCookie } from '@/lib/auth'
+import { checkCustomerAuthRateLimit, rateLimitResponse } from '@/lib/auth-rate-limit'
 
 const schema = z.object({
   celular: z.string().regex(/^9\d{8}$/, 'Celular debe ser 9 dígitos empezando con 9'),
   nombre: z.string().min(2, 'Mínimo 2 caracteres').max(120),
-  password: z.string().min(12, 'Mínimo 12 caracteres').refine((value) => Buffer.byteLength(value, 'utf8') <= 72, 'Máximo 72 bytes'),
+  password: z.string().regex(/^\d{4}$/, 'La contraseña debe ser un PIN de 4 dígitos'),
   direccion_temporal: z
     .object({
       etiqueta: z.string().max(40),
@@ -35,6 +36,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { celular, nombre, password, direccion_temporal } = parsed.data
+    const rateLimit = await checkCustomerAuthRateLimit(req, 'registro', celular)
+    if (rateLimit.status !== 'allowed') return rateLimitResponse(rateLimit)
+
     const result = await registrarCliente(celular, nombre, password)
 
     if (!result.ok) {

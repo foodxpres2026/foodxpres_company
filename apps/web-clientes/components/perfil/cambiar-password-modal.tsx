@@ -45,8 +45,8 @@ export default function CambiarPasswordModal({
       return
     }
 
-    if (nueva.length < 6) {
-      setError('La nueva contraseña debe tener mínimo 6 caracteres')
+    if (!/^\d{4}$/.test(nueva)) {
+      setError('La nueva contraseña debe ser un PIN de 4 dígitos')
       return
     }
 
@@ -89,7 +89,7 @@ export default function CambiarPasswordModal({
         <form onSubmit={handleSubmit} className="p-5 md:p-6 space-y-4">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-lg font-bold text-white">
-              Cambiar contraseña
+              Cambiar PIN de acceso
             </h3>
             <button
               type="button"
@@ -104,7 +104,7 @@ export default function CambiarPasswordModal({
             <div className="text-center py-6">
               <p className="text-4xl mb-3">✅</p>
               <p className="text-white font-bold">
-                ¡Contraseña actualizada!
+                ¡PIN actualizado!
               </p>
             </div>
           ) : (
@@ -125,30 +125,36 @@ export default function CambiarPasswordModal({
 
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-                  Nueva contraseña
+                  Nuevo PIN
                 </label>
                 <input
                   type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
                   value={nueva}
-                  onChange={(e) => setNueva(e.target.value)}
+                  onChange={(e) => setNueva(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   required
-                  minLength={6}
                   autoComplete="new-password"
+                  placeholder="Ingresa 4 dígitos"
                   className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white focus:outline-none focus:border-brand"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-                  Confirmar nueva contraseña
+                  Confirmar PIN
                 </label>
                 <input
                   type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
                   value={confirmar}
-                  onChange={(e) => setConfirmar(e.target.value)}
+                  onChange={(e) => setConfirmar(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   required
-                  minLength={6}
                   autoComplete="new-password"
+                  placeholder="Repite los 4 dígitos"
                   className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white focus:outline-none focus:border-brand"
                 />
               </div>
@@ -165,7 +171,7 @@ export default function CambiarPasswordModal({
                   disabled={loading}
                   className="flex-1 bg-brand hover:bg-brand-dark disabled:bg-brand/40 text-black font-bold py-3 rounded-xl transition-colors"
                 >
-                  {loading ? 'Cambiando...' : 'Cambiar contraseña'}
+                  {loading ? 'Actualizando...' : 'Cambiar PIN'}
                 </button>
                 <button
                   type="button"
