@@ -13,8 +13,9 @@ const labelStyle: CSSProperties = { display: 'grid', gap: 6, color: '#9aa69a', f
 export default function AutopedidosPanel({ onBack, onCreated }: { onBack: () => void; onCreated: () => void }) {
   const [data, setData] = useState<Data | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('')
   const [address, setAddress] = useState(''), [reference, setReference] = useState(''), [celular, setCelular] = useState(''), [lat, setLat] = useState(''), [lng, setLng] = useState(''), [shipping, setShipping] = useState<Shipping | null>(null), [shippingBusy, setShippingBusy] = useState(false)
-  const [mapTarget, setMapTarget] = useState(false)
-  const load = useCallback(async () => { setBusy(true); setError(''); try { const res = await fetch('/api/local/autopedidos', { cache: 'no-store' }); const body = await res.json(); if (!res.ok || !body.ok) throw new Error(body.error || 'No se pudo cargar el local'); setData(body.data); setMapTarget(true) } catch (e) { setError(e instanceof Error ? e.message : 'Error de conexión') } finally { setBusy(false) } }, [])
+  const [localLat, setLocalLat] = useState(''), [localLng, setLocalLng] = useState('')
+  const [mapTarget, setMapTarget] = useState<'local' | 'client' | null>(null)
+  const load = useCallback(async () => { setBusy(true); setError(''); try { const res = await fetch('/api/local/autopedidos', { cache: 'no-store' }); const body = await res.json(); if (!res.ok || !body.ok) throw new Error(body.error || 'No se pudo cargar el local'); setData(body.data); setMapTarget('client') } catch (e) { setError(e instanceof Error ? e.message : 'Error de conexión') } finally { setBusy(false) } }, [])
   useEffect(() => { void load() }, [load])
   useEffect(() => {
     setShipping(null)
@@ -25,7 +26,7 @@ export default function AutopedidosPanel({ onBack, onCreated }: { onBack: () => 
   }, [lat, lng, data?.restaurant.lat, data?.restaurant.lng])
   async function closeMap() {
     const chosenLat = Number(lat), chosenLng = Number(lng)
-    setMapTarget(false)
+    setMapTarget(null)
     if (!Number.isFinite(chosenLat) || !Number.isFinite(chosenLng)) return
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${chosenLat}&lon=${chosenLng}&accept-language=es`)
