@@ -26,7 +26,8 @@ export async function GET(request: NextRequest) {
                p.codigo AS pedido_codigo, p.notas AS pedido_notas,
                r.nombre AS restaurante_nombre, r.direccion_fisica AS restaurante_direccion,
                r.lat AS restaurante_lat, r.lng AS restaurante_lng,
-               r.celular AS restaurante_celular, u.nombre AS cliente_nombre, u.celular AS cliente_celular
+               r.celular AS restaurante_celular, u.nombre AS cliente_nombre,
+               CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN COALESCE(sp.direccion_snapshot->>'celular', u.celular) ELSE u.celular END AS cliente_celular
         FROM sub_pedidos sp INNER JOIN pedidos p ON p.id = sp.pedido_id
         INNER JOIN restaurantes r ON r.id = sp.restaurante_id INNER JOIN usuarios u ON u.id = p.usuario_id
         WHERE sp.driver_id IS NULL AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO')
@@ -46,7 +47,8 @@ export async function GET(request: NextRequest) {
                p.codigo AS pedido_codigo, p.notas AS pedido_notas,
                r.nombre AS restaurante_nombre, r.direccion_fisica AS restaurante_direccion,
                r.lat AS restaurante_lat, r.lng AS restaurante_lng,
-               r.celular AS restaurante_celular, u.nombre AS cliente_nombre, u.celular AS cliente_celular
+               r.celular AS restaurante_celular, u.nombre AS cliente_nombre,
+               CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN COALESCE(sp.direccion_snapshot->>'celular', u.celular) ELSE u.celular END AS cliente_celular
         FROM sub_pedidos sp INNER JOIN pedidos p ON p.id = sp.pedido_id
         INNER JOIN restaurantes r ON r.id = sp.restaurante_id INNER JOIN usuarios u ON u.id = p.usuario_id
         WHERE sp.driver_id = ${driver.id} AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION')
@@ -64,7 +66,8 @@ export async function GET(request: NextRequest) {
                p.codigo AS pedido_codigo, p.notas AS pedido_notas,
                r.nombre AS restaurante_nombre, r.direccion_fisica AS restaurante_direccion,
                r.lat AS restaurante_lat, r.lng AS restaurante_lng,
-               r.celular AS restaurante_celular, u.nombre AS cliente_nombre, u.celular AS cliente_celular
+               r.celular AS restaurante_celular, u.nombre AS cliente_nombre,
+               CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN COALESCE(sp.direccion_snapshot->>'celular', u.celular) ELSE u.celular END AS cliente_celular
         FROM sub_pedidos sp INNER JOIN pedidos p ON p.id = sp.pedido_id
         INNER JOIN restaurantes r ON r.id = sp.restaurante_id INNER JOIN usuarios u ON u.id = p.usuario_id
         WHERE sp.driver_id = ${driver.id} AND sp.estado IN ('ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO', 'CANCELADO', 'RECHAZADO')

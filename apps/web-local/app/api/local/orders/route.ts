@@ -16,7 +16,7 @@ export async function GET() {
              sp.entregado_en, sp.entrega_cerrada_local_en, sp.direccion_snapshot,
              p.codigo AS pedido_codigo, p.total AS pedido_total, p.notas AS notas_pedido,
              CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.nombre ELSE u.nombre END AS cliente_nombre,
-             CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.celular ELSE u.celular END AS cliente_celular,
+             CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN COALESCE(sp.direccion_snapshot->>'celular', r.celular) ELSE u.celular END AS cliente_celular,
              p.vip, p.costo_vip,
              (p.usuario_id = ${staff.id} AND sp.direccion_snapshot->>'etiqueta' = 'Autopedido') AS autopedido_propio
       FROM sub_pedidos sp

@@ -7,7 +7,7 @@ import { calculateLocalShipping } from '@/lib/autopedido'
 
 export const dynamic = 'force-dynamic'
 const itemSchema = z.object({ plato_id: z.string().uuid(), cantidad: z.number().int().min(1).max(99), notas: z.string().max(100).optional().nullable(), opciones: z.array(z.object({ grupo_id: z.string().uuid(), choice_id: z.string().uuid() })).max(20) })
-const orderSchema = z.object({ direccion: z.string().min(3).max(255), referencia: z.string().max(255).optional().nullable(), lat: z.number().finite().min(-90).max(90), lng: z.number().finite().min(-180).max(180), notas: z.string().max(500).optional().nullable(), vip: z.boolean().default(false), items: z.array(itemSchema).min(1).max(50) })
+const orderSchema = z.object({ celular: z.string().regex(/^9\d{8}$/, 'Ingresa un celular peruano de 9 dígitos'), direccion: z.string().min(3).max(255), referencia: z.string().max(255).optional().nullable(), lat: z.number().finite().min(-90).max(90), lng: z.number().finite().min(-180).max(180), notas: z.string().max(500).optional().nullable(), vip: z.boolean().default(false), items: z.array(itemSchema).max(50).default([]) })
 const locationSchema = z.object({ direccion: z.string().min(3).max(255), referencia: z.string().max(255).optional().nullable(), lat: z.number().finite().min(-90).max(90), lng: z.number().finite().min(-180).max(180) })
 
 async function getMenu(sql: ReturnType<typeof getSql>, restaurantId: string) {
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
     const vipCents = data.vip ? Math.round(Number(vipRows[0]?.costo_vip || 0) * 100) : 0
     const subtotal = subtotalCents / 100, shippingCents = Math.round(shipping.costo * 100)
     const total = (subtotalCents + shippingCents + vipCents) / 100
-    const localCommission = localRule
+    const localCommission = localRule && subtotalCents > 0
       ? (localRule.modalidad === 'FIJA' ? Number(localRule.valor) : Math.round(subtotalCents * Number(localRule.valor) / 100) / 100)
       : 0
     const driverCommission = Math.round(shippingCents * Number(driverRule?.valor ?? 0) / 100) / 100
@@ -120,7 +120,7 @@ export async function POST(req: Request) {
     const queries: any[] = [
       // Use existing schema only; the order snapshot marks this as a local self-order.
       sql`INSERT INTO pedidos (id, codigo, usuario_id, subtotal, total_envio, vip, costo_vip, total, notas, estado_global) VALUES (${orderId}, ${code}, ${staff.id}, ${subtotal}, ${shippingCents / 100}, ${data.vip}, ${vipCents / 100}, ${total}, ${data.notas || null}, 'PENDIENTE')`,
-      sql`INSERT INTO sub_pedidos (id, pedido_id, restaurante_id, tipo_pedido, estado, subtotal, costo_envio, distancia_km, tiempo_estimado, direccion_snapshot, notas, local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto, driver_comision_regla_id, driver_comision_valor, driver_comision_monto) VALUES (${subId}, ${orderId}, ${staff.restauranteId}, 'AUTOPEDIDO', 'PENDIENTE', ${subtotal}, ${shippingCents / 100}, ${shipping.distancia_km}, ${shipping.duracion_min}, ${JSON.stringify({ etiqueta: 'Autopedido', direccion: data.direccion, referencia: data.referencia || null, lat: data.lat, lng: data.lng })}::jsonb, ${data.notas || null}, ${localRule?.id ?? null}, ${localRule?.modalidad ?? 'FIJA'}, ${Number(localRule?.valor ?? 0)}, ${localCommission}, ${driverRule?.id ?? null}, ${Number(driverRule?.valor ?? 0)}, ${driverCommission})`,
+      sql`INSERT INTO sub_pedidos (id, pedido_id, restaurante_id, tipo_pedido, estado, subtotal, costo_envio, distancia_km, tiempo_estimado, direccion_snapshot, notas, local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto, driver_comision_regla_id, driver_comision_valor, driver_comision_monto) VALUES (${subId}, ${orderId}, ${staff.restauranteId}, 'AUTOPEDIDO', 'PENDIENTE', ${subtotal}, ${shippingCents / 100}, ${shipping.distancia_km}, ${shipping.duracion_min}, ${JSON.stringify({ etiqueta: 'Autopedido', direccion: data.direccion, referencia: data.referencia || null, celular: data.celular, lat: data.lat, lng: data.lng })}::jsonb, ${data.notas || null}, ${localRule?.id ?? null}, ${localRule?.modalidad ?? 'FIJA'}, ${Number(localRule?.valor ?? 0)}, ${localCommission}, ${driverRule?.id ?? null}, ${Number(driverRule?.valor ?? 0)}, ${driverCommission})`,
       sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${subId}, 'PENDIENTE', ${staff.id}, 'Autopedido registrado por el local')`,
     ]
     for (const item of normalized) {

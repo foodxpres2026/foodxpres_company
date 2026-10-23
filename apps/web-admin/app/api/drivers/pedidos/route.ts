@@ -19,7 +19,8 @@ export async function GET(req: NextRequest) {
              p.codigo AS pedido_codigo, p.notas AS pedido_notas,
              r.nombre AS restaurante_nombre, r.direccion_fisica AS restaurante_direccion,
              r.celular AS restaurante_celular,
-             u.nombre AS cliente_nombre, u.celular AS cliente_celular
+             u.nombre AS cliente_nombre,
+             CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN COALESCE(sp.direccion_snapshot->>'celular', u.celular) ELSE u.celular END AS cliente_celular
       FROM sub_pedidos sp
       INNER JOIN pedidos p ON p.id = sp.pedido_id
       INNER JOIN restaurantes r ON r.id = sp.restaurante_id
