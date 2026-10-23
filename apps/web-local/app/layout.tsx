@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import 'leaflet/dist/leaflet.css'
+import InstallPwa from './install-pwa'
 
 export const metadata: Metadata = {
   title: 'FOODXPRES Local', description: 'Acceso para locales asociados a FOODXPRES',
@@ -12,5 +13,5 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#7ed321', viewportFit: 'cover' }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es"><body>{children}</body></html>
+  return <html lang="es"><body>{children}<InstallPwa /></body></html>
 }

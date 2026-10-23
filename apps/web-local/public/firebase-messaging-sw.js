@@ -11,6 +11,12 @@ firebase.initializeApp({
 })
 
 const messaging = firebase.messaging()
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url)
+  if (event.request.method === 'POST' && url.origin === self.location.origin && url.pathname === '/api/local/compartir-ubicacion') {
+    event.respondWith(fetch(event.request))
+  }
+})
 // Activa la configuración nueva sin esperar a cerrar todas las pestañas.
 self.addEventListener('install', (event) => event.waitUntil(self.skipWaiting()))
 self.addEventListener('activate', (event) => event.waitUntil(clients.claim()))
