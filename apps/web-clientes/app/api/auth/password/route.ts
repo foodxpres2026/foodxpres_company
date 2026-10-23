@@ -10,7 +10,10 @@ import {
 
 const schema = z.object({
   password_actual: z.string().min(1, 'Ingresa tu contraseña actual'),
-  password_nueva: z.string().regex(/^\d{4}$/, 'La nueva contraseña debe ser un PIN de 4 dígitos'),
+  password_nueva: z.string().min(8, 'La nueva contraseña debe tener al menos 8 caracteres').refine(
+    (value) => Buffer.byteLength(value, 'utf8') <= 72,
+    'La contraseña es demasiado larga',
+  ),
 })
 
 export async function PATCH(req: NextRequest) {

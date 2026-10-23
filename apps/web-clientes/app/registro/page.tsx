@@ -24,8 +24,8 @@ function RegistroForm() {
       setError('El celular debe tener 9 dígitos')
       return
     }
-    if (!/^\d{4}$/.test(password)) {
-      setError('La contraseña debe ser un PIN de 4 dígitos')
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres')
       return
     }
 
@@ -138,21 +138,19 @@ function RegistroForm() {
 
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
-                PIN de acceso
+                Contraseña
               </label>
               <input
                 type="password"
-                inputMode="numeric"
-                pattern="[0-9]{4}"
-                maxLength={4}
                 value={password}
-                onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="new-password"
-                placeholder="Ingresa 4 dígitos"
+                minLength={8}
+                placeholder="Mínimo 8 caracteres"
                 className="w-full px-4 py-4 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
               />
-              <p className="text-xs text-gray-600 mt-1">Elige un PIN numérico de 4 dígitos.</p>
+              <p className="text-xs text-gray-600 mt-1">Usa al menos 8 caracteres.</p>
             </div>
 
             {error && (
