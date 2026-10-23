@@ -5,7 +5,7 @@ import type { LocalUser } from '@/lib/auth'
 import AutopedidosPanel from './autopedidos-panel'
 import PushNotifications from './push-notifications'
 
-type Section = 'pending' | 'preparing' | 'ready' | 'history'
+type Section = 'active' | 'history'
 type OrderItem = { id: string; nombre_snapshot: string; cantidad: number; subtotal: number | string; notas: string | null }
 type Order = {
   id: string; estado: string; subtotal: number | string; costo_envio: number | string
@@ -17,14 +17,27 @@ type Order = {
   items: OrderItem[]
 }
 const sections: { id: Section; label: string }[] = [
-  { id: 'pending', label: 'Por aceptar' }, { id: 'preparing', label: 'En preparación' },
-  { id: 'ready', label: 'Listos' }, { id: 'history', label: 'Historial' },
+  { id: 'active', label: 'Pedidos' }, { id: 'history', label: 'Historial' },
 ]
+const boardColumns = [
+  { id: 'pending', label: 'Por aceptar', icon: '⏳', states: ['PENDIENTE'] },
+  { id: 'preparing', label: 'En preparación', icon: '👨‍🍳', states: ['ACEPTADO', 'PREPARANDO'] },
+  { id: 'ready', label: 'Listos', icon: '🍽️', states: ['LISTO'] },
+  { id: 'delivery', label: 'En camino', icon: '🛵', states: ['ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION'] },
+] as const
+const historyStates = ['ENTREGADO', 'RECHAZADO', 'CANCELADO']
 const money = (amount: number | string) => `S/ ${Number(amount ?? 0).toFixed(2)}`
 const displayDate = (value: string) => new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+const timeAgo = (value: string) => {
+  const minutes = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60_000))
+  if (minutes < 1) return 'Ahora'
+  if (minutes < 60) return `hace ${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  return `hace ${hours} h${minutes % 60 ? ` ${minutes % 60} min` : ''}`
+}
 const sectionMatches: Record<Section, string[]> = {
-  pending: ['PENDIENTE'], preparing: ['ACEPTADO', 'PREPARANDO'], ready: ['LISTO'],
-  history: ['ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO', 'RECHAZADO', 'CANCELADO'],
+  active: ['PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION'],
+  history: historyStates,
 }
 const stateLabel: Record<string, string> = {
   PENDIENTE: 'Por aceptar', ACEPTADO: 'Aceptado', PREPARANDO: 'En preparación', LISTO: 'Listo',
@@ -33,7 +46,7 @@ const stateLabel: Record<string, string> = {
 
 export default function LocalDashboard({ user }: { user: LocalUser }) {
   const [orders, setOrders] = useState<Order[]>([])
-  const [section, setSection] = useState<Section>('pending')
+  const [section, setSection] = useState<Section>('active')
   const [selected, setSelected] = useState<Order | null>(null)
   const [estimate, setEstimate] = useState('30')
   const [rejectReason, setRejectReason] = useState('')
@@ -82,10 +95,10 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
   const counts = useMemo(() => Object.fromEntries(sections.map(({ id }) => [id, orders.filter((order) => sectionMatches[id].includes(order.estado)).length])) as Record<Section, number>, [orders])
   const visibleOrders = useMemo(() => orders.filter((order) => sectionMatches[section].includes(order.estado)), [orders, section])
 
-  async function act(order: Order, accion: 'ACEPTAR' | 'RECHAZAR' | 'LISTO') {
+  async function act(order: Order, accion: 'ACEPTAR' | 'RECHAZAR' | 'LISTO', tiempoEstimado = Number(estimate)) {
     setBusy(order.id); setError(''); setNotice('')
     try {
-      const body = accion === 'ACEPTAR' ? { accion, tiempo_estimado: Number(estimate) } : accion === 'RECHAZAR' ? { accion, motivo: rejectReason.trim() || null } : { accion }
+      const body = accion === 'ACEPTAR' ? { accion, tiempo_estimado: tiempoEstimado } : accion === 'RECHAZAR' ? { accion, motivo: rejectReason.trim() || null } : { accion }
       const response = await fetch(`/api/local/orders/${order.id}/action`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       const result = await response.json()
       if (!response.ok || !result.ok) throw new Error(result.error ?? 'No se pudo actualizar el pedido')
@@ -115,7 +128,7 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
     finally { setBusy(null) }
   }
 
-  const activeTotal = counts.pending + counts.preparing + counts.ready
+  const activeTotal = counts.active
   const title = sections.find((tab) => tab.id === section)?.label ?? 'Pedidos'
 
   return <main className="local-shell">
@@ -127,7 +140,7 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
     <div className="local-layout">
       <aside className={`local-sidebar ${drawer ? 'open' : ''}`}>
         <div className="local-profile"><div className="local-avatar">{user.restauranteNombre.slice(0, 1).toUpperCase()}</div><div><strong>{user.restauranteNombre}</strong><span>{user.nombre}</span></div><button className="local-drawer-close" onClick={() => setDrawer(false)} aria-label="Cerrar menú">×</button></div>
-        <nav aria-label="Pedidos del local"><button onClick={() => { setAutoMode(false); setSection('pending'); setDrawer(false) }} className={`local-nav-item ${!autoMode ? 'active' : ''}`}><span>◷</span>Pedidos<b>{activeTotal}</b></button><button onClick={() => { setAutoMode(true); setDrawer(false) }} className={`local-nav-item ${autoMode ? 'active' : ''}`}><span>＋</span>Autopedidos</button>{sections.map((tab) => <button key={tab.id} onClick={() => { setAutoMode(false); setSection(tab.id); setDrawer(false) }} className={`local-nav-item ${!autoMode && section === tab.id ? 'active' : ''}`}><span>{tab.id === 'pending' ? '◷' : tab.id === 'preparing' ? '◉' : tab.id === 'ready' ? '✓' : '↺'}</span>{tab.label}<b>{counts[tab.id]}</b></button>)}</nav>
+        <nav aria-label="Pedidos del local">{sections.map((tab) => <button key={tab.id} onClick={() => { setAutoMode(false); setSection(tab.id); setDrawer(false) }} className={`local-nav-item ${!autoMode && section === tab.id ? 'active' : ''}`}><span>{tab.id === 'active' ? '◷' : '↺'}</span>{tab.label}<b>{counts[tab.id]}</b></button>)}<button onClick={() => { setAutoMode(true); setDrawer(false) }} className={`local-nav-item ${autoMode ? 'active' : ''}`}><span>＋</span>Autopedidos</button></nav>
         <div className="local-sidebar-bottom"><span className="local-online-dot"/>Pedidos activos: {activeTotal}{commissionBalance !== null && <span className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</span>}<button onClick={logout} disabled={busy === 'logout'}>Cerrar sesión</button></div>
       </aside>
       {drawer && <button className="local-backdrop" onClick={() => setDrawer(false)} aria-label="Cerrar menú"/>}
@@ -136,10 +149,16 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
         {autoMode ? <><div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>Autopedidos</h1>{commissionBalance !== null && <p className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</p>}</div><button className="local-refresh" onClick={() => void loadCommissionBalance()}>↻ <span>Actualizar saldo</span></button></div><AutopedidosPanel onBack={() => setAutoMode(false)} onCreated={() => { void load(true); void loadCommissionBalance() }} /></> : <>
         <div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>{title}</h1><p>Gestiona los pedidos de {user.restauranteNombre}.</p>{commissionBalance !== null && <p className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</p>}</div><button className="local-refresh" onClick={() => { void load(); void loadCommissionBalance() }} disabled={loading}>↻ <span>Actualizar</span></button></div>
         <div className="local-mobile-tabs">{sections.map((tab) => <button key={tab.id} onClick={() => setSection(tab.id)} className={section === tab.id ? 'active' : ''}>{tab.label}<span>{counts[tab.id]}</span></button>)}</div>
-        <div className="local-list-meta"><span>{visibleOrders.length} {visibleOrders.length === 1 ? 'pedido' : 'pedidos'}</span><span>Actualizado {refreshAt ? refreshAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '—'} · Auto cada 15 s</span></div>
+        <div className="local-list-meta"><span>{visibleOrders.length} {visibleOrders.length === 1 ? 'pedido' : 'pedidos'}</span><span>Actualizado {refreshAt ? refreshAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '—'} · {section === 'active' ? 'Auto cada 15 s' : 'Actualización manual'}</span></div>
         {notice && <div className="local-notice" role="status">✓ {notice}</div>}
         {error && <div className="local-error" role="alert"><span>{error}</span><button onClick={() => void load()}>Reintentar</button></div>}
-        {loading && orders.length === 0 ? <div className="local-empty"><i className="local-spinner"/><p>Cargando pedidos…</p></div> : visibleOrders.length === 0 && !error ? <div className="local-empty"><div className="local-empty-icon">{section === 'pending' ? '✓' : section === 'history' ? '↺' : '□'}</div><h2>{section === 'pending' ? 'No hay pedidos por aceptar' : `No hay pedidos en ${title.toLowerCase()}`}</h2><p>Los nuevos pedidos de tu local aparecerán aquí automáticamente.</p></div> : <div className="local-orders-grid">{visibleOrders.map((order) => <LocalOrderCard key={order.id} order={order} onDetails={() => { setSelected(order); setEstimate('30'); setRejectReason('') }} />)}</div>}
+        {loading && orders.length === 0 ? <div className="local-empty"><i className="local-spinner"/><p>Cargando pedidos…</p></div> : visibleOrders.length === 0 && !error ? <div className="local-empty"><div className="local-empty-icon">{section === 'active' ? '✓' : '↺'}</div><h2>{section === 'active' ? 'No hay pedidos activos' : 'No hay pedidos en el historial'}</h2><p>Los nuevos pedidos de tu local aparecerán aquí automáticamente.</p></div> : section === 'active' ? <div className="local-kanban">{boardColumns.map((column) => {
+          const columnOrders = visibleOrders.filter((order) => (column.states as readonly string[]).includes(order.estado))
+          return <section className="local-kanban-column" key={column.id} aria-label={column.label}>
+            <header className="local-kanban-head"><div><span>{column.icon}</span><h2>{column.label}</h2></div><b>{columnOrders.length}</b></header>
+            <div className="local-kanban-list">{columnOrders.length === 0 ? <p className="local-kanban-empty">Sin pedidos</p> : columnOrders.map((order) => <LocalOrderCard key={order.id} order={order} onDetails={() => { setSelected(order); setEstimate('30'); setRejectReason('') }} onAccept={() => void act(order, 'ACEPTAR', 30)} onReady={() => void act(order, 'LISTO')} busy={busy === order.id} />)}</div>
+          </section>
+        })}</div> : <div className="local-orders-grid">{visibleOrders.map((order) => <LocalOrderCard key={order.id} order={order} onDetails={() => { setSelected(order); setEstimate('30'); setRejectReason('') }} />)}</div>}
         </>}
       </section>
     </div>
@@ -158,6 +177,6 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
   </main>
 }
 
-function LocalOrderCard({ order, onDetails }: { order: Order; onDetails: () => void }) {
-  return <article className="local-order-card"><div className="local-order-card-head"><div><span className="local-order-code">#{order.pedido_codigo}</span><span className={`local-state ${order.estado.toLowerCase()}`}>{stateLabel[order.estado] ?? order.estado}</span></div><time>{displayDate(order.creado_en)}</time></div><div className="local-customer"><strong>{order.cliente_nombre}</strong><span>{order.cliente_celular || 'Sin celular registrado'}</span></div><div className="local-order-preview">{order.items.slice(0, 3).map((item) => <span key={item.id}>{item.cantidad} × {item.nombre_snapshot}</span>)}{order.items.length > 3 && <small>y {order.items.length - 3} producto(s) más</small>}</div><div className="local-order-card-foot"><strong>{money(order.pedido_total)}</strong><button onClick={onDetails}>Ver detalle</button></div></article>
+function LocalOrderCard({ order, onDetails, onAccept, onReady, busy = false }: { order: Order; onDetails: () => void; onAccept?: () => void; onReady?: () => void; busy?: boolean }) {
+  return <article className="local-order-card"><div className="local-order-card-head"><div><span className="local-order-code">#{order.pedido_codigo}</span><span className={`local-state ${order.estado.toLowerCase()}`}>{stateLabel[order.estado] ?? order.estado}</span></div><time>{timeAgo(order.creado_en)}</time></div><div className="local-customer"><strong>{order.cliente_nombre}</strong>{order.cliente_celular ? <a href={`tel:${order.cliente_celular}`}>☎ {order.cliente_celular}</a> : <span>Sin celular registrado</span>}</div><div className="local-order-address-preview">📍 {order.direccion_snapshot?.direccion || 'Dirección no disponible'}{order.direccion_snapshot?.referencia && <small>Ref.: {order.direccion_snapshot.referencia}</small>}</div><div className="local-order-preview">{order.items.slice(0, 3).map((item) => <span key={item.id}>{item.cantidad} × {item.nombre_snapshot}</span>)}{order.items.length > 3 && <small>y {order.items.length - 3} producto(s) más</small>}{order.items.length === 0 && <span>Pedido de envío</span>}</div><div className="local-order-card-foot"><strong>{money(order.pedido_total)}</strong><div className="local-order-card-actions">{onAccept && <button className="local-order-fast-action" onClick={onAccept} disabled={busy}>{busy ? 'Guardando…' : 'Aceptar · 30 min'}</button>}{onReady && <button className="local-order-fast-action" onClick={onReady} disabled={busy}>{busy ? 'Guardando…' : 'Marcar listo'}</button>}<button className="local-order-details-button" onClick={onDetails}>Detalle</button></div></div></article>
 }
