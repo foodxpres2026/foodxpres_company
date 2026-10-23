@@ -5,6 +5,8 @@ import type { LocalUser } from '@/lib/auth'
 import AutopedidosPanel from './autopedidos-panel'
 import PushNotifications from './push-notifications'
 
+type SharedLocation = { lat: number; lng: number }
+
 type Section = 'active' | 'history'
 type OrderItem = { id: string; nombre_snapshot: string; cantidad: number; subtotal: number | string; notas: string | null }
 type Order = {
@@ -58,6 +60,22 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
   const [drawer, setDrawer] = useState(false)
   const [autoMode, setAutoMode] = useState(false)
   const [commissionBalance, setCommissionBalance] = useState<number | null>(null)
+  const [sharedLocation, setSharedLocation] = useState<SharedLocation | null>(null)
+  const [sharedLocationError, setSharedLocationError] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('autopedido') !== '1') return
+    const coordinates = params.get('ubicacionCompartida')?.split(',').map(Number)
+    if (coordinates?.length === 2 && Number.isFinite(coordinates[0]) && Number.isFinite(coordinates[1]) && Math.abs(coordinates[0]) <= 90 && Math.abs(coordinates[1]) <= 180) {
+      setSharedLocation({ lat: coordinates[0], lng: coordinates[1] })
+      setSharedLocationError(false)
+    } else {
+      setSharedLocationError(params.get('errorUbicacionCompartida') === '1')
+    }
+    setAutoMode(true)
+    window.history.replaceState({}, '', window.location.pathname)
+  }, [])
 
   const loadCommissionBalance = useCallback(async () => {
     try {
@@ -146,7 +164,7 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
       {drawer && <button className="local-backdrop" onClick={() => setDrawer(false)} aria-label="Cerrar menú"/>}
       <section className="local-content">
         <PushNotifications />
-        {autoMode ? <><div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>Autopedidos</h1>{commissionBalance !== null && <p className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</p>}</div><button className="local-refresh" onClick={() => void loadCommissionBalance()}>↻ <span>Actualizar saldo</span></button></div><AutopedidosPanel onBack={() => setAutoMode(false)} onCreated={() => { void load(true); void loadCommissionBalance() }} /></> : <>
+        {autoMode ? <><div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>Autopedidos</h1>{commissionBalance !== null && <p className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</p>}</div><button className="local-refresh" onClick={() => void loadCommissionBalance()}>↻ <span>Actualizar saldo</span></button></div><AutopedidosPanel sharedLocation={sharedLocation} sharedLocationError={sharedLocationError} onBack={() => { setAutoMode(false); setSharedLocation(null); setSharedLocationError(false) }} onCreated={() => { setSharedLocation(null); setSharedLocationError(false); void load(true); void loadCommissionBalance() }} /></> : <>
         <div className="local-page-heading"><div><p className="local-eyebrow">PANEL DEL LOCAL</p><h1>{title}</h1><p>Gestiona los pedidos de {user.restauranteNombre}.</p>{commissionBalance !== null && <p className="local-commission-balance">Comisión pendiente: {money(commissionBalance)}</p>}</div><button className="local-refresh" onClick={() => { void load(); void loadCommissionBalance() }} disabled={loading}>↻ <span>Actualizar</span></button></div>
         <div className="local-mobile-tabs">{sections.map((tab) => <button key={tab.id} onClick={() => setSection(tab.id)} className={section === tab.id ? 'active' : ''}>{tab.label}<span>{counts[tab.id]}</span></button>)}</div>
         <div className="local-list-meta"><span>{visibleOrders.length} {visibleOrders.length === 1 ? 'pedido' : 'pedidos'}</span><span>Actualizado {refreshAt ? refreshAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '—'} · {section === 'active' ? 'Auto cada 15 s' : 'Actualización manual'}</span></div>

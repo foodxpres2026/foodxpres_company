@@ -5,6 +5,12 @@ export default function manifest(): MetadataRoute.Manifest {
     id: '/local', name: 'FOODXPRES Local', short_name: 'FOODXPRES Local',
     description: 'Acceso para locales asociados a FOODXPRES', start_url: '/', scope: '/',
     display: 'standalone', background_color: '#0a0a0a', theme_color: '#7ed321', lang: 'es-PE',
+    share_target: {
+      action: '/api/local/compartir-ubicacion',
+      method: 'POST',
+      enctype: 'application/x-www-form-urlencoded',
+      params: { title: 'title', text: 'text', url: 'url' },
+    },
     icons: [
       { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
