@@ -76,6 +76,11 @@ export async function checkCustomerAuthRateLimit(
 
   if (!redisUrl || !redisToken) {
     if (process.env.NODE_ENV !== 'production') return checkLocal([ipKey, phoneKey], config)
+    console.error('Customer auth rate limiter configuration missing', {
+      action,
+      hasUrl: Boolean(redisUrl),
+      hasToken: Boolean(redisToken),
+    })
     return { status: 'unavailable' }
   }
 
@@ -97,13 +102,21 @@ export async function checkCustomerAuthRateLimit(
       cache: 'no-store',
       signal: AbortSignal.timeout(3000),
     })
-    if (!response.ok) return { status: 'unavailable' }
+    if (!response.ok) {
+      console.error('Customer auth rate limiter HTTP error', { action, status: response.status })
+      return { status: 'unavailable' }
+    }
 
     const payload = await response.json() as {
       result?: unknown
       error?: string
     }
     if (payload.error || !Array.isArray(payload.result) || payload.result.length !== 4) {
+      console.error('Customer auth rate limiter invalid response', {
+        action,
+        errorCode: payload.error?.split(/\s+/)[0] || null,
+        hasResult: Array.isArray(payload.result),
+      })
       return { status: 'unavailable' }
     }
 
@@ -117,7 +130,11 @@ export async function checkCustomerAuthRateLimit(
     }
 
     return { status: 'allowed' }
-  } catch {
+  } catch (error) {
+    console.error('Customer auth rate limiter request failed', {
+      action,
+      errorName: error instanceof Error ? error.name : 'unknown',
+    })
     // Fail closed in production if the shared limiter cannot be reached.
     return process.env.NODE_ENV === 'production'
       ? { status: 'unavailable' }
