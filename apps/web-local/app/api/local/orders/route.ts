@@ -11,7 +11,7 @@ export async function GET() {
   try {
     const sql = getSql()
     const orders = await sql`
-      SELECT sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.notas AS notas_local,
+      SELECT sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.tiempo_estimado, sp.notas AS notas_local,
              sp.motivo_rechazo, sp.creado_en, sp.aceptado_en, sp.listo_en,
              sp.entregado_en, sp.entrega_cerrada_local_en, sp.direccion_snapshot,
              p.codigo AS pedido_codigo, p.total AS pedido_total, p.notas AS notas_pedido,
@@ -32,8 +32,12 @@ export async function GET() {
 
     const ids = orders.map((order) => order.id)
     const items = ids.length ? await sql`
-      SELECT pi.id, pi.sub_pedido_id, pi.nombre_snapshot, pi.cantidad, pi.subtotal, pi.notas
-      FROM pedido_items pi WHERE pi.sub_pedido_id = ANY(${ids}::uuid[])
+      SELECT pi.id, pi.sub_pedido_id, pi.nombre_snapshot, pi.cantidad, pi.subtotal, pi.notas,
+             COALESCE(json_agg(json_build_object('grupo', io.grupo_titulo_snapshot, 'opcion', io.choice_nombre_snapshot, 'precio_extra', io.precio_extra) ORDER BY io.grupo_titulo_snapshot, io.choice_nombre_snapshot) FILTER (WHERE io.id IS NOT NULL), '[]'::json) AS opciones
+      FROM pedido_items pi
+      LEFT JOIN item_opciones io ON io.item_id = pi.id
+      WHERE pi.sub_pedido_id = ANY(${ids}::uuid[])
+      GROUP BY pi.id, pi.sub_pedido_id, pi.nombre_snapshot, pi.cantidad, pi.subtotal, pi.notas, pi.creado_en
       ORDER BY pi.creado_en, pi.id
     ` as any[] : []
     const grouped = new Map<string, any[]>()
