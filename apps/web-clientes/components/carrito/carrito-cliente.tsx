@@ -205,6 +205,10 @@ export default function CarritoCliente({
       }, {})
 
       const gruposPayload = Object.values(gruposMap)
+      const enviosEsperados = Object.fromEntries(gruposArr.map((grupo) => [
+        grupo.restaurante_id,
+        enviosPorLocal[grupo.restaurante_id]?.costo ?? 0,
+      ]))
 
       const res = await fetch('/api/pedidos', {
         method: 'POST',
@@ -214,6 +218,7 @@ export default function CarritoCliente({
           propina,
           vip,
           notas: notas.trim() || null,
+          envios_esperados: enviosEsperados,
           grupos: gruposPayload,
         }),
       })
@@ -221,6 +226,21 @@ export default function CarritoCliente({
       const data = await res.json()
 
       if (!res.ok || !data.ok) {
+        if (data.code === 'DELIVERY_PRICE_CHANGED') {
+          try {
+            const refresh = await fetch('/api/envio/calcular-multi', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ restaurante_ids: gruposArr.map((grupo) => grupo.restaurante_id), lat: direccionActual.lat, lng: direccionActual.lng }),
+            })
+            const refreshed = await refresh.json()
+            if (refresh.ok && refreshed.ok) {
+              const map: Record<string, { costo: number | null; distancia_km: number | null; permitido: boolean; razon: string | null }> = {}
+              for (const item of refreshed.data) map[item.restaurante_id] = { costo: item.costo == null ? null : Number(item.costo), distancia_km: item.distancia_km == null ? null : Number(item.distancia_km), permitido: Boolean(item.permitido), razon: item.razon || null }
+              setEnviosPorLocal(map)
+            }
+          } catch { /* El total anterior sigue visible si no se pudo refrescar la cotización. */ }
+        }
         setError(data.error || 'Error al crear pedido')
         setEnviando(false)
         return

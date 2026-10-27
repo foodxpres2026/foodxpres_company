@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 interface Config {
   tarifa_delivery_metodo: 'DETALLADA' | 'GENERAL'
+  recargo_delivery: number
   costo_vip: number
   tiempo_max_aceptacion: number
   actualizado_en: string
@@ -23,6 +24,7 @@ export default function ConfiguracionForm() {
           // Postgres devuelve numeric como string → convertir a number
           setConfig({
             tarifa_delivery_metodo: data.data.tarifa_delivery_metodo,
+            recargo_delivery: Number(data.data.recargo_delivery ?? 0),
             costo_vip: Number(data.data.costo_vip),
             tiempo_max_aceptacion: Number(data.data.tiempo_max_aceptacion),
             actualizado_en: data.data.actualizado_en,
@@ -83,6 +85,12 @@ export default function ConfiguracionForm() {
             <span><strong className="block text-sm text-white">Tabla FOODXPRES general</strong><small className="text-gray-500">Usa los rangos de la segunda tabla (hasta 12 km); continúa el patrón de S/ 0.50 cada 0.5 km hasta 15 km.</small></span>
           </label>
         </fieldset>
+        <Field
+          label="Extra manual por delivery (S/)"
+          value={config.recargo_delivery}
+          onChange={(v) => update('recargo_delivery', v)}
+          hint="Se suma por cada local/delivery en pedidos nuevos. Pon S/ 0.00 para desactivarlo. El cliente y el local solo verán el precio total del delivery."
+        />
       </div>
 
       <div className="bg-surface border border-line rounded-2xl p-5 md:p-6 space-y-4">

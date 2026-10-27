@@ -8,6 +8,16 @@ export async function POST(req: Request) {
   if (!staff) return Response.json({ ok: false, error: 'Sesión vencida. Vuelve a ingresar.' }, { status: 401 })
   const parsed = schema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) return Response.json({ ok: false, error: 'Ingresa una ubicación válida del cliente.' }, { status: 400 })
-  try { return Response.json({ ok: true, data: await calculateLocalShipping(staff.restauranteId, parsed.data.lat, parsed.data.lng) }, { headers: { 'Cache-Control': 'no-store' } }) }
+  try {
+    const result = await calculateLocalShipping(staff.restauranteId, parsed.data.lat, parsed.data.lng)
+    return Response.json({ ok: true, data: {
+      costo: result.costo,
+      distancia_km: result.distancia_km,
+      duracion_min: result.duracion_min,
+      fuente: result.fuente,
+      permitido: result.permitido,
+      ...(result.razon ? { razon: result.razon } : {}),
+    } }, { headers: { 'Cache-Control': 'no-store' } })
+  }
   catch (error) { return Response.json({ ok: false, error: error instanceof Error ? error.message : 'No se pudo calcular el envío.' }, { status: 422 }) }
 }

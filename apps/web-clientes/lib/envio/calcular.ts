@@ -18,7 +18,7 @@ export async function calcularEnvio(
 ): Promise<CostoEnvioResultado | null> {
   // 1. Config global
   const config = (await sql`
-    SELECT tarifa_delivery_metodo
+    SELECT tarifa_delivery_metodo, recargo_delivery
     FROM configuracion_sistema
     WHERE id = 1
     LIMIT 1
@@ -47,7 +47,9 @@ export async function calcularEnvio(
     Number(r.lng)
   )
 
-  const costo = deliveryPriceForDistance(ruta.distancia_km, tabla)
+  const costoBase = deliveryPriceForDistance(ruta.distancia_km, tabla)
+  const recargoDelivery = Math.round(Number(config[0].recargo_delivery ?? 0) * 100) / 100
+  const costo = costoBase === null ? null : Math.round((costoBase + recargoDelivery) * 100) / 100
   const razon = ruta.fuente === 'haversine'
     ? 'RUTA_NO_DISPONIBLE'
     : ruta.distancia_km > MAX_DELIVERY_DISTANCE_KM
@@ -56,6 +58,8 @@ export async function calcularEnvio(
 
   return {
     costo: razon ? null : costo,
+    costo_base: razon ? null : costoBase,
+    recargo_delivery: razon ? 0 : recargoDelivery,
     distancia_km: ruta.distancia_km,
     duracion_min: ruta.duracion_min,
     fuente: ruta.fuente,

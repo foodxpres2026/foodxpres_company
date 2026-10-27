@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { getLocalStaff } from '@/lib/local-auth'
 import { sql } from '@/lib/db'
+import { deliveryPriceForDistance, type DeliveryPriceTable } from '../../../../../packages/utils/src/delivery'
 
 const menuQuery = `
   SELECT p.id AS plato_id, p.nombre AS plato_nombre, p.descripcion,
@@ -136,7 +137,7 @@ export async function POST(req: NextRequest) {
       normalized.push({ ...item, nombre_snapshot: plato.nombre, precio_snapshot: unitCents / 100, subtotal: itemCents / 100, opciones: elegidas })
     }
 
-    let envio: { costo: number; distancia_km: number }
+    let envio: { costo: number; costo_base: number; recargo_delivery: number; distancia_km: number }
     try {
       const response = await fetch(`${clientApiBase}/api/envio/calcular`, {
         method: 'POST',
@@ -146,8 +147,13 @@ export async function POST(req: NextRequest) {
         signal: AbortSignal.timeout(10000),
       })
       const result = await response.json()
-      if (!response.ok || !result.ok || !result.data) throw new Error('Cálculo de envío no disponible')
-      envio = { costo: Number(result.data.costo), distancia_km: Number(result.data.distancia_km) }
+      if (!response.ok || !result.ok || !result.data?.permitido || result.data.costo == null) throw new Error('Cálculo de envío no disponible')
+      const config = await sql`SELECT tarifa_delivery_metodo, recargo_delivery FROM configuracion_sistema WHERE id = 1 LIMIT 1` as any[]
+      if (!config[0]) throw new Error('No se encontró la configuración del delivery')
+      const costoBase = deliveryPriceForDistance(Number(result.data.distancia_km), config[0].tarifa_delivery_metodo as DeliveryPriceTable)
+      if (costoBase == null) throw new Error('No se pudo determinar la tarifa base del delivery')
+      const recargo = Math.round(Number(config[0].recargo_delivery ?? 0) * 100) / 100
+      envio = { costo_base: costoBase, recargo_delivery: recargo, costo: Math.round((costoBase + recargo) * 100) / 100, distancia_km: Number(result.data.distancia_km) }
     } catch {
       return Response.json({ ok: false, error: 'No se pudo calcular el delivery para esta dirección' }, { status: 503 })
     }
@@ -191,7 +197,8 @@ export async function POST(req: NextRequest) {
     const localCommission = localRule
       ? (localRule.modalidad === 'FIJA' ? Number(localRule.valor) : Math.round(subtotalCentimos * Number(localRule.valor) / 100) / 100)
       : 0
-    const driverCommission = Math.round(envioCentimos * Number(driverRule?.valor ?? 0) / 100) / 100
+    const driverBaseCents = Math.round(envio.costo_base * 100)
+    const driverCommission = Math.round(driverBaseCents * Number(driverRule?.valor ?? 0) / 100) / 100
     const pedidoId = randomUUID()
     const subPedidoId = randomUUID()
     const pedidoCodigo = orderCode()
@@ -202,8 +209,8 @@ export async function POST(req: NextRequest) {
         VALUES (${pedidoId}, ${pedidoCodigo}, ${customerId}, 'AUTOPEDIDO', ${staff.id}, ${subtotal}, ${envioCentimos / 100}, ${total}, ${data.notas || null}, 'PENDIENTE')
       `,
       sql`
-        INSERT INTO sub_pedidos (id, pedido_id, restaurante_id, tipo_pedido, estado, subtotal, costo_envio, distancia_km, direccion_snapshot, local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto, driver_comision_regla_id, driver_comision_valor, driver_comision_monto)
-        VALUES (${subPedidoId}, ${pedidoId}, ${staff.restaurantId}, 'AUTOPEDIDO', 'PENDIENTE', ${subtotal}, ${envioCentimos / 100}, ${envio.distancia_km}, ${JSON.stringify(dirSnapshot)}::jsonb, ${localRule?.id ?? null}, ${localRule?.modalidad ?? 'FIJA'}, ${Number(localRule?.valor ?? 0)}, ${localCommission}, ${driverRule?.id ?? null}, ${Number(driverRule?.valor ?? 0)}, ${driverCommission})
+        INSERT INTO sub_pedidos (id, pedido_id, restaurante_id, tipo_pedido, estado, subtotal, costo_envio, recargo_delivery, distancia_km, direccion_snapshot, local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto, driver_comision_regla_id, driver_comision_valor, driver_comision_monto)
+        VALUES (${subPedidoId}, ${pedidoId}, ${staff.restaurantId}, 'AUTOPEDIDO', 'PENDIENTE', ${subtotal}, ${envioCentimos / 100}, ${envio.recargo_delivery}, ${envio.distancia_km}, ${JSON.stringify(dirSnapshot)}::jsonb, ${localRule?.id ?? null}, ${localRule?.modalidad ?? 'FIJA'}, ${Number(localRule?.valor ?? 0)}, ${localCommission}, ${driverRule?.id ?? null}, ${Number(driverRule?.valor ?? 0)}, ${driverCommission})
       `,
       sql`
         INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)

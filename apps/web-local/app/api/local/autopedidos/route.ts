@@ -115,12 +115,13 @@ export async function POST(req: Request) {
     const localCommission = localRule
       ? (localRule.modalidad === 'FIJA' ? Number(localRule.valor) : Math.round(subtotalCents * Number(localRule.valor) / 100) / 100)
       : 0
-    const driverCommission = Math.round(shippingCents * Number(driverRule?.valor ?? 0) / 100) / 100
+    const baseShippingCents = Math.round(Number(shipping.costo_base ?? 0) * 100)
+    const driverCommission = Math.round(baseShippingCents * Number(driverRule?.valor ?? 0) / 100) / 100
     const orderId = randomUUID(), subId = randomUUID(), code = `P-${randomBytes(5).toString('hex').toUpperCase()}`
     const queries: any[] = [
       // Use existing schema only; the order snapshot marks this as a local self-order.
       sql`INSERT INTO pedidos (id, codigo, usuario_id, subtotal, total_envio, vip, costo_vip, total, notas, estado_global) VALUES (${orderId}, ${code}, ${staff.id}, ${subtotal}, ${shippingCents / 100}, ${data.vip}, ${vipCents / 100}, ${total}, ${data.notas || null}, 'ACEPTADO')`,
-      sql`INSERT INTO sub_pedidos (id, pedido_id, restaurante_id, tipo_pedido, estado, aceptado_en, subtotal, costo_envio, distancia_km, tiempo_estimado, direccion_snapshot, notas, local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto, driver_comision_regla_id, driver_comision_valor, driver_comision_monto) VALUES (${subId}, ${orderId}, ${staff.restauranteId}, 'AUTOPEDIDO', 'ACEPTADO', NOW(), ${subtotal}, ${shippingCents / 100}, ${shipping.distancia_km}, ${shipping.duracion_min}, ${JSON.stringify({ etiqueta: 'Autopedido', direccion: data.direccion, referencia: data.referencia || null, celular: data.celular, lat: data.lat, lng: data.lng })}::jsonb, ${data.notas || null}, ${localRule?.id ?? null}, ${localRule?.modalidad ?? 'FIJA'}, ${Number(localRule?.valor ?? 0)}, ${localCommission}, ${driverRule?.id ?? null}, ${Number(driverRule?.valor ?? 0)}, ${driverCommission})`,
+      sql`INSERT INTO sub_pedidos (id, pedido_id, restaurante_id, tipo_pedido, estado, aceptado_en, subtotal, costo_envio, recargo_delivery, distancia_km, tiempo_estimado, direccion_snapshot, notas, local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto, driver_comision_regla_id, driver_comision_valor, driver_comision_monto) VALUES (${subId}, ${orderId}, ${staff.restauranteId}, 'AUTOPEDIDO', 'ACEPTADO', NOW(), ${subtotal}, ${shippingCents / 100}, ${shipping.recargo_delivery}, ${shipping.distancia_km}, ${shipping.duracion_min}, ${JSON.stringify({ etiqueta: 'Autopedido', direccion: data.direccion, referencia: data.referencia || null, celular: data.celular, lat: data.lat, lng: data.lng })}::jsonb, ${data.notas || null}, ${localRule?.id ?? null}, ${localRule?.modalidad ?? 'FIJA'}, ${Number(localRule?.valor ?? 0)}, ${localCommission}, ${driverRule?.id ?? null}, ${Number(driverRule?.valor ?? 0)}, ${driverCommission})`,
       sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${subId}, 'ACEPTADO', ${staff.id}, 'Autopedido aceptado automáticamente al registrarlo por el local')`,
     ]
     for (const item of normalized) {

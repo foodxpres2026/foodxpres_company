@@ -31,7 +31,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    return Response.json({ ok: true, data: resultado })
+    // Solo se envía al cliente el precio final; el cálculo interno por separado
+    // se usa al crear el pedido para liquidar la comisión del driver.
+    return Response.json({ ok: true, data: {
+      costo: resultado.costo,
+      distancia_km: resultado.distancia_km,
+      duracion_min: resultado.duracion_min,
+      fuente: resultado.fuente,
+      permitido: resultado.permitido,
+      ...(resultado.razon ? { razon: resultado.razon } : {}),
+    } })
   } catch (error) {
     console.error('Error cálculo envío:', error)
     return Response.json(

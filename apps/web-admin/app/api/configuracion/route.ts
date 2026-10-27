@@ -5,6 +5,7 @@ import { getSessionUser } from '@/lib/auth'
 
 const configSchema = z.object({
   tarifa_delivery_metodo: z.enum(['DETALLADA', 'GENERAL']),
+  recargo_delivery: z.coerce.number().finite().min(0).max(10000),
   costo_vip: z.coerce.number().min(0),
   tiempo_max_aceptacion: z.coerce.number().int().min(1),
 })
@@ -17,7 +18,7 @@ export async function GET() {
 
   try {
     const rows = await sql`
-      SELECT tarifa_delivery_metodo, costo_vip,
+      SELECT tarifa_delivery_metodo, recargo_delivery, costo_vip,
              tiempo_max_aceptacion, actualizado_en
       FROM configuracion_sistema
       WHERE id = 1
@@ -55,6 +56,7 @@ export async function PATCH(req: NextRequest) {
     await sql`
       UPDATE configuracion_sistema SET
         tarifa_delivery_metodo = ${d.tarifa_delivery_metodo},
+        recargo_delivery = ${d.recargo_delivery},
         costo_vip = ${d.costo_vip},
         tiempo_max_aceptacion = ${d.tiempo_max_aceptacion},
         actualizado_en = NOW()

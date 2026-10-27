@@ -4,7 +4,7 @@ import { deliveryPriceForDistance, MAX_DELIVERY_DISTANCE_KM, type DeliveryPriceT
 export async function calculateLocalShipping(restaurantId: string, clientLat: number, clientLng: number) {
   const sql = getSql()
   const rows = await sql`
-    SELECT c.tarifa_delivery_metodo, r.lat, r.lng
+    SELECT c.tarifa_delivery_metodo, c.recargo_delivery, r.lat, r.lng
     FROM configuracion_sistema c CROSS JOIN restaurantes r
     WHERE c.id = 1 AND r.id = ${restaurantId} LIMIT 1
   ` as any[]
@@ -44,8 +44,13 @@ export async function calculateLocalShipping(restaurantId: string, clientLat: nu
   const withinLimit = km <= MAX_DELIVERY_DISTANCE_KM
   const permitido = routeAvailable && withinLimit
   const razon = !routeAvailable ? 'RUTA_NO_DISPONIBLE' : !withinLimit ? 'SUPERA_DISTANCIA_MAXIMA' : null
+  const costoBase = deliveryPriceForDistance(km, tabla)
+  const recargoDelivery = Math.round(Number(config.recargo_delivery ?? 0) * 100) / 100
+  const costo = costoBase === null ? null : Math.round((costoBase + recargoDelivery) * 100) / 100
   return {
-    costo: permitido ? deliveryPriceForDistance(km, tabla) : null,
+    costo: permitido ? costo : null,
+    costo_base: permitido ? costoBase : null,
+    recargo_delivery: permitido ? recargoDelivery : 0,
     distancia_km: km,
     duracion_min: duration,
     fuente: source,

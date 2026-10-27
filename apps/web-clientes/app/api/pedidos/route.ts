@@ -31,6 +31,7 @@ const createSchema = z.object({
   propina: z.number().finite().min(0).max(1000).default(0),
   vip: z.boolean().default(false),
   notas: z.string().max(500).optional().nullable(),
+  envios_esperados: z.record(z.string(), z.coerce.number().finite().min(0).max(10000)).optional(),
   grupos: z.array(grupoSchema).min(1).max(10),
 }).superRefine((data, ctx) => {
   const ids = data.grupos.map((grupo) => grupo.restaurante_id)
@@ -313,8 +314,21 @@ export async function POST(req: NextRequest) {
         items: itemsCalculados,
         subtotal: subtotalGrupoCentimos / 100,
         costo_envio: envio.costo!,
+        costo_envio_base: envio.costo_base!,
+        recargo_delivery: envio.recargo_delivery,
         distancia_km: envio.distancia_km,
       })
+    }
+
+    for (const group of gruposCalculados) {
+      const expected = parsed.data.envios_esperados?.[group.restaurante_id]
+      if (expected !== undefined && Math.round(expected * 100) !== Math.round(group.costo_envio * 100)) {
+        return Response.json({
+          ok: false,
+          code: 'DELIVERY_PRICE_CHANGED',
+          error: 'El precio del delivery cambió. Revisa el nuevo total del carrito y confirma otra vez.',
+        }, { status: 409 })
+      }
     }
 
     // ============================================
@@ -354,7 +368,7 @@ export async function POST(req: NextRequest) {
         ? (rule.modalidad === 'FIJA' ? localRate : Math.round(group.subtotal * localRate) / 100)
         : 0
       group.driver_rule = driverRule
-      group.driver_commission_amount = Math.round(group.costo_envio * driverRate) / 100
+      group.driver_commission_amount = Math.round(group.costo_envio_base * driverRate) / 100
     }
 
     // ============================================
@@ -391,13 +405,13 @@ export async function POST(req: NextRequest) {
       createdSubOrderIds.push(spId)
       transactionQueries.push(sql`
         INSERT INTO sub_pedidos (
-          id, pedido_id, restaurante_id, tipo_pedido, estado, subtotal, costo_envio,
+          id, pedido_id, restaurante_id, tipo_pedido, estado, subtotal, costo_envio, recargo_delivery,
           distancia_km, direccion_snapshot,
           local_comision_regla_id, local_comision_modalidad, local_comision_valor, local_comision_monto,
           driver_comision_regla_id, driver_comision_valor, driver_comision_monto
         ) VALUES (
           ${spId}, ${pedidoId}, ${g.restaurante_id}, 'NORMAL', 'PENDIENTE', ${g.subtotal},
-          ${g.costo_envio}, ${g.distancia_km},
+          ${g.costo_envio}, ${g.recargo_delivery}, ${g.distancia_km},
           ${JSON.stringify(dirSnapshot)}::jsonb,
           ${g.local_rule?.id ?? null}, ${g.local_rule?.modalidad ?? 'FIJA'},
           ${Number(g.local_rule?.valor ?? 0)}, ${g.local_commission_amount},
