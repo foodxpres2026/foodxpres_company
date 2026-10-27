@@ -62,13 +62,16 @@ export default function PushNotifications() {
   }, [register])
 
   if (state === 'unsupported') return null
-  const text = state === 'active' ? 'Notificaciones activadas en este dispositivo.'
-    : state === 'denied' ? 'Notificaciones bloqueadas. Permítelas desde la configuración del navegador.'
-      : state === 'error' ? 'No se pudieron activar. Revisa la conexión y vuelve a intentarlo.'
-        : 'Activa las alertas para enterarte cuando entre un pedido, aunque no tengas abierto el panel.'
+  const status = state === 'active' ? 'Alertas activas'
+    : state === 'denied' ? 'Permiso bloqueado'
+      : state === 'error' ? 'No se pudieron activar'
+        : state === 'asking' ? 'Activando…' : 'Recibe avisos de pedidos nuevos'
   return <div className="push-notifications" role="status">
-    <span aria-hidden="true">🔔</span><div className="push-notifications-copy"><strong>{text}</strong>{message && <p>{message}</p>}{state === 'active' && !soundReady && <p>Activa el sonido mientras esta pantalla esté abierta.</p>}</div>
-    {state !== 'active' && state !== 'denied' && <button type="button" onClick={() => { setSoundReady(enablePushSound()); void register(true) }} disabled={state === 'asking'}>{state === 'asking' ? 'Activando…' : state === 'error' ? 'Reintentar' : 'Activar alertas'}</button>}
-    {!soundReady && <button type="button" onClick={() => setSoundReady(enablePushSound())}>Activar sonido</button>}
+    <div className="push-notifications-heading"><span aria-hidden="true">🔔</span><div className="push-notifications-copy"><strong>Notificaciones</strong><small>{status}</small></div></div>
+    {message && <p className="push-notifications-message">{message}</p>}
+    <div className="push-notifications-actions">
+      {state !== 'active' && state !== 'denied' && <button type="button" onClick={() => { setSoundReady(enablePushSound()); void register(true) }} disabled={state === 'asking'}>{state === 'asking' ? 'Activando…' : state === 'error' ? 'Reintentar' : 'Activar alertas'}</button>}
+      {!soundReady && <button type="button" className="secondary" onClick={() => setSoundReady(enablePushSound())}>Activar sonido</button>}
+    </div>
   </div>
 }

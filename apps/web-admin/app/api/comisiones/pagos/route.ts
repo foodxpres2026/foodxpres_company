@@ -15,13 +15,27 @@ export async function GET(request: NextRequest) {
   if (!user || user.role !== 'ADMIN') return Response.json({ ok: false, error: 'No autorizado' }, { status: 401 })
   const tipo = request.nextUrl.searchParams.get('tipo')
   const id = request.nextUrl.searchParams.get('id')
-  if (!['LOCAL', 'DRIVER'].includes(tipo ?? '') || !id) return Response.json({ ok: false, error: 'Beneficiario inválido' }, { status: 400 })
+  if ((!tipo && id) || (tipo && !id) || (tipo && !['LOCAL', 'DRIVER'].includes(tipo))) return Response.json({ ok: false, error: 'Beneficiario inválido' }, { status: 400 })
   try {
-    const rows = await sql`
-      SELECT cp.id, cp.monto, cp.nota, cp.pagado_en, u.nombre AS admin_nombre
-      FROM comision_pagos cp LEFT JOIN usuarios u ON u.id = cp.registrado_por
+    const rows = tipo && id ? await sql`
+      SELECT cp.id, cp.beneficiario_tipo, cp.beneficiario_id, cp.monto, cp.nota, cp.pagado_en,
+             u.nombre AS admin_nombre,
+             CASE WHEN cp.beneficiario_tipo = 'LOCAL' THEN r.nombre ELSE d.nombre END AS beneficiario_nombre
+      FROM comision_pagos cp
+      LEFT JOIN usuarios u ON u.id = cp.registrado_por
+      LEFT JOIN restaurantes r ON cp.beneficiario_tipo = 'LOCAL' AND r.id = cp.beneficiario_id
+      LEFT JOIN usuarios d ON cp.beneficiario_tipo = 'DRIVER' AND d.id = cp.beneficiario_id
       WHERE cp.beneficiario_tipo = ${tipo} AND cp.beneficiario_id = ${id}::uuid
       ORDER BY cp.pagado_en DESC LIMIT 50
+    ` : await sql`
+      SELECT cp.id, cp.beneficiario_tipo, cp.beneficiario_id, cp.monto, cp.nota, cp.pagado_en,
+             u.nombre AS admin_nombre,
+             CASE WHEN cp.beneficiario_tipo = 'LOCAL' THEN r.nombre ELSE d.nombre END AS beneficiario_nombre
+      FROM comision_pagos cp
+      LEFT JOIN usuarios u ON u.id = cp.registrado_por
+      LEFT JOIN restaurantes r ON cp.beneficiario_tipo = 'LOCAL' AND r.id = cp.beneficiario_id
+      LEFT JOIN usuarios d ON cp.beneficiario_tipo = 'DRIVER' AND d.id = cp.beneficiario_id
+      ORDER BY cp.pagado_en DESC
     `
     return Response.json({ ok: true, data: rows }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {

@@ -22,6 +22,7 @@ export default function ComisionesClient() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [payments, setPayments] = useState<any[]>([])
+  const [allPayments, setAllPayments] = useState<any[]>([])
   const [selected, setSelected] = useState<Beneficiary | null>(null)
   const [payAmount, setPayAmount] = useState('')
   const [payNote, setPayNote] = useState('')
@@ -45,6 +46,15 @@ export default function ComisionesClient() {
   }, [localId])
 
   useEffect(() => { void load() }, [load])
+  const loadPaymentHistory = useCallback(async () => {
+    try {
+      const response = await fetch('/api/comisiones/pagos', { cache: 'no-store' })
+      const result = await response.json()
+      if (!response.ok || !result.ok) throw new Error(result.error || 'No se cargó el historial de pagos')
+      setAllPayments(result.data)
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Error de conexión') }
+  }, [])
+  useEffect(() => { void loadPaymentHistory() }, [loadPaymentHistory])
   const selectedLocal = data?.restaurants.find((local) => local.id === localId)
 
   async function saveRule(tipo: 'LOCAL' | 'DRIVER', tipoPedido: 'NORMAL' | 'AUTOPEDIDO' = 'NORMAL') {
@@ -79,7 +89,7 @@ export default function ComisionesClient() {
       if (!response.ok || !result.ok) throw new Error(result.error || 'No se pudo registrar el pago')
       setMessage(`Pago de ${money(payAmount)} registrado con fecha y administrador.`)
       setSelected(null)
-      await load()
+      await Promise.all([load(), loadPaymentHistory()])
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Error de conexión') }
     finally { setBusy(false) }
   }
@@ -103,6 +113,7 @@ export default function ComisionesClient() {
       <section className="rounded-2xl border border-line bg-surface p-5 space-y-4">
         <div><h2 className="font-bold text-white">Comisiones de locales</h2><p className="mt-1 text-xs text-gray-500">Cada local tiene una regla independiente para pedidos normales y autopedidos. Ambas se calculan solo sobre el subtotal de productos: no incluyen delivery, VIP ni propina.</p></div>
         <label className="block max-w-xl text-xs text-gray-400">Local<select className="mt-1 block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-white" value={localId} onChange={(e) => { const id = e.target.value; const local = data.restaurants.find((item) => item.id === id); setLocalId(id); setMode(local?.regla?.modalidad ?? 'FIJA'); setValue(local?.regla ? String(Number(local.regla.valor)) : '0.50'); setAutoMode(local?.regla_autopedido?.modalidad ?? 'FIJA'); setAutoValue(local?.regla_autopedido ? String(Number(local.regla_autopedido.valor)) : '0.50') }}><option value="">Selecciona un local</option>{data.restaurants.map((local) => <option key={local.id} value={local.id}>{local.nombre}</option>)}</select></label>
+        {selectedLocal && <a href={`/dashboard/comisiones/reporte?localId=${encodeURIComponent(selectedLocal.id)}`} target="_blank" rel="noreferrer" className="inline-flex rounded-lg border border-brand/50 px-4 py-2 text-sm font-semibold text-brand hover:bg-brand/10">Ver / Imprimir reporte de {selectedLocal.nombre}</a>}
         {selectedLocal && <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-3 rounded-xl border border-line-light bg-surface-dark p-4">
             <div><h3 className="font-semibold text-white">Pedidos normales</h3><p className="text-xs text-gray-500">Pedidos creados por los clientes.</p></div>
@@ -128,6 +139,11 @@ export default function ComisionesClient() {
           <div className="space-y-2"><h3 className="text-xs font-bold uppercase text-gray-500">Locales</h3>{data.restaurants.map((local) => <BalanceRow key={local.id} name={local.nombre} saldo={local.saldo} onPay={() => void openPayments({ tipo: 'LOCAL', id: local.id, nombre: local.nombre, saldo: Number(local.saldo) })} />)}</div>
           <div className="space-y-2"><h3 className="text-xs font-bold uppercase text-gray-500">Drivers</h3>{data.drivers.map((driver) => <BalanceRow key={driver.id} name={driver.nombre} saldo={driver.saldo} onPay={() => void openPayments({ tipo: 'DRIVER', id: driver.id, nombre: driver.nombre, saldo: Number(driver.saldo) })} />)}</div>
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-line bg-surface p-5 space-y-3">
+        <div><h2 className="font-bold text-white">Historial de pagos realizados</h2><p className="mt-1 text-xs text-gray-500">Registro cronológico de los pagos abonados a locales y drivers.</p></div>
+        {allPayments.length ? <div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-xs"><thead className="text-gray-500"><tr><th className="py-2">Fecha</th><th>Beneficiario</th><th>Tipo</th><th>Monto</th><th>Nota / referencia</th><th>Registrado por</th></tr></thead><tbody>{allPayments.map((payment) => <tr key={payment.id} className="border-t border-line text-gray-300"><td className="py-2">{date(payment.pagado_en)}</td><td>{payment.beneficiario_nombre || 'Beneficiario'}</td><td>{payment.beneficiario_tipo === 'LOCAL' ? 'Local' : 'Driver'}</td><td className="font-bold text-brand">{money(payment.monto)}</td><td>{payment.nota || '—'}</td><td>{payment.admin_nombre || 'Administrador'}</td></tr>)}</tbody></table></div> : <p className="text-xs text-gray-500">Aún no hay pagos registrados.</p>}
       </section>
 
       {selected && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Registrar pago de comisión"><div className="max-h-[90vh] w-full max-w-lg overflow-auto rounded-2xl border border-line bg-surface p-5"><div className="mb-4 flex justify-between"><div><h2 className="font-bold text-white">Pago · {selected.nombre}</h2><p className="text-xs text-gray-400">Saldo pendiente: {money(selected.saldo)}</p></div><button onClick={() => setSelected(null)} aria-label="Cerrar" className="text-xl text-gray-400">×</button></div><div className="grid gap-3 sm:grid-cols-2"><label className="text-xs text-gray-400">Monto pagado (S/)<input className="mt-1 block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-white" type="number" min="0.01" max={selected.saldo} step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} /></label><label className="text-xs text-gray-400">Nota o referencia<input className="mt-1 block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-white" value={payNote} onChange={(e) => setPayNote(e.target.value)} maxLength={500} placeholder="Opcional" /></label></div><div className="mt-4"><h3 className="mb-2 text-xs font-bold text-gray-400">Últimos pagos</h3>{payments.length ? payments.map((payment) => <p key={payment.id} className="border-t border-line py-2 text-xs text-gray-300">{money(payment.monto)} · {date(payment.pagado_en)}{payment.nota ? ` · ${payment.nota}` : ''}{payment.admin_nombre ? ` · por ${payment.admin_nombre}` : ''}</p>) : <p className="text-xs text-gray-500">No hay pagos registrados.</p>}</div><button disabled={busy || !Number(payAmount) || Number(payAmount) > selected.saldo} onClick={() => void registerPayment()} className="mt-4 w-full rounded-lg bg-brand px-4 py-3 font-bold text-black disabled:opacity-50">{busy ? 'Guardando...' : 'Registrar pago'}</button></div></div>}
