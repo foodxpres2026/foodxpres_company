@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
         return {
           restaurante_id: id,
           costo: r?.costo ?? null,
-          recargo_delivery: r?.recargo_delivery ?? 0,
           distancia_km: r?.distancia_km ?? null,
           duracion_min: r?.duracion_min ?? null,
           permitido: r?.permitido ?? false,

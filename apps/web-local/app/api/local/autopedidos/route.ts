@@ -131,6 +131,6 @@ export async function POST(req: Request) {
     }
     await sql.transaction(queries)
     await notifyInternalPush('AUTOPEDIDO', subId)
-    return Response.json({ ok: true, data: { id: orderId, codigo: code, total, costo_envio: shipping.costo, recargo_delivery: shipping.recargo_delivery, distancia_km: shipping.distancia_km } }, { status: 201 })
+    return Response.json({ ok: true, data: { id: orderId, codigo: code, total, costo_envio: shipping.costo, distancia_km: shipping.distancia_km } }, { status: 201 })
   } catch (error) { console.error('POST local/autopedidos error:', error); return Response.json({ ok: false, error: error instanceof Error ? error.message : 'No se pudo crear el autopedido.' }, { status: 500 }) }
 }

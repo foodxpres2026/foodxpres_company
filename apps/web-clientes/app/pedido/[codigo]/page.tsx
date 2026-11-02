@@ -38,7 +38,7 @@ async function getPedido(codigo: string, usuarioId: string) {
 
   const subs = (await sql`
     SELECT 
-      sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.recargo_delivery, sp.distancia_km,
+      sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.distancia_km,
       sp.direccion_snapshot, sp.notas,
       sp.creado_en, sp.aceptado_en, sp.listo_en, sp.recogido_en, sp.entrega_reportada_en, sp.cliente_confirmo_en, sp.entregado_en,
       r.nombre as restaurante_nombre,
@@ -51,11 +51,6 @@ async function getPedido(codigo: string, usuarioId: string) {
     WHERE sp.pedido_id = ${pedido.id}
     ORDER BY sp.creado_en ASC
   `) as any[]
-
-  const recargoDeliveryTotal = subs.reduce(
-    (total, subPedido) => total + Number(subPedido.recargo_delivery ?? 0),
-    0
-  )
 
   const subsConItems = await Promise.all(
     subs.map(async (sp: any) => {
@@ -81,7 +76,7 @@ async function getPedido(codigo: string, usuarioId: string) {
     })
   )
 
-  return { ...pedido, recargoDeliveryTotal, sub_pedidos: subsConItems }
+  return { ...pedido, sub_pedidos: subsConItems }
 }
 
 export default async function PedidoPage({
@@ -283,12 +278,6 @@ export default async function PedidoPage({
               S/ {Number(pedido.total_envio).toFixed(2)}
             </span>
           </div>
-          {recargoDeliveryTotal > 0 && (
-            <div className="flex justify-between text-xs">
-              <span className="text-gray-500">Recargo adicional incluido</span>
-              <span className="text-gray-400">S/ {recargoDeliveryTotal.toFixed(2)}</span>
-            </div>
-          )}
           {Number(pedido.propina) > 0 && (
             <div className="flex justify-between">
               <span className="text-gray-400">Propina</span>
