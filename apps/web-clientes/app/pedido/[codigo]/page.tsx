@@ -12,6 +12,16 @@ import CopiarCelularDriver from '@/components/pedidos/copiar-celular-driver'
 
 export const dynamic = 'force-dynamic'
 
+function promedioPreparacion(sp: { tiempo_estimado?: number | string | null; restaurante_tiempo_estimado?: string | null }) {
+  const asignado = Number(sp.tiempo_estimado)
+  if (Number.isFinite(asignado) && asignado > 0) return Math.round(asignado)
+
+  const tiempos = (sp.restaurante_tiempo_estimado ?? '').match(/\d+/g)?.map(Number).filter((min) => min > 0) ?? []
+  if (tiempos.length >= 2) return Math.round((tiempos[0] + tiempos[1]) / 2)
+  if (tiempos.length === 1) return tiempos[0]
+  return 30
+}
+
 const ESTADO_LABELS: Record<string, string> = {
   PENDIENTE: 'Pendiente',
   ACEPTADO: 'Aceptado',
@@ -43,6 +53,7 @@ async function getPedido(codigo: string, usuarioId: string) {
       sp.direccion_snapshot, sp.notas,
       sp.creado_en, sp.aceptado_en, sp.listo_en, sp.recogido_en, sp.entrega_reportada_en, sp.cliente_confirmo_en, sp.entregado_en,
       r.nombre as restaurante_nombre,
+      r.tiempo_estimado as restaurante_tiempo_estimado,
       r.celular as restaurante_celular,
       d.nombre as driver_nombre,
       d.celular as driver_celular
@@ -177,13 +188,9 @@ export default async function PedidoPage({
                   <span className="text-lg" aria-hidden="true">⏱️</span>
                   <div>
                     <p className="text-xs font-bold text-white">
-                      {sp.tiempo_estimado
-                        ? `Preparación estimada: ${sp.tiempo_estimado} min`
-                        : ['PENDIENTE', 'ACEPTADO', 'PREPARANDO'].includes(sp.estado)
-                          ? 'El local indicará el tiempo al aceptar'
-                          : 'Preparación en curso'}
+                      {`Preparación estimada: ${promedioPreparacion(sp)} min`}
                     </p>
-                    <p className="text-[10px] text-gray-500">Tiempo indicado por el restaurante</p>
+                    <p className="text-[10px] text-gray-500">{sp.tiempo_estimado ? 'Tiempo confirmado por el restaurante' : sp.restaurante_tiempo_estimado ? 'Promedio del tiempo indicado por el restaurante' : 'Promedio general aproximado'}</p>
                   </div>
                 </div>
                 <EstadoTimeline estado={sp.estado} />

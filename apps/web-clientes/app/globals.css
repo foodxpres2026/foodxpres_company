@@ -135,9 +135,21 @@ body {
   animation: promo-progress-fill 5s linear forwards;
 }
 
+@keyframes order-step-bounce {
+  0%, 100% { transform: translateY(0) scale(1.08); }
+  50% { transform: translateY(-5px) scale(1.16); }
+}
+
+.order-step-icon-current {
+  opacity: 1;
+  background: color-mix(in srgb, var(--color-brand) 16%, transparent);
+  animation: order-step-bounce 1.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .promo-content-motion,
-  .promo-progress {
+  .promo-progress,
+  .order-step-icon-current {
     animation: none;
   }
 

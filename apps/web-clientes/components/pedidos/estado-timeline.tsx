@@ -46,9 +46,9 @@ export default function EstadoTimeline({
 
   return (
     <div>
-      <div className="mb-1 flex justify-between" aria-hidden="true">
+      <div className="mb-2 flex justify-between" aria-hidden="true">
         {PASOS.map((paso, i) => (
-          <span key={paso.key} className={`w-6 text-center text-base transition-all ${i <= indexActual ? 'opacity-100' : 'opacity-35'} ${i === indexActual ? 'scale-110' : ''}`}>
+          <span key={paso.key} className={`flex h-10 w-10 items-center justify-center rounded-xl text-[26px] transition-all sm:h-12 sm:w-12 sm:text-3xl ${i < indexActual ? 'opacity-100' : i === indexActual ? 'order-step-icon-current' : 'opacity-60 grayscale-[35%]'}`}>
             {paso.icon}
           </span>
         ))}
@@ -87,18 +87,14 @@ export default function EstadoTimeline({
         })}
       </div>
 
-      {/* Labels (solo si no es compact) */}
+      {/* Etiquetas de todas las etapas */}
       {!compact && (
-        <div className="flex justify-between mt-2">
-          <span className="text-[10px] text-gray-600">
-            {PASOS[0].label}
-          </span>
-          <span className="text-[10px] text-brand font-bold">
-            {PASOS[indexActual].label}
-          </span>
-          <span className="text-[10px] text-gray-600">
-            {PASOS[PASOS.length - 1].label}
-          </span>
+        <div className="mt-2 grid grid-cols-5 gap-1">
+          {PASOS.map((paso, i) => (
+            <span key={paso.key} className={`text-center text-[9px] leading-tight sm:text-[10px] ${i === indexActual ? 'font-bold text-brand' : i < indexActual ? 'text-gray-300' : 'text-gray-500'}`}>
+              {paso.label}
+            </span>
+          ))}
         </div>
       )}
 
