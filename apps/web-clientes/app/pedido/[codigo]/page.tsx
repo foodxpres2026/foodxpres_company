@@ -39,7 +39,7 @@ async function getPedido(codigo: string, usuarioId: string) {
 
   const subs = (await sql`
     SELECT 
-      sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.distancia_km,
+      sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.distancia_km, sp.tiempo_estimado,
       sp.direccion_snapshot, sp.notas,
       sp.creado_en, sp.aceptado_en, sp.listo_en, sp.recogido_en, sp.entrega_reportada_en, sp.cliente_confirmo_en, sp.entregado_en,
       r.nombre as restaurante_nombre,
@@ -173,6 +173,19 @@ export default async function PedidoPage({
                 </div>
 
                 {/* TIMELINE DEL LOCAL */}
+                <div className="mb-3 flex items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2.5">
+                  <span className="text-lg" aria-hidden="true">⏱️</span>
+                  <div>
+                    <p className="text-xs font-bold text-white">
+                      {sp.tiempo_estimado
+                        ? `Preparación estimada: ${sp.tiempo_estimado} min`
+                        : ['PENDIENTE', 'ACEPTADO', 'PREPARANDO'].includes(sp.estado)
+                          ? 'El local indicará el tiempo al aceptar'
+                          : 'Preparación en curso'}
+                    </p>
+                    <p className="text-[10px] text-gray-500">Tiempo indicado por el restaurante</p>
+                  </div>
+                </div>
                 <EstadoTimeline estado={sp.estado} />
               {sp.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && <ConfirmarEntrega subPedidoId={sp.id} />}
               {sp.estado === 'ENTREGADO' && sp.cliente_confirmo_en && <p className="mt-3 text-xs font-medium text-brand">✓ Confirmaste que recibiste este pedido.</p>}

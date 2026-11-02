@@ -1,11 +1,11 @@
 'use client'
 
 const PASOS = [
-  { key: 'PENDIENTE', label: 'Pendiente', icon: '⏳' },
-  { key: 'ACEPTADO', label: 'Aceptado', icon: '✅' },
+  { key: 'PENDIENTE', label: 'Pendiente', icon: '🕒' },
+  { key: 'ACEPTADO', label: 'Preparando', icon: '👨‍🍳' },
   { key: 'LISTO', label: 'Listo', icon: '🍽️' },
   { key: 'EN_CAMINO', label: 'En camino', icon: '🛵' },
-  { key: 'ENTREGADO', label: 'Entregado', icon: '🎉' },
+  { key: 'ENTREGADO', label: 'Entregado', icon: '✅' },
 ]
 
 const ESTADOS_ESPECIALES: Record<string, { label: string; icon: string; color: string }> = {
@@ -46,6 +46,13 @@ export default function EstadoTimeline({
 
   return (
     <div>
+      <div className="mb-1 flex justify-between" aria-hidden="true">
+        {PASOS.map((paso, i) => (
+          <span key={paso.key} className={`w-6 text-center text-base transition-all ${i <= indexActual ? 'opacity-100' : 'opacity-35'} ${i === indexActual ? 'scale-110' : ''}`}>
+            {paso.icon}
+          </span>
+        ))}
+      </div>
       {/* Barra de progreso */}
       <div className="flex items-center gap-1">
         {PASOS.map((paso, i) => {
