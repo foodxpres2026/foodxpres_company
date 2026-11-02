@@ -81,7 +81,7 @@ async function getPedido(codigo: string, usuarioId: string) {
     })
   )
 
-  return { ...pedido, sub_pedidos: subsConItems }
+  return { ...pedido, recargoDeliveryTotal, sub_pedidos: subsConItems }
 }
 
 export default async function PedidoPage({
