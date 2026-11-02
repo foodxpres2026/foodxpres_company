@@ -86,10 +86,10 @@ export default function ConfiguracionForm() {
           </label>
         </fieldset>
         <Field
-          label="Extra manual por delivery (S/)"
+          label="Recargo adicional por delivery (S/)"
           value={config.recargo_delivery}
           onChange={(v) => update('recargo_delivery', v)}
-          hint="Se suma por cada local/delivery en pedidos nuevos. Pon S/ 0.00 para desactivarlo. El cliente y el local solo verán el precio total del delivery."
+          hint="Se suma a cada delivery de todos los restaurantes en pedidos nuevos. Permanece activo hasta que lo cambies manualmente; usa S/ 0.00 para desactivarlo. Los pedidos ya creados conservan su importe."
         />
       </div>
 
