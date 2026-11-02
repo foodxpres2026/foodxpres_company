@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
         return {
           restaurante_id: id,
           costo: r?.costo ?? null,
+          recargo_delivery: r?.recargo_delivery ?? 0,
           distancia_km: r?.distancia_km ?? null,
           duracion_min: r?.duracion_min ?? null,
           permitido: r?.permitido ?? false,
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
       })
     )
 
-    return Response.json({ ok: true, data: resultados })
+    return Response.json({ ok: true, data: resultados }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('Error cálculo masivo:', error)
     return Response.json(

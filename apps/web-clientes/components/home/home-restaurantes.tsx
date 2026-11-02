@@ -46,6 +46,7 @@ export default function HomeRestaurantes({
     return {
       ...r,
       envio_costo: envio?.costo ?? null,
+      envio_recargo: envio?.recargo_delivery ?? 0,
       envio_km: envio?.distancia_km ?? null,
     }
   }

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 export interface EnvioInfo {
   restaurante_id: string
   costo: number | null
+  recargo_delivery: number
   distancia_km: number | null
   duracion_min: number | null
 }

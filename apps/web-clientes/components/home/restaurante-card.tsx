@@ -14,6 +14,7 @@ export interface RestauranteCardData {
   abierto: boolean
   // Envío (calculado dinámicamente)
   envio_costo?: number | null
+  envio_recargo?: number | null
   envio_km?: number | null
 }
 
@@ -60,6 +61,7 @@ export function RestauranteHero({
       {restaurante.envio_costo != null && (
         <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
           🛵 S/ {restaurante.envio_costo.toFixed(2)}
+          {(restaurante.envio_recargo ?? 0) > 0 && <span className="text-brand">incluye +S/ {restaurante.envio_recargo!.toFixed(2)}</span>}
         </div>
       )}
 
@@ -145,6 +147,7 @@ export function RestauranteGrid({
         {restaurante.envio_costo != null && (
           <div className="absolute top-2 right-2 bg-black/80 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded-full">
             🛵 S/ {restaurante.envio_costo.toFixed(2)}
+            {(restaurante.envio_recargo ?? 0) > 0 && <span className="text-brand"> incluye +S/ {restaurante.envio_recargo!.toFixed(2)}</span>}
           </div>
         )}
 

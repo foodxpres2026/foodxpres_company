@@ -12,6 +12,7 @@ export async function POST(req: Request) {
     const result = await calculateLocalShipping(staff.restauranteId, parsed.data.lat, parsed.data.lng)
     return Response.json({ ok: true, data: {
       costo: result.costo,
+      recargo_delivery: result.recargo_delivery,
       distancia_km: result.distancia_km,
       duracion_min: result.duracion_min,
       fuente: result.fuente,

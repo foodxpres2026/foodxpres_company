@@ -34,7 +34,7 @@ export async function GET(
 
     const subs = (await sql`
       SELECT 
-        sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.distancia_km,
+        sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.recargo_delivery, sp.distancia_km,
         sp.direccion_snapshot, sp.notas, sp.creado_en,
         sp.aceptado_en, sp.listo_en, sp.recogido_en, sp.entregado_en,
         r.nombre as restaurante_nombre,

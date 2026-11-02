@@ -33,7 +33,7 @@ export default function CarritoCliente({
   // 🎯 Ahora usa directamente la dirección (BD o localStorage)
   const direccionActual = useDireccionActual(direccionDeBD)
 
-  const [enviosPorLocal, setEnviosPorLocal] = useState<Record<string, { costo: number | null; distancia_km: number | null; permitido: boolean; razon: string | null }>>({})
+  const [enviosPorLocal, setEnviosPorLocal] = useState<Record<string, { costo: number | null; recargo_delivery: number; distancia_km: number | null; permitido: boolean; razon: string | null }>>({})
   const [propina, setPropina] = useState(0)
   const [otraPropina, setOtraPropina] = useState('')
   const [esOtraPropina, setEsOtraPropina] = useState(false)
@@ -96,10 +96,11 @@ export default function CarritoCliente({
       .then((r) => r.json())
       .then((data) => {
         if (data.ok) {
-          const map: Record<string, { costo: number | null; distancia_km: number | null; permitido: boolean; razon: string | null }> = {}
+          const map: Record<string, { costo: number | null; recargo_delivery: number; distancia_km: number | null; permitido: boolean; razon: string | null }> = {}
           for (const item of data.data) {
             map[item.restaurante_id] = {
               costo: item.costo == null ? null : Number(item.costo),
+              recargo_delivery: Number(item.recargo_delivery ?? 0),
               distancia_km: item.distancia_km == null ? null : Number(item.distancia_km),
               permitido: Boolean(item.permitido),
               razon: item.razon || null,
@@ -123,6 +124,10 @@ export default function CarritoCliente({
   )
   const envioTotal = Object.values(enviosPorLocal).reduce(
     (s, v) => s + (v.costo || 0),
+    0
+  )
+  const recargoDeliveryTotal = Object.values(enviosPorLocal).reduce(
+    (s, v) => s + v.recargo_delivery,
     0
   )
   const vipMonto = vip ? costoVip : 0
@@ -235,8 +240,8 @@ export default function CarritoCliente({
             })
             const refreshed = await refresh.json()
             if (refresh.ok && refreshed.ok) {
-              const map: Record<string, { costo: number | null; distancia_km: number | null; permitido: boolean; razon: string | null }> = {}
-              for (const item of refreshed.data) map[item.restaurante_id] = { costo: item.costo == null ? null : Number(item.costo), distancia_km: item.distancia_km == null ? null : Number(item.distancia_km), permitido: Boolean(item.permitido), razon: item.razon || null }
+              const map: Record<string, { costo: number | null; recargo_delivery: number; distancia_km: number | null; permitido: boolean; razon: string | null }> = {}
+              for (const item of refreshed.data) map[item.restaurante_id] = { costo: item.costo == null ? null : Number(item.costo), recargo_delivery: Number(item.recargo_delivery ?? 0), distancia_km: item.distancia_km == null ? null : Number(item.distancia_km), permitido: Boolean(item.permitido), razon: item.razon || null }
               setEnviosPorLocal(map)
             }
           } catch { /* El total anterior sigue visible si no se pudo refrescar la cotización. */ }
@@ -319,12 +324,10 @@ export default function CarritoCliente({
                   {grupo.restaurante_nombre}
                 </h3>
               </div>
-              <span className="text-[11px] text-gray-400 whitespace-nowrap flex-shrink-0">
-                Delivery:{' '}
-                <strong className="text-brand">
-                  {envio?.costo != null ? `S/ ${envio.costo.toFixed(2)}` : 'No disponible'}
-                </strong>
-              </span>
+              <div className="text-right text-[11px] text-gray-400 whitespace-nowrap flex-shrink-0">
+                <div>Delivery: <strong className="text-brand">{envio?.costo != null ? `S/ ${envio.costo.toFixed(2)}` : 'No disponible'}</strong></div>
+                {(envio?.recargo_delivery ?? 0) > 0 && <div className="text-[10px] text-gray-500">Incluye recargo: S/ {envio!.recargo_delivery.toFixed(2)}</div>}
+              </div>
             </div>
             {envio && !envio.permitido && <p className="px-4 pb-2 text-[11px] text-danger">{envio.razon === 'SUPERA_DISTANCIA_MAXIMA' ? `Está a ${envio.distancia_km?.toFixed(1) ?? 'más de 15'} km; el máximo es 15 km.` : 'No se pudo obtener la ruta real por calles. Intenta de nuevo más tarde.'}</p>}
 
@@ -537,6 +540,7 @@ export default function CarritoCliente({
           </span>
           <span className="text-white">S/ {envioTotal.toFixed(2)}</span>
         </div>
+        <div className="flex justify-between text-[11px]"><span className="text-gray-500">Recargo adicional{recargoDeliveryTotal > 0 ? ' incluido' : ''}</span><span className="text-gray-400">S/ {recargoDeliveryTotal.toFixed(2)}</span></div>
         {propina > 0 && (
           <div className="flex justify-between">
             <span className="text-gray-400">Propina</span>

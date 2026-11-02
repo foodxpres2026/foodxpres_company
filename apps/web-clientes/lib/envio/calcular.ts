@@ -4,6 +4,8 @@ import { deliveryPriceForDistance, MAX_DELIVERY_DISTANCE_KM, type DeliveryPriceT
 
 export interface CostoEnvioResultado {
   costo: number | null
+  costo_base: number | null
+  recargo_delivery: number
   distancia_km: number
   duracion_min: number | null
   fuente: 'cache' | 'openroute' | 'haversine'
