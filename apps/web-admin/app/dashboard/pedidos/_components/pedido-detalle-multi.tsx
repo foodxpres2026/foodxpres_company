@@ -37,6 +37,7 @@ interface SubPedido {
   motivo_rechazo: string | null
   restaurante_nombre: string
   restaurante_celular: string | null
+  restaurante_tiempo_estimado?: string | null
   driver_id: string | null
   driver_nombre: string | null
   driver_celular: string | null
@@ -112,9 +113,13 @@ export default function PedidoDetalleMulti({
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [localActivo, setLocalActivo] = useState(0)
+  const [mostrarTiempoAceptacion, setMostrarTiempoAceptacion] = useState(false)
+  const [tiempoEstimado, setTiempoEstimado] = useState('30')
 
   const esMulti = pedido.sub_pedidos.length > 1
   const primeraDireccion = pedido.sub_pedidos[0]?.direccion_snapshot || {}
+  const celularLocal = (pedido.sub_pedidos[localActivo]?.restaurante_celular ?? '').replace(/\D/g, '')
+  const celularWhatsAppLocal = celularLocal.startsWith('51') ? celularLocal : `51${celularLocal}`
 
   const totalAceptados = pedido.sub_pedidos.filter((sp) =>
     ['ACEPTADO', 'PREPARANDO', 'LISTO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO'].includes(
@@ -126,7 +131,7 @@ export default function PedidoDetalleMulti({
     ['RECHAZADO', 'CANCELADO'].includes(sp.estado)
   ).length
 
-  async function cambiarEstado(subPedidoId: string, nuevoEstado: string) {
+  async function cambiarEstado(subPedidoId: string, nuevoEstado: string, minutos?: number) {
     let notas: string | null = null
     if (nuevoEstado === 'CANCELADO' || nuevoEstado === 'RECHAZADO') {
       notas = prompt(`Motivo de ${nuevoEstado.toLowerCase()}:`)
@@ -139,7 +144,7 @@ export default function PedidoDetalleMulti({
       const res = await fetch(`/api/pedidos/${subPedidoId}/estado`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: nuevoEstado, notas }),
+        body: JSON.stringify({ estado: nuevoEstado, notas, ...(minutos ? { tiempo_estimado: minutos } : {}) }),
       })
       const data = await res.json()
       if (!res.ok || !data.ok) {
@@ -359,10 +364,21 @@ export default function PedidoDetalleMulti({
                   🏪 {spActual.restaurante_nombre}
                 </h3>
                 {spActual.restaurante_celular && (
-                  <p className="text-xs text-gray-500">
-                    📱 {spActual.restaurante_celular}
-                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <a href={`tel:${spActual.restaurante_celular}`} className="text-xs text-gray-400 hover:text-brand">
+                      📱 {spActual.restaurante_celular} · Llamar
+                    </a>
+                    <a
+                      href={`https://wa.me/${celularWhatsAppLocal}?text=${encodeURIComponent(`Hola ${spActual.restaurante_nombre}, te contactamos desde FOODXPRES por el pedido ${pedido.codigo} de ${pedido.cliente_nombre}. Por favor revisa el pedido en tu panel.`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 rounded-lg border border-green-500/30 bg-green-500/10 px-2.5 py-1.5 text-xs font-bold text-green-400 hover:bg-green-500/20"
+                    >
+                      💬 Avisar por WhatsApp
+                    </a>
+                  </div>
                 )}
+                {!spActual.restaurante_celular && <p className="mt-2 text-xs text-gray-500">El restaurante no tiene un celular registrado.</p>}
               </div>
               <span
                 className={`text-xs px-2.5 py-1 rounded-full font-bold flex-shrink-0 ${
@@ -505,7 +521,19 @@ export default function PedidoDetalleMulti({
                     <button
                       key={est}
                       type="button"
-                      onClick={() => cambiarEstado(spActual.id, est)}
+                      onClick={() => {
+                        if (est === 'ACEPTADO') {
+                          const rangoLocal = spActual.restaurante_tiempo_estimado?.match(/\d+/g)?.map(Number).filter((min) => min > 0) ?? []
+                          const promedioLocal = rangoLocal.length > 1
+                            ? Math.round((rangoLocal[0] + rangoLocal[1]) / 2)
+                            : rangoLocal[0] ?? 30
+                          setTiempoEstimado(String(spActual.tiempo_estimado ?? promedioLocal))
+                          setMostrarTiempoAceptacion(true)
+                        } else {
+                          setMostrarTiempoAceptacion(false)
+                          void cambiarEstado(spActual.id, est)
+                        }
+                      }}
                       disabled={loading === spActual.id}
                       className={`text-sm font-bold px-4 py-2.5 rounded-xl transition-colors active:scale-[0.98] ${
                         esCancelacion
@@ -520,6 +548,26 @@ export default function PedidoDetalleMulti({
                   )
                 })}
               </div>
+              {mostrarTiempoAceptacion && spActual.estado === 'PENDIENTE' && (
+                <div className="mt-4 rounded-xl border border-brand/25 bg-brand/5 p-4">
+                  <label htmlFor="admin-prep-time" className="mb-2 block text-sm font-bold text-white">Tiempo estimado de preparación</label>
+                  <div className="flex items-center gap-2">
+                    <input id="admin-prep-time" type="number" min="1" max="180" step="1" value={tiempoEstimado}
+                      onChange={(event) => setTiempoEstimado(event.target.value)}
+                      className="w-28 rounded-lg border border-line bg-surface-dark px-3 py-2 text-white focus:border-brand focus:outline-none" />
+                    <span className="text-sm text-gray-400">minutos</span>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">Este tiempo se informará al cliente.</p>
+                  <div className="mt-3 flex gap-2">
+                    <button type="button" onClick={() => setMostrarTiempoAceptacion(false)} className="rounded-lg border border-line px-3 py-2 text-xs font-bold text-gray-300">Cancelar</button>
+                    <button type="button" disabled={loading === spActual.id || !/^\d+$/.test(tiempoEstimado) || Number(tiempoEstimado) < 1 || Number(tiempoEstimado) > 180}
+                      onClick={() => { void cambiarEstado(spActual.id, 'ACEPTADO', Number(tiempoEstimado)); setMostrarTiempoAceptacion(false) }}
+                      className="rounded-lg bg-brand px-3 py-2 text-xs font-bold text-black disabled:opacity-50">
+                      {loading === spActual.id ? 'Aceptando...' : 'Aceptar pedido'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

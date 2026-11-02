@@ -24,6 +24,11 @@ const estadoSchema = z.object({
     'CANCELADO',
   ]),
   notas: z.string().max(500).optional().nullable(),
+  tiempo_estimado: z.number().int().min(1).max(180).optional(),
+}).superRefine((data, ctx) => {
+  if (data.estado === 'ACEPTADO' && data.tiempo_estimado === undefined) {
+    ctx.addIssue({ code: 'custom', message: 'Indica el tiempo estimado de preparación', path: ['tiempo_estimado'] })
+  }
 })
 
 export async function PATCH(
@@ -48,7 +53,7 @@ export async function PATCH(
       )
     }
 
-    const { estado, notas } = parsed.data
+    const { estado, notas, tiempo_estimado } = parsed.data
 
     // Verificar que existe + obtener pedido_id
     const exists = await sql`
@@ -70,7 +75,7 @@ export async function PATCH(
       case 'ACEPTADO':
         await sql`
           UPDATE sub_pedidos 
-          SET estado = ${estado}, aceptado_en = ${now}
+          SET estado = ${estado}, aceptado_en = ${now}, tiempo_estimado = ${tiempo_estimado}
           WHERE id = ${id}
         `
         break

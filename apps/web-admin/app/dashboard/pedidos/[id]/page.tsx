@@ -35,6 +35,7 @@ async function getPedido(pedidoId: string) {
       sp.propina_vip_monto,
       r.nombre as restaurante_nombre,
       r.celular as restaurante_celular,
+      r.tiempo_estimado as restaurante_tiempo_estimado,
       d.id as driver_id,
       d.nombre as driver_nombre,
       d.celular as driver_celular
