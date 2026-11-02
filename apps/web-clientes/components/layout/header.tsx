@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import UserMenu from './user-menu'
 import Logo from './logo'
@@ -24,6 +24,7 @@ interface HeaderProps {
 
 export default function Header({ user, direccionDeBD }: HeaderProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const [busquedaAbierta, setBusquedaAbierta] = useState(false)
   const [query, setQuery] = useState('')
   const [mounted, setMounted] = useState(false)
@@ -72,6 +73,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
   }
 
   const sinDireccion = mounted && !direccionActual
+  const enRestaurante = pathname.startsWith('/restaurante/')
 
   return (
     <>
@@ -154,7 +156,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
         </div>
 
         {/* BANNER DIRECCIÓN (mobile) */}
-        {sinDireccion && (
+        {!enRestaurante && sinDireccion && (
           <button
             type="button"
             onClick={abrirDireccion}
@@ -176,7 +178,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
         )}
 
         {/* DIRECCIÓN ACTUAL (mobile, si hay) */}
-        {mounted && direccionActual && (
+        {!enRestaurante && mounted && direccionActual && (
           <button
             type="button"
             onClick={abrirDireccion}

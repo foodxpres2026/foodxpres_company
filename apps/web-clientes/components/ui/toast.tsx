@@ -26,11 +26,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const toast = useCallback(
     (message: string, options?: { type?: 'success' | 'error' | 'info'; icon?: string }) => {
-      const id = Math.random().toString(36).substring(2, 9)
+      const nextToast = {
+        id: Math.random().toString(36).substring(2, 9),
+        message,
+        type: options?.type || 'success',
+        icon: options?.icon,
+      }
       setToasts((prev) => [
-        ...prev,
-        { id, message, type: options?.type || 'success', icon: options?.icon },
-      ])
+        ...prev.filter((item) => item.message !== message || item.type !== nextToast.type),
+        nextToast,
+      ].slice(-3))
     },
     []
   )
@@ -67,12 +72,14 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
 
   return (
     <div
+      role="status"
       className={`${
         colores[toast.type || 'success']
-      } rounded-xl px-4 py-3 shadow-2xl font-bold text-sm flex items-center gap-2 pointer-events-auto animate-[slideUp_0.3s_ease-out] max-w-sm`}
+      } rounded-xl px-4 py-3 shadow-2xl font-bold text-sm flex items-center gap-3 pointer-events-auto animate-[slideUp_0.3s_ease-out] max-w-sm`}
     >
       {toast.icon && <span className="text-base">{toast.icon}</span>}
-      <span>{toast.message}</span>
+      <span className="flex-1">{toast.message}</span>
+      <button type="button" onClick={onClose} aria-label="Cerrar notificación" className="text-current/70 hover:text-current text-lg leading-none">×</button>
     </div>
   )
 }
