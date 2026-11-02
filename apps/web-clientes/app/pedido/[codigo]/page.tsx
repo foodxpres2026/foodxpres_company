@@ -8,6 +8,7 @@ import EstadoTimeline from '@/components/pedidos/estado-timeline'
 import { formatearFechaHora } from '@/lib/utils/fechas'
 import ConfirmarEntrega from '@/components/pedidos/confirmar-entrega'
 import ActualizarPedido from '@/components/pedidos/actualizar-pedido'
+import CopiarCelularDriver from '@/components/pedidos/copiar-celular-driver'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,7 +28,7 @@ const ESTADO_LABELS: Record<string, string> = {
 async function getPedido(codigo: string, usuarioId: string) {
   const pedidoRows = (await sql`
     SELECT id, codigo, subtotal, total_envio, propina, vip, costo_vip,
-           total, notas, estado_global, creado_en
+           total, notas, estado_global, creado_en, metodo_pago, paga_con
     FROM pedidos
     WHERE codigo = ${codigo} AND usuario_id = ${usuarioId}
     LIMIT 1
@@ -197,6 +198,9 @@ export default async function PedidoPage({
                           📱 +51 {sp.driver_celular}
                         </p>
                       )}
+                      {sp.driver_celular && ['YAPE', 'PLIN'].includes(pedido.metodo_pago) && (
+                        <CopiarCelularDriver celular={`+51${sp.driver_celular}`} />
+                      )}
                     </div>
                     {sp.driver_celular && (
                       <a
@@ -300,6 +304,16 @@ export default async function PedidoPage({
               S/ {Number(pedido.total).toFixed(2)}
             </span>
           </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Método de pago</span>
+            <span className="font-semibold text-white">{({ EFECTIVO: 'Efectivo', YAPE: 'Yape', PLIN: 'Plin' } as Record<string, string>)[pedido.metodo_pago] || 'Efectivo'}</span>
+          </div>
+          {pedido.metodo_pago === 'EFECTIVO' && Number(pedido.paga_con) > Number(pedido.total) && (
+            <div className="flex justify-between">
+              <span className="text-gray-400">Vuelto</span>
+              <span className="font-semibold text-brand">S/ {(Number(pedido.paga_con) - Number(pedido.total)).toFixed(2)}</span>
+            </div>
+          )}
         </div>
 
         {/* BOTÓN VOLVER */}

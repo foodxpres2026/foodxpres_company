@@ -30,6 +30,8 @@ const createSchema = z.object({
   direccion_id: z.string().uuid(),
   propina: z.number().finite().min(0).max(1000).default(0),
   vip: z.boolean().default(false),
+  metodo_pago: z.enum(['EFECTIVO', 'YAPE', 'PLIN']),
+  paga_con: z.number().finite().min(0).max(100000).nullable(),
   notas: z.string().max(500).optional().nullable(),
   envios_esperados: z.record(z.string(), z.coerce.number().finite().min(0).max(10000)).optional(),
   grupos: z.array(grupoSchema).min(1).max(10),
@@ -128,7 +130,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { direccion_id, propina, vip, notas, grupos } = parsed.data
+    const { direccion_id, propina, vip, metodo_pago, paga_con, notas, grupos } = parsed.data
 
     // ============================================
     // 1. Verificar dirección
@@ -346,6 +348,14 @@ export async function POST(req: NextRequest) {
     const envioGlobal = envioGlobalCentimos / 100
     const total = (subtotalGlobalCentimos + envioGlobalCentimos + propinaCentimos + costoVipCentimos) / 100
 
+    if (metodo_pago === 'EFECTIVO') {
+      if (paga_con === null || Math.round(paga_con * 100) < Math.round(total * 100)) {
+        return Response.json({ ok: false, error: 'El monto en efectivo debe cubrir el total del pedido.' }, { status: 400 })
+      }
+    } else if (paga_con !== null) {
+      return Response.json({ ok: false, error: 'El monto recibido solo corresponde a pagos en efectivo.' }, { status: 400 })
+    }
+
     // Congelar las reglas aplicables al crear el pedido evita que un cambio futuro
     // de comisión modifique el saldo pendiente de pedidos anteriores.
     const restauranteIds = gruposCalculados.map((grupo) => grupo.restaurante_id)
@@ -381,10 +391,11 @@ export async function POST(req: NextRequest) {
     transactionQueries.push(sql`
       INSERT INTO pedidos (
         id, codigo, usuario_id, subtotal, total_envio, propina, vip,
-        costo_vip, total, notas, estado_global
+        costo_vip, total, notas, estado_global, metodo_pago, paga_con
       ) VALUES (
         ${pedidoId}, ${codigoPedido}, ${user.id}, ${subtotalGlobal}, ${envioGlobal},
-        ${propinaCentimos / 100}, ${vip}, ${costoVipCentimos / 100}, ${total}, ${notas || null}, 'PENDIENTE'
+        ${propinaCentimos / 100}, ${vip}, ${costoVipCentimos / 100}, ${total}, ${notas || null}, 'PENDIENTE',
+        ${metodo_pago}, ${paga_con}
       )
     `)
 

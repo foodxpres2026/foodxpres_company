@@ -41,6 +41,10 @@ export default function CarritoCliente({
   const [notas, setNotas] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pasoPago, setPasoPago] = useState(false)
+  const [metodoPago, setMetodoPago] = useState<'EFECTIVO' | 'YAPE' | 'PLIN' | null>(null)
+  const [montoPago, setMontoPago] = useState('')
+  const [montoExacto, setMontoExacto] = useState(true)
 
   // Agrupar items por restaurante
   const grupos = items.reduce<
@@ -134,6 +138,19 @@ export default function CarritoCliente({
   async function confirmar() {
     setError(null)
 
+    if (!metodoPago) {
+      setError('Selecciona cómo realizarás el pago.')
+      return
+    }
+
+    const pagaCon = metodoPago === 'EFECTIVO'
+      ? (montoExacto ? total : Number(montoPago))
+      : null
+    if (metodoPago === 'EFECTIVO' && (!Number.isFinite(pagaCon) || pagaCon! < total)) {
+      setError('El monto debe ser igual o mayor al total del pedido.')
+      return
+    }
+
     if (items.length === 0) {
       setError('Tu carrito está vacío')
       return
@@ -217,6 +234,8 @@ export default function CarritoCliente({
           direccion_id: direccionActual.id,
           propina,
           vip,
+          metodo_pago: metodoPago,
+          paga_con: pagaCon,
           notas: notas.trim() || null,
           envios_esperados: enviosEsperados,
           grupos: gruposPayload,
@@ -554,6 +573,57 @@ export default function CarritoCliente({
         </div>
       </div>
 
+      {pasoPago && (
+        <section className="p-4 border-t border-line space-y-4" aria-labelledby="payment-title">
+          <div>
+            <h3 id="payment-title" className="text-base font-bold text-white">Confirma cómo pagarás</h3>
+            <p className="text-xs text-gray-500 mt-1">Total del pedido: S/ {total.toFixed(2)}</p>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              ['EFECTIVO', '💵', 'Efectivo'],
+              ['YAPE', '💜', 'Yape'],
+              ['PLIN', '🩵', 'Plin'],
+            ] as const).map(([value, icon, label]) => (
+              <button key={value} type="button" onClick={() => { setMetodoPago(value); setError(null) }}
+                aria-pressed={metodoPago === value}
+                className={`rounded-xl border px-2 py-3 text-sm font-bold transition-colors ${metodoPago === value ? 'border-brand bg-brand/10 text-brand' : 'border-line bg-surface-dark text-gray-300'}`}>
+                <span className="block text-lg mb-1">{icon}</span>{label}
+              </button>
+            ))}
+          </div>
+          {metodoPago === 'EFECTIVO' && (
+            <div className="space-y-3 rounded-xl border border-line bg-surface-dark p-3">
+              <label className="flex items-center gap-3 text-sm text-white">
+                <input type="radio" name="cash-amount" checked={montoExacto} onChange={() => setMontoExacto(true)} className="accent-brand" />
+                Tengo el monto exacto
+              </label>
+              <label className="flex items-center gap-3 text-sm text-white">
+                <input type="radio" name="cash-amount" checked={!montoExacto} onChange={() => setMontoExacto(false)} className="accent-brand" />
+                Pagaré con otro monto
+              </label>
+              {!montoExacto && (
+                <div>
+                  <label htmlFor="cash-amount" className="block text-xs text-gray-400 mb-1">¿Con cuánto pagarás?</label>
+                  <div className="flex items-center rounded-lg border border-line px-3 focus-within:border-brand">
+                    <span className="text-gray-400">S/</span>
+                    <input id="cash-amount" type="number" min={total} step="0.10" inputMode="decimal" value={montoPago}
+                      onChange={(event) => setMontoPago(event.target.value)} placeholder={total.toFixed(2)}
+                      className="w-full bg-transparent p-3 text-white outline-none" />
+                  </div>
+                  {Number(montoPago) >= total && <p className="mt-2 text-sm font-semibold text-brand">Vuelto: S/ {(Number(montoPago) - total).toFixed(2)}</p>}
+                </div>
+              )}
+            </div>
+          )}
+          {(metodoPago === 'YAPE' || metodoPago === 'PLIN') && (
+            <p className="rounded-xl border border-line bg-surface-dark p-3 text-xs text-gray-300">
+              El celular del repartidor aparecerá aquí cuando se asigne a tu pedido. Podrás copiarlo para hacer el pago.
+            </p>
+          )}
+        </section>
+      )}
+
       {/* ERROR */}
       {error && (
         <div className="mx-4 mb-3 bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded-xl text-xs">
@@ -565,12 +635,13 @@ export default function CarritoCliente({
       <div className="p-4 border-t border-line bg-surface-dark">
         <button
           type="button"
-          onClick={confirmar}
+          onClick={() => pasoPago ? confirmar() : (setError(null), setPasoPago(true))}
           disabled={enviando}
           className="w-full bg-brand hover:bg-brand-dark disabled:bg-brand/40 text-black font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] text-sm"
         >
-          {enviando ? 'Creando pedido...' : 'Realizar pedido →'}
+          {enviando ? 'Creando pedido...' : pasoPago ? 'Confirmar pedido →' : 'Confirmar tipo de pago →'}
         </button>
+        {pasoPago && <button type="button" onClick={() => { setPasoPago(false); setError(null) }} className="w-full mt-2 py-2 text-xs font-semibold text-gray-400 hover:text-white">← Volver al carrito</button>}
       </div>
     </div>
   )
