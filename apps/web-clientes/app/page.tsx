@@ -109,19 +109,22 @@ export default async function HomePage({
   return (
     <>
       <FondoDecorativo />
-      <Header user={user} direccionDeBD={direccionDeBD} />
+      <Header user={user} direccionDeBD={direccionDeBD} categoriasBusqueda={categorias} />
 
       <main className="max-w-6xl mx-auto px-4 py-5 pb-24 md:pb-8">
         <section className="mb-6">
           <PromoCarousel promos={promos as any[]} />
         </section>
 
-        <section className="mb-6">
+        <section className="mb-3">
           <h2 className="text-base font-bold text-white mb-3">
             ¿Qué se te antoja? 🤔
           </h2>
-          <CategoriasChips categorias={categorias as any[]} />
         </section>
+
+        <div className="sticky top-[57px] z-30 -mx-4 px-4 py-2 mb-6 bg-surface-dark/95 backdrop-blur-lg border-b border-line">
+          <CategoriasChips categorias={categorias as any[]} />
+        </div>
 
         {categoriaActiva && (
           <div className="mb-4">

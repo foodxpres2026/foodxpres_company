@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useSyncExternalStore } from 'react'
 import UserMenu from './user-menu'
 import Logo from './logo'
 import { useCarrito } from '@/lib/carrito/store'
@@ -14,32 +14,38 @@ import DireccionModalWrapper from '@/components/direcciones/direccion-modal-wrap
 import DireccionesSelector from '@/components/direcciones/direcciones-selector'
 import { ABRIR_DIRECCION_EVENT } from '@/lib/direccion-events'
 
+const subscribeToMount = () => () => {}
+const getClientMounted = () => true
+const getServerMounted = () => false
+
 interface HeaderProps {
   user: {
     nombre: string
     celular: string
   } | null
   direccionDeBD?: DireccionLocal | null
+  categoriasBusqueda?: { id: string; slug: string; nombre: string; emoji: string | null }[]
 }
 
-export default function Header({ user, direccionDeBD }: HeaderProps) {
+export default function Header({ user, direccionDeBD, categoriasBusqueda: categoriasIniciales = [] }: HeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [busquedaAbierta, setBusquedaAbierta] = useState(false)
   const [query, setQuery] = useState('')
-  const [mounted, setMounted] = useState(false)
+  const mounted = useSyncExternalStore(subscribeToMount, getClientMounted, getServerMounted)
   const [modalDireccionOpen, setModalDireccionOpen] = useState(false)
   const [selectorAbierto, setSelectorAbierto] = useState(false)
+  const [categorias, setCategorias] = useState(categoriasIniciales)
+  const [categoriasCargadas, setCategoriasCargadas] = useState(categoriasIniciales.length > 0)
 
   const totalItems = useCarrito((s) => s.totalItems())
   const direccionActual = useDireccionActual(direccionDeBD ?? null)
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    const abrirDesdeOtraSeccion = () => abrirDireccion()
+    const abrirDesdeOtraSeccion = () => {
+      if (user) setSelectorAbierto(true)
+      else setModalDireccionOpen(true)
+    }
     window.addEventListener(ABRIR_DIRECCION_EVENT, abrirDesdeOtraSeccion)
     return () => window.removeEventListener(ABRIR_DIRECCION_EVENT, abrirDesdeOtraSeccion)
   }, [user])
@@ -54,6 +60,20 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
       document.body.style.overflow = ''
     }
   }, [busquedaAbierta])
+
+  useEffect(() => {
+    if (!busquedaAbierta || categoriasCargadas) return
+    let cancelado = false
+    fetch('/api/categorias')
+      .then((response) => response.json())
+      .then((result) => {
+        if (cancelado) return
+        if (result.ok && Array.isArray(result.data)) setCategorias(result.data)
+        setCategoriasCargadas(true)
+      })
+      .catch(() => { if (!cancelado) setCategoriasCargadas(true) })
+    return () => { cancelado = true }
+  }, [busquedaAbierta, categoriasCargadas])
 
   function handleBuscar(e: React.FormEvent) {
     e.preventDefault()
@@ -72,6 +92,12 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
     }
   }
 
+  function seleccionarCategoria(slug: string) {
+    router.push(`/?categoria=${encodeURIComponent(slug)}`)
+    setBusquedaAbierta(false)
+    setQuery('')
+  }
+
   const sinDireccion = mounted && !direccionActual
   const enRestaurante = pathname.startsWith('/restaurante/')
   const ocultarDireccionMovil = enRestaurante || pathname === '/carrito'
@@ -86,25 +112,6 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
               <Logo size={36} linkeado />
               <span className="text-white font-black tracking-tight text-sm md:text-base whitespace-nowrap">FOODXPRES</span>
             </div>
-
-            {/* DIRECCIÓN */}
-            {pathname !== '/carrito' && (
-              <button
-                type="button"
-                onClick={abrirDireccion}
-                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-xl transition-colors text-xs max-w-[220px] ${
-                  direccionActual
-                    ? 'bg-surface border border-line text-gray-300 hover:border-brand/40'
-                    : 'bg-jaguar/10 border border-jaguar/40 text-jaguar hover:bg-jaguar/20'
-                }`}
-              >
-                <span>📍</span>
-                <span className="truncate font-medium">
-                  {direccionActual?.direccion || 'Añadir dirección'}
-                </span>
-                <span className="text-gray-600">▾</span>
-              </button>
-            )}
 
             {/* BÚSQUEDA (desktop) */}
             <button
@@ -155,46 +162,66 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
             </div>
           </div>
         </div>
-
-        {/* BANNER DIRECCIÓN (mobile) */}
-        {!ocultarDireccionMovil && sinDireccion && (
-          <button
-            type="button"
-            onClick={abrirDireccion}
-            className="w-full bg-jaguar/10 border-t border-jaguar/30 px-4 py-2.5 text-left"
-          >
-            <div className="flex items-center gap-2 max-w-6xl mx-auto">
-              <span className="text-base">📍</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-jaguar">
-                  ¿A dónde te llevamos?
-                </p>
-                <p className="text-[10px] text-gray-500">
-                  Agrega tu dirección para ver el delivery
-                </p>
-              </div>
-              <span className="text-jaguar text-lg">›</span>
-            </div>
-          </button>
-        )}
-
-        {/* DIRECCIÓN ACTUAL (mobile, si hay) */}
-        {!ocultarDireccionMovil && mounted && direccionActual && (
-          <button
-            type="button"
-            onClick={abrirDireccion}
-            className="md:hidden w-full bg-surface/50 border-t border-line px-4 py-2 text-left"
-          >
-            <div className="flex items-center gap-2 max-w-6xl mx-auto">
-              <span className="text-sm">📍</span>
-              <span className="flex-1 text-xs text-gray-400 truncate">
-                {direccionActual.direccion}
-              </span>
-              <span className="text-brand text-xs font-bold">Cambiar</span>
-            </div>
-          </button>
-        )}
       </header>
+
+      {/* Selector de ubicación fuera de la barra fija, también en escritorio */}
+      {pathname !== '/carrito' && (
+        <div className="hidden md:block max-w-6xl mx-auto px-4 w-full">
+          <button
+            type="button"
+            onClick={abrirDireccion}
+            className={`w-full flex items-center gap-2 px-3 py-2 text-left text-xs border-b transition-colors ${
+              direccionActual
+                ? 'border-line text-gray-300 hover:text-white'
+                : 'border-jaguar/30 text-jaguar'
+            }`}
+          >
+            <span>📍</span>
+            <span className="text-gray-500">Entregar en</span>
+            <span className="truncate font-medium">{direccionActual?.direccion || 'Añadir dirección'}</span>
+            <span className="text-brand font-bold ml-auto">Cambiar</span>
+          </button>
+        </div>
+      )}
+
+      {/* BANNER DIRECCIÓN (mobile; se desplaza junto con el contenido) */}
+      {!ocultarDireccionMovil && sinDireccion && (
+        <button
+          type="button"
+          onClick={abrirDireccion}
+          className="w-full bg-jaguar/10 border-t border-jaguar/30 px-4 py-2.5 text-left"
+        >
+          <div className="flex items-center gap-2 max-w-6xl mx-auto">
+            <span className="text-base">📍</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-jaguar">
+                ¿A dónde te llevamos?
+              </p>
+              <p className="text-[10px] text-gray-500">
+                Agrega tu dirección para ver el delivery
+              </p>
+            </div>
+            <span className="text-jaguar text-lg">›</span>
+          </div>
+        </button>
+      )}
+
+      {/* DIRECCIÓN ACTUAL (mobile, si hay; se desplaza junto con el contenido) */}
+      {!ocultarDireccionMovil && mounted && direccionActual && (
+        <button
+          type="button"
+          onClick={abrirDireccion}
+          className="md:hidden w-full bg-surface/50 border-t border-line px-4 py-2 text-left"
+        >
+          <div className="flex items-center gap-2 max-w-6xl mx-auto">
+            <span className="text-sm">📍</span>
+            <span className="flex-1 text-xs text-gray-400 truncate">
+              {direccionActual.direccion}
+            </span>
+            <span className="text-brand text-xs font-bold">Cambiar</span>
+          </div>
+        </button>
+      )}
 
       {/* MODAL BÚSQUEDA */}
       {busquedaAbierta && (
@@ -231,11 +258,36 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">
-            <p className="text-center text-gray-500 text-sm py-12">
-              {query.trim()
-                ? `Presiona Enter para buscar "${query}"`
-                : 'Escribe para buscar...'}
-            </p>
+            {query.trim() ? (
+              <p className="text-center text-gray-500 text-sm py-12">
+                Presiona Enter para buscar “{query}”
+              </p>
+            ) : (
+              <section className="max-w-3xl mx-auto">
+                <h2 className="text-sm font-bold text-gray-300 mb-4">Explora todas las categorías</h2>
+                {categorias.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {categorias.map((categoria) => (
+                      <button
+                        key={categoria.id}
+                        type="button"
+                        onClick={() => seleccionarCategoria(categoria.slug)}
+                        className="min-h-16 flex items-center gap-3 p-3 rounded-xl bg-surface border border-line hover:border-brand/50 transition-colors text-left"
+                      >
+                        <span className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-2xl flex-shrink-0">
+                          {categoria.emoji || '🍽️'}
+                        </span>
+                        <span className="text-sm text-white font-medium leading-tight line-clamp-2">{categoria.nombre}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 py-8 text-center">
+                    {categoriasCargadas ? 'No hay categorías disponibles.' : 'Cargando categorías…'}
+                  </p>
+                )}
+              </section>
+            )}
           </div>
         </div>
       )}

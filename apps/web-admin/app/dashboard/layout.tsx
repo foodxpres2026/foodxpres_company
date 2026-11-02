@@ -5,10 +5,10 @@ import LogoutButton from './logout-button'
 import Logo from '@/components/layout/logo'
 
 const NAV_ITEMS = [
+  { href: '/dashboard/pedidos', label: 'Pedidos', icon: '📦' },
   { href: '/dashboard', label: 'Inicio', icon: '📊' },
   { href: '/dashboard/restaurantes', label: 'Restaurantes', icon: '🏪' },
-  { href: '/dashboard/categorias', label: 'Categorías', icon: '🍽️' }, // ← NUEVO
-  { href: '/dashboard/pedidos', label: 'Pedidos', icon: '📦' },
+  { href: '/dashboard/categorias', label: 'Categorías', icon: '🍽️' },
   { href: '/dashboard/drivers', label: 'Drivers', icon: '🏍️' },
   { href: '/dashboard/clientes', label: 'Clientes', icon: '👥' },
   { href: '/dashboard/promociones', label: 'Promociones', icon: '🎨' },
