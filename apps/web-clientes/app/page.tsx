@@ -18,6 +18,15 @@ async function getData(categoriaSlug?: string) {
       r.id, r.slug, r.nombre, r.subtitulo, r.banner_url, r.logo_url,
       r.tiempo_estimado, r.monto_minimo,
       r.activo, r.creado_en,
+      COALESCE((
+        SELECT json_agg(
+          jsonb_build_object('id', c.id, 'nombre', c.nombre, 'emoji', c.emoji)
+          ORDER BY c.orden, c.nombre
+        )
+        FROM restaurantes_categorias rc
+        INNER JOIN categorias c ON c.id = rc.categoria_id
+        WHERE rc.restaurante_id = r.id
+      ), '[]'::json) AS categorias,
       COALESCE(
         json_agg(
           DISTINCT jsonb_build_object(
@@ -58,6 +67,7 @@ async function getData(categoriaSlug?: string) {
 
   const restaurantes = restaurantesRows.map((r) => ({
     ...r,
+    categorias: Array.isArray(r.categorias) ? r.categorias : [],
     horarios: r.horarios || [],
     abierto: estaAbierto(r.horarios || []),
   }))

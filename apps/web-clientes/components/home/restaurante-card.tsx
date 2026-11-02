@@ -12,6 +12,7 @@ export interface RestauranteCardData {
   tiempo_estimado: string | null
   monto_minimo: string
   abierto: boolean
+  categorias?: { id: string; nombre: string; emoji: string | null }[]
   // Envío (calculado dinámicamente)
   envio_costo?: number | null
   envio_km?: number | null
@@ -148,29 +149,39 @@ export function RestauranteGrid({
           </div>
         )}
 
-        {restaurante.logo_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={restaurante.logo_url}
-            alt={restaurante.nombre}
-            className="absolute bottom-2 right-2 w-8 h-8 rounded-lg object-cover border-2 border-white/30"
-          />
-        )}
       </div>
 
       <div className="p-3">
-        <h3 className="text-sm font-bold text-white truncate">
+        <h3 className="text-sm font-bold text-white leading-tight line-clamp-2 min-h-10">
           {restaurante.nombre}
         </h3>
-        <p className="text-[11px] text-gray-500 truncate mb-2">
-          {restaurante.subtitulo || 'Restaurante'}
-        </p>
-        <div className="flex items-center justify-between text-[10px]">
-          {restaurante.tiempo_estimado && (
-            <span className="text-gray-500">
-              ⏱ {restaurante.tiempo_estimado}
-            </span>
-          )}
+        <div className="mt-2 grid min-h-[76px] md:min-h-[88px] grid-cols-[minmax(0,1fr)_56px] md:grid-cols-[minmax(0,1fr)_72px] items-center gap-2">
+          <div className="min-w-0 self-stretch flex flex-col justify-center gap-1" aria-label="Categorías del local">
+            {restaurante.categorias?.length ? restaurante.categorias.slice(0, 3).map((categoria) => (
+              <span key={categoria.id} className="max-w-full truncate rounded-md bg-surface-dark px-1.5 py-1 text-[10px] leading-3 text-gray-400">
+                {categoria.emoji ? `${categoria.emoji} ` : ''}{categoria.nombre}
+              </span>
+            )) : (
+              <p className="text-[10px] leading-4 text-gray-500 line-clamp-3">
+                {restaurante.subtitulo || 'Restaurante'}
+              </p>
+            )}
+          </div>
+          <div className="w-14 md:w-[72px] flex flex-col items-center justify-center gap-1">
+            {restaurante.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={restaurante.logo_url} alt={`Logo de ${restaurante.nombre}`} className="w-12 h-12 md:w-16 md:h-16 rounded-xl object-cover border border-white/20 shadow-md" />
+            ) : (
+              <div role="img" aria-label={`Logo de ${restaurante.nombre}`} className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-brand/15 border border-white/20 flex items-center justify-center text-2xl">
+                🏪
+              </div>
+            )}
+            {restaurante.tiempo_estimado && (
+              <span className="w-full text-center text-[9px] leading-tight text-gray-400 line-clamp-2">
+                ⏱ {restaurante.tiempo_estimado}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </Link>

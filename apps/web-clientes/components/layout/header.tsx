@@ -82,11 +82,9 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
         <div className="max-w-6xl mx-auto px-3 md:px-4 py-2.5">
           <div className="flex items-center gap-2 md:gap-3">
             {/* Emblema FOODXPRES para el encabezado compacto */}
-            <div
-              className="flex-shrink-0"
-              onClick={() => setBusquedaAbierta(false)}
-            >
+            <div className="flex items-center gap-2 flex-shrink-0" onClick={() => setBusquedaAbierta(false)}>
               <Logo size={36} linkeado />
+              <span className="text-white font-black tracking-tight text-sm md:text-base whitespace-nowrap">FOODXPRES</span>
             </div>
 
             {/* DIRECCIÓN */}
