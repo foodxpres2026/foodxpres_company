@@ -10,6 +10,7 @@ type Order = {
   id: string; estado: string; subtotal: number | string; costo_envio: number | string; distancia_km: number | string | null
   tiempo_estimado: number | null; direccion_snapshot: { direccion?: string; etiqueta?: string; referencia?: string; lat?: number; lng?: number } | null
   creado_en: string; driver_asignado_en: string | null; driver_llego_en: string | null; listo_en: string | null
+  pedido_total: number | string; metodo_pago: 'EFECTIVO' | 'YAPE' | 'PLIN'; paga_con: number | string | null
   driver_llego_cliente_en?: string | null
   recogido_en: string | null; entregado_en: string | null; pedido_codigo: string; pedido_notas: string | null
   entrega_reportada_en?: string | null; driver_comision_monto?: number | string | null
@@ -164,10 +165,13 @@ function OrderCard({ order, driverName, section, canTake, takeBlockedLabel, busy
   const actionLabel = order.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' ? 'Finalizar entrega'
     : action === 'LLEGUE' ? 'Llegué al local' : action === 'RECOGI' ? 'Recibí los productos' : action === 'LLEGUE_CLIENTE' ? 'Llegué al cliente' : 'Entregué el pedido'
   const total = Number(order.subtotal) + Number(order.costo_envio)
+  const metodoPago = order.metodo_pago === 'YAPE' ? 'Yape' : order.metodo_pago === 'PLIN' ? 'Plin' : 'Efectivo'
+  const vueltoEsperado = order.paga_con == null ? null : Math.max(0, Number(order.paga_con) - Number(order.pedido_total))
   const statusLabel = order.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' ? 'Esperando confirmación del cliente' : order.estado.replaceAll('_', ' ')
   return <article className="order-card">
     <div className="order-card-head"><div><span className="order-id">PEDIDO {order.pedido_codigo || order.id.slice(0, 8).toUpperCase()}</span><span className={`state-pill ${order.estado.toLowerCase()}`}>{statusLabel}</span></div><span className="order-date">{dateTime(order.driver_asignado_en ?? order.listo_en ?? order.creado_en)}</span></div>
     <div className="order-money"><div><span>Productos</span><strong>{money(order.subtotal)}</strong></div><div><span>Costo de envío</span><strong>{money(order.costo_envio)}</strong></div><div className="money-total"><span>Total pedido</span><strong>{money(total)}</strong></div></div>
+    <div className="items-box payment-box"><strong>Pago del cliente · {metodoPago}</strong>{order.metodo_pago === 'EFECTIVO' && <><div className="item-line"><span>Pagará con</span><strong>{money(order.paga_con)}</strong></div><div className="item-line"><span>Vuelto esperado</span><strong>{money(vueltoEsperado)}</strong></div></>}</div>
     <div className="place-row"><span className="place-icon">⌂</span><div className="place-body"><strong>{order.restaurante_nombre}</strong><span>{order.restaurante_direccion || 'Dirección no disponible'}</span><div className="contact-links">{order.restaurante_celular && <><a href={phoneLink(order.restaurante_celular)}>Llamar · {order.restaurante_celular}</a><button type="button" className="whatsapp-link" onClick={() => setWhatsappTarget('restaurant')}>WhatsApp</button></>}</div></div></div>
     <div className="place-row"><span className="place-icon customer">●</span><div className="place-body"><strong>{order.cliente_nombre}</strong><span>{customerAddress}</span><div className="contact-links">{order.cliente_celular && <><a href={phoneLink(order.cliente_celular)}>Llamar · {order.cliente_celular}</a><button type="button" className="whatsapp-link" onClick={() => setWhatsappTarget('customer')}>WhatsApp</button></>}</div></div></div>
     {!!order.items.length && <div className="items-box"><strong>Detalle del pedido</strong>{order.items.map((item) => <div className="item-line" key={item.id}><span>{item.cantidad} × {item.nombre_snapshot}</span><span>{money(item.subtotal)}</span>{item.notas && <small>{item.notas}</small>}</div>)}</div>}
