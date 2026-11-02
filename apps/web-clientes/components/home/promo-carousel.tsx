@@ -27,7 +27,7 @@ export default function PromoCarousel({ promos }: { promos: Promo[] }) {
 
   if (promos.length === 0) {
     return (
-      <div className="mx-auto h-40 md:h-[300px] lg:h-[360px] max-w-4xl rounded-[26px] overflow-hidden relative bg-gradient-to-br from-brand/30 to-brand/5 border border-brand/20 shadow-[0_24px_70px_-38px_rgba(126,211,33,0.55)]">
+      <div className="mx-auto h-40 md:h-64 lg:h-72 max-w-4xl rounded-2xl overflow-hidden relative bg-gradient-to-br from-brand/30 to-brand/5 border border-line">
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5">
           <span className="text-[10px] bg-brand text-black font-bold px-2 py-1 rounded-full inline-block mb-2">
@@ -46,48 +46,49 @@ export default function PromoCarousel({ promos }: { promos: Promo[] }) {
 
   return (
     <div className="relative mx-auto w-full max-w-4xl">
-      <div className="promo-frame relative h-40 md:h-[300px] lg:h-[360px] rounded-[26px] overflow-hidden bg-surface border border-white/10 shadow-[0_24px_70px_-38px_rgba(126,211,33,0.55)] isolate">
+      <div className="promo-frame relative h-40 md:h-64 lg:h-72 rounded-2xl overflow-hidden bg-surface border border-line isolate">
         {promos.map((promo, i) => (
           <Link
             key={promo.id}
             href={promo.link_url || '/'}
             tabIndex={i === activo ? 0 : -1}
             aria-hidden={i !== activo}
-            className={`absolute inset-0 block transition-[opacity,transform] duration-700 ease-out ${
-              i === activo ? 'z-10 opacity-100 scale-100' : 'z-0 opacity-0 scale-[1.025] pointer-events-none'
+            className={`absolute inset-0 block transition-[opacity,transform] duration-700 ease-out md:grid md:grid-cols-2 ${
+              i === activo ? 'z-10 opacity-100 translate-x-0' : 'z-0 opacity-0 translate-x-2 pointer-events-none'
             }`}
           >
-            {promo.imagen_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={promo.imagen_url}
-                alt={promo.titulo}
-                className={`w-full h-full object-cover ${i === activo ? 'promo-image-motion' : ''}`}
-              />
-            ) : (
-              <div
-                className="w-full h-full"
-                style={{
-                  background:
-                    promo.gradiente_css ||
-                    'linear-gradient(135deg, #7ED321, #4A9A2C)',
-                }}
-              />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+            <div className="absolute inset-0 md:relative md:inset-auto md:min-w-0 md:overflow-hidden">
+              {promo.imagen_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={promo.imagen_url} alt={promo.titulo} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full" style={{ background: promo.gradiente_css || 'linear-gradient(135deg, #7ED321, #4A9A2C)' }} />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent md:hidden" />
+              <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-black/10 to-black/25" />
 
-            <div className={`absolute bottom-0 left-0 right-0 p-5 md:p-8 ${i === activo ? 'promo-content-motion' : ''}`}>
-              {promo.badge && (
-                <span className="text-[10px] md:text-xs bg-brand text-black font-bold px-2.5 py-1 rounded-full inline-flex items-center mb-2 shadow-lg shadow-black/20">
-                  {promo.badge}
+              <div className={`absolute bottom-0 left-0 right-0 p-5 md:hidden ${i === activo ? 'promo-content-motion' : ''}`}>
+                {promo.badge && <span className="text-[10px] bg-brand text-black font-bold px-2.5 py-1 rounded-full inline-flex items-center mb-2">{promo.badge}</span>}
+                <h2 className="text-xl font-black text-white leading-tight">{promo.titulo}</h2>
+                {promo.subtitulo && <p className="text-sm text-gray-200 mt-1 line-clamp-2">{promo.subtitulo}</p>}
+              </div>
+            </div>
+
+            <div className={`hidden md:flex min-w-0 flex-col justify-between p-5 lg:p-6 bg-gradient-to-br from-[#19252d] via-[#141c21] to-[#101510] ${i === activo ? 'promo-content-motion' : ''}`}>
+              <div>
+                <span className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] font-bold text-brand mb-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand" />
+                  {promo.badge || 'Destacado en FoodXpres'}
                 </span>
-              )}
-              <h2 className="text-xl md:text-3xl lg:text-4xl font-black text-white leading-tight drop-shadow-lg">
-                {promo.titulo}
-              </h2>
-              {promo.subtitulo && (
-                <p className="text-sm md:text-base text-gray-200 mt-1 max-w-2xl drop-shadow-md">{promo.subtitulo}</p>
-              )}
+                <h2 className="text-xl lg:text-2xl font-black text-white leading-tight line-clamp-2">{promo.titulo}</h2>
+                {promo.subtitulo && <p className="text-sm text-gray-300 mt-2 leading-relaxed line-clamp-3">{promo.subtitulo}</p>}
+              </div>
+              <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/10">
+                <span className="text-[10px] text-gray-500 uppercase tracking-wider">Promoción</span>
+                <span className="inline-flex items-center gap-2 text-sm font-bold text-brand">
+                  {promo.cta_texto || 'Ver promoción'} <span aria-hidden="true">→</span>
+                </span>
+              </div>
             </div>
           </Link>
         ))}

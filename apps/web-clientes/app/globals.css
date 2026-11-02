@@ -117,11 +117,6 @@ body {
   animation: fadeIn 0.3s ease-out;
 }
 
-@keyframes promo-image-drift {
-  from { transform: scale(1.02) translateX(0); }
-  to { transform: scale(1.09) translateX(-1.2%); }
-}
-
 @keyframes promo-content-enter {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
@@ -130,10 +125,6 @@ body {
 @keyframes promo-progress-fill {
   from { width: 0; }
   to { width: 100%; }
-}
-
-.promo-image-motion {
-  animation: promo-image-drift 8s ease-in-out infinite alternate;
 }
 
 .promo-content-motion {
@@ -145,7 +136,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .promo-image-motion,
   .promo-content-motion,
   .promo-progress {
     animation: none;
