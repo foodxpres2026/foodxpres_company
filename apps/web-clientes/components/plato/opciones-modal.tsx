@@ -154,7 +154,7 @@ export default function OpcionesModal({
       opciones: opcionesElegidas,
     })
 
-    toast(`${platoActual.nombre} agregado`, { icon: '🛒' })
+    toast(`${platoActual.nombre} agregado`, { icon: '🛒', action: { label: 'Ver carrito', href: '/carrito' }, sound: true })
 
     onClose()
   }

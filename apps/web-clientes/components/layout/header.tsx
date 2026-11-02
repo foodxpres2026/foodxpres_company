@@ -74,6 +74,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
 
   const sinDireccion = mounted && !direccionActual
   const enRestaurante = pathname.startsWith('/restaurante/')
+  const ocultarDireccionMovil = enRestaurante || pathname === '/carrito'
 
   return (
     <>
@@ -89,21 +90,23 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
             </div>
 
             {/* DIRECCIÓN */}
-            <button
-              type="button"
-              onClick={abrirDireccion}
-              className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-xl transition-colors text-xs max-w-[220px] ${
-                direccionActual
-                  ? 'bg-surface border border-line text-gray-300 hover:border-brand/40'
-                  : 'bg-jaguar/10 border border-jaguar/40 text-jaguar hover:bg-jaguar/20'
-              }`}
-            >
-              <span>📍</span>
-              <span className="truncate font-medium">
-                {direccionActual?.direccion || 'Añadir dirección'}
-              </span>
-              <span className="text-gray-600">▾</span>
-            </button>
+            {pathname !== '/carrito' && (
+              <button
+                type="button"
+                onClick={abrirDireccion}
+                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-xl transition-colors text-xs max-w-[220px] ${
+                  direccionActual
+                    ? 'bg-surface border border-line text-gray-300 hover:border-brand/40'
+                    : 'bg-jaguar/10 border border-jaguar/40 text-jaguar hover:bg-jaguar/20'
+                }`}
+              >
+                <span>📍</span>
+                <span className="truncate font-medium">
+                  {direccionActual?.direccion || 'Añadir dirección'}
+                </span>
+                <span className="text-gray-600">▾</span>
+              </button>
+            )}
 
             {/* BÚSQUEDA (desktop) */}
             <button
@@ -156,7 +159,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
         </div>
 
         {/* BANNER DIRECCIÓN (mobile) */}
-        {!enRestaurante && sinDireccion && (
+        {!ocultarDireccionMovil && sinDireccion && (
           <button
             type="button"
             onClick={abrirDireccion}
@@ -178,7 +181,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
         )}
 
         {/* DIRECCIÓN ACTUAL (mobile, si hay) */}
-        {!enRestaurante && mounted && direccionActual && (
+        {!ocultarDireccionMovil && mounted && direccionActual && (
           <button
             type="button"
             onClick={abrirDireccion}

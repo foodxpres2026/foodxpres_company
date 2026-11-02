@@ -61,7 +61,7 @@ export default function PlatoCard({ plato, restaurante, onAbrirOpciones }: Props
       opciones: [],
     })
 
-    toast(`${plato.nombre} agregado`, { icon: '🛒' })
+    toast(`${plato.nombre} agregado`, { icon: '🛒', action: { label: 'Ver carrito', href: '/carrito' }, sound: true })
   }
 
   return (
