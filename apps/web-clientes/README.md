@@ -37,4 +37,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Customer accounts
 
-New customer accounts use a password of at least 8 characters. Existing customer passwords continue to work so customers are not locked out; they can change their password from their profile.
+New customer accounts use a four-digit numeric PIN. Existing customer passwords continue to work so customers are not locked out; after login, they can change their PIN from their profile.

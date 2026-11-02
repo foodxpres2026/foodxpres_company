@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { autenticarCliente, setSessionCookie } from '@/lib/auth'
+import { clearCustomerAccountLoginFailures, isCustomerLoginBlocked, recordCustomerLoginFailure } from '@/lib/login-rate-limit'
 
 const schema = z.object({
   celular: z.string().regex(/^9\d{8}$/),
@@ -20,15 +21,30 @@ export async function POST(req: NextRequest) {
     }
 
     const { celular, password } = parsed.data
+    if (await isCustomerLoginBlocked(req, celular)) {
+      return Response.json(
+        { ok: false, error: 'Demasiados intentos. Intenta nuevamente en 15 minutos.' },
+        { status: 429, headers: { 'Retry-After': '900' } },
+      )
+    }
+
     const user = await autenticarCliente(celular, password)
 
     if (!user) {
+      const blocked = await recordCustomerLoginFailure(req, celular)
+      if (blocked) {
+        return Response.json(
+          { ok: false, error: 'Demasiados intentos. Intenta nuevamente en 15 minutos.' },
+          { status: 429, headers: { 'Retry-After': '900' } },
+        )
+      }
       return Response.json(
         { ok: false, error: 'Celular o contraseña incorrectos' },
         { status: 401 }
       )
     }
 
+    await clearCustomerAccountLoginFailures(celular)
     await setSessionCookie(user)
     return Response.json({ ok: true, user })
   } catch (error) {

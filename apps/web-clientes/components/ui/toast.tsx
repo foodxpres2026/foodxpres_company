@@ -63,10 +63,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 }
 
 function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
+  const duration = toast.action ? 4000 : 2500
+
   useEffect(() => {
-    const timer = setTimeout(onClose, 2500)
+    const timer = setTimeout(onClose, duration)
     return () => clearTimeout(timer)
-  }, [onClose])
+  }, [onClose, duration])
 
   const colores: Record<string, string> = {
     success: 'bg-brand text-black',
@@ -74,15 +76,18 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
     info: 'bg-surface border border-brand text-white',
   }
 
-  const className = `${colores[toast.type || 'success']} rounded-xl px-4 py-3 shadow-2xl font-bold text-sm flex items-center gap-3 pointer-events-auto animate-[slideUp_0.3s_ease-out] max-w-sm`
+  const className = `${colores[toast.type || 'success']} rounded-xl px-4 py-3 shadow-2xl font-bold text-sm flex items-center gap-3 pointer-events-auto animate-[slideUp_0.3s_ease-out] w-full max-w-sm h-14 box-border`
 
   if (toast.action) {
     return (
-      <Link href={toast.action.href} onClick={onClose} className={className} aria-label={`${toast.message}. ${toast.action.label}`}>
-        {toast.icon && <span className="text-base">{toast.icon}</span>}
-        <span className="flex-1">{toast.message}</span>
-        <span className="text-xs underline underline-offset-2 whitespace-nowrap">{toast.action.label} →</span>
-      </Link>
+      <div role="status" className={className}>
+        <Link href={toast.action.href} onClick={onClose} className="flex min-w-0 flex-1 items-center gap-3" aria-label={`${toast.message}. ${toast.action.label}`}>
+          {toast.icon && <span className="text-base flex-shrink-0">{toast.icon}</span>}
+          <span className="flex-1 min-w-0 truncate">{toast.message}</span>
+          <span className="text-xs underline underline-offset-2 whitespace-nowrap flex-shrink-0">{toast.action.label} →</span>
+        </Link>
+        <button type="button" onClick={onClose} aria-label="Cerrar notificación" className="text-current/70 hover:text-current text-lg leading-none flex-shrink-0">×</button>
+      </div>
     )
   }
 
@@ -92,8 +97,8 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
       className={className}
     >
       {toast.icon && <span className="text-base">{toast.icon}</span>}
-      <span className="flex-1">{toast.message}</span>
-      <button type="button" onClick={onClose} aria-label="Cerrar notificación" className="text-current/70 hover:text-current text-lg leading-none">×</button>
+      <span className="flex-1 min-w-0 truncate">{toast.message}</span>
+      <button type="button" onClick={onClose} aria-label="Cerrar notificación" className="text-current/70 hover:text-current text-lg leading-none flex-shrink-0">×</button>
     </div>
   )
 }

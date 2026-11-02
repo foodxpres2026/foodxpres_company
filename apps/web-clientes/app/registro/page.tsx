@@ -13,6 +13,7 @@ function RegistroForm() {
   const [nombre, setNombre] = useState('')
   const [celular, setCelular] = useState('')
   const [password, setPassword] = useState('')
+  const [mostrarPassword, setMostrarPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,8 +25,8 @@ function RegistroForm() {
       setError('El celular debe tener 9 dígitos')
       return
     }
-    if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres')
+    if (!/^\d{4}$/.test(password)) {
+      setError('El PIN debe tener exactamente 4 dígitos')
       return
     }
 
@@ -138,19 +139,25 @@ function RegistroForm() {
 
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
-                Contraseña
+                PIN de acceso
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                minLength={8}
-                placeholder="Mínimo 8 caracteres"
-                className="w-full px-4 py-4 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
-              />
-              <p className="text-xs text-gray-600 mt-1">Usa al menos 8 caracteres.</p>
+              <div className="relative">
+                <input
+                  type={mostrarPassword ? 'text' : 'password'}
+                  inputMode="numeric"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  required
+                  autoComplete="new-password"
+                  minLength={4}
+                  maxLength={4}
+                  pattern="[0-9]{4}"
+                  placeholder="4 dígitos"
+                  className="w-full px-4 pr-14 py-4 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                />
+                <button type="button" onClick={() => setMostrarPassword((visible) => !visible)} aria-label={mostrarPassword ? 'Ocultar PIN' : 'Mostrar PIN'} className="absolute inset-y-0 right-3 text-gray-400 hover:text-white">{mostrarPassword ? '🙈' : '👁️'}</button>
+              </div>
+              <p className="text-xs text-gray-600 mt-1">Usa exactamente 4 dígitos.</p>
             </div>
 
             {error && (

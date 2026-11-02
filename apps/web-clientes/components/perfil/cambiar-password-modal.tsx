@@ -12,20 +12,12 @@ export default function CambiarPasswordModal({
   const [actual, setActual] = useState('')
   const [nueva, setNueva] = useState('')
   const [confirmar, setConfirmar] = useState('')
+  const [mostrarActual, setMostrarActual] = useState(false)
+  const [mostrarNueva, setMostrarNueva] = useState(false)
+  const [mostrarConfirmar, setMostrarConfirmar] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [exito, setExito] = useState(false)
-
-  useEffect(() => {
-    if (open) {
-      setActual('')
-      setNueva('')
-      setConfirmar('')
-      setError(null)
-      setLoading(false)
-      setExito(false)
-    }
-  }, [open])
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
@@ -45,8 +37,8 @@ export default function CambiarPasswordModal({
       return
     }
 
-    if (nueva.length < 8) {
-      setError('La nueva contraseña debe tener al menos 8 caracteres')
+    if (!/^\d{4}$/.test(nueva)) {
+      setError('El PIN nuevo debe tener exactamente 4 dígitos')
       return
     }
 
@@ -89,7 +81,7 @@ export default function CambiarPasswordModal({
         <form onSubmit={handleSubmit} className="p-5 md:p-6 space-y-4">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-lg font-bold text-white">
-              Cambiar contraseña
+              Cambiar PIN
             </h3>
             <button
               type="button"
@@ -113,46 +105,61 @@ export default function CambiarPasswordModal({
                 <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
                   Contraseña actual
                 </label>
-                <input
-                  type="password"
-                  value={actual}
-                  onChange={(e) => setActual(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                  className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white focus:outline-none focus:border-brand"
-                />
+                <div className="relative">
+                  <input
+                    type={mostrarActual ? 'text' : 'password'}
+                    value={actual}
+                    onChange={(e) => setActual(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                    className="w-full px-4 pr-14 py-3 bg-surface-dark border border-line-light rounded-xl text-white focus:outline-none focus:border-brand"
+                  />
+                  <button type="button" onClick={() => setMostrarActual((visible) => !visible)} aria-label={mostrarActual ? 'Ocultar contraseña actual' : 'Mostrar contraseña actual'} className="absolute inset-y-0 right-3 text-gray-400 hover:text-white">{mostrarActual ? '🙈' : '👁️'}</button>
+                </div>
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-                  Nueva contraseña
+                  Nuevo PIN
                 </label>
-                <input
-                  type="password"
-                  value={nueva}
-                  onChange={(e) => setNueva(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                  minLength={8}
-                  placeholder="Mínimo 8 caracteres"
-                  className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white focus:outline-none focus:border-brand"
-                />
+                <div className="relative">
+                  <input
+                    type={mostrarNueva ? 'text' : 'password'}
+                    inputMode="numeric"
+                    value={nueva}
+                    onChange={(e) => setNueva(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    required
+                    autoComplete="new-password"
+                    minLength={4}
+                    maxLength={4}
+                    pattern="[0-9]{4}"
+                    placeholder="4 dígitos"
+                    className="w-full px-4 pr-14 py-3 bg-surface-dark border border-line-light rounded-xl text-white focus:outline-none focus:border-brand"
+                  />
+                  <button type="button" onClick={() => setMostrarNueva((visible) => !visible)} aria-label={mostrarNueva ? 'Ocultar PIN nuevo' : 'Mostrar PIN nuevo'} className="absolute inset-y-0 right-3 text-gray-400 hover:text-white">{mostrarNueva ? '🙈' : '👁️'}</button>
+                </div>
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-                  Confirmar contraseña
+                  Confirmar PIN
                 </label>
-                <input
-                  type="password"
-                  value={confirmar}
-                  onChange={(e) => setConfirmar(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                  minLength={8}
-                  placeholder="Repite tu contraseña"
-                  className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white focus:outline-none focus:border-brand"
-                />
+                <div className="relative">
+                  <input
+                    type={mostrarConfirmar ? 'text' : 'password'}
+                    inputMode="numeric"
+                    value={confirmar}
+                    onChange={(e) => setConfirmar(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    required
+                    autoComplete="new-password"
+                    minLength={4}
+                    maxLength={4}
+                    pattern="[0-9]{4}"
+                    placeholder="Repite los 4 dígitos"
+                    className="w-full px-4 pr-14 py-3 bg-surface-dark border border-line-light rounded-xl text-white focus:outline-none focus:border-brand"
+                  />
+                  <button type="button" onClick={() => setMostrarConfirmar((visible) => !visible)} aria-label={mostrarConfirmar ? 'Ocultar confirmación del PIN' : 'Mostrar confirmación del PIN'} className="absolute inset-y-0 right-3 text-gray-400 hover:text-white">{mostrarConfirmar ? '🙈' : '👁️'}</button>
+                </div>
               </div>
 
               {error && (
@@ -167,7 +174,7 @@ export default function CambiarPasswordModal({
                   disabled={loading}
                   className="flex-1 bg-brand hover:bg-brand-dark disabled:bg-brand/40 text-black font-bold py-3 rounded-xl transition-colors"
                 >
-                  {loading ? 'Actualizando...' : 'Cambiar contraseña'}
+                  {loading ? 'Actualizando...' : 'Cambiar PIN'}
                 </button>
                 <button
                   type="button"

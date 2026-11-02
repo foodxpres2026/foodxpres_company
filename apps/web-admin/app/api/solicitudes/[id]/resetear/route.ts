@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { randomInt } from 'node:crypto'
 import bcrypt from 'bcryptjs'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
@@ -21,7 +22,7 @@ export async function POST(
       FROM solicitudes_recuperacion
       WHERE id = ${id}
       LIMIT 1
-    `
+    ` as { celular: string; usuario_id: string | null; estado: string }[]
 
     if (solRows.length === 0) {
       return Response.json(
@@ -30,7 +31,7 @@ export async function POST(
       )
     }
 
-    const sol = solRows[0] as any
+    const sol = solRows[0]
 
     if (sol.estado !== 'PENDIENTE') {
       return Response.json(
@@ -44,7 +45,7 @@ export async function POST(
       SELECT id FROM usuarios
       WHERE celular = ${sol.celular} AND role = 'CUSTOMER' AND activo = TRUE
       LIMIT 1
-    `
+    ` as { id: string }[]
 
     if (usrRows.length === 0) {
       // Marcar como cancelada (usuario no existe)
@@ -64,8 +65,8 @@ export async function POST(
 
     const usuarioId = usrRows[0].id
 
-    // Generar contraseña temporal: 6 dígitos
-    const nuevaPassword = Math.floor(100000 + Math.random() * 900000).toString()
+    // Generar PIN temporal de 4 dígitos con un generador criptográfico.
+    const nuevaPassword = randomInt(0, 10_000).toString().padStart(4, '0')
     const hash = await bcrypt.hash(nuevaPassword, 10)
 
     await sql`
@@ -89,7 +90,7 @@ export async function POST(
       password_temporal: nuevaPassword,
       celular: sol.celular,
       whatsapp_url: `https://wa.me/51${sol.celular}?text=${encodeURIComponent(
-        `Hola! Tu nueva contraseña de FOODXPRES es: ${nuevaPassword}\n\nInicia sesión y cámbiala cuando quieras. 🐯`
+        `Hola! Tu nuevo PIN de FOODXPRES es: ${nuevaPassword}\n\nInicia sesión y cámbialo cuando quieras. 🐯`
       )}`,
     })
   } catch (error) {

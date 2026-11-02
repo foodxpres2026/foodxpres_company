@@ -10,10 +10,7 @@ import {
 
 const schema = z.object({
   password_actual: z.string().min(1, 'Ingresa tu contraseña actual'),
-  password_nueva: z.string().min(8, 'La nueva contraseña debe tener al menos 8 caracteres').refine(
-    (value) => Buffer.byteLength(value, 'utf8') <= 72,
-    'La contraseña es demasiado larga',
-  ),
+  password_nueva: z.string().regex(/^\d{4}$/, 'El PIN debe tener exactamente 4 dígitos'),
 })
 
 export async function PATCH(req: NextRequest) {
@@ -36,11 +33,11 @@ export async function PATCH(req: NextRequest) {
     const { password_actual, password_nueva } = parsed.data
 
     // Obtener hash actual
-    const rows = (await sql`
+    const rows = await sql`
       SELECT password_hash FROM usuarios 
       WHERE id = ${user.id} AND role = 'CUSTOMER'
       LIMIT 1
-    `) as any[]
+    ` as { password_hash: string | null }[]
 
     if (rows.length === 0 || !rows[0].password_hash) {
       return Response.json(

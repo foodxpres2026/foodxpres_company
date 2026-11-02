@@ -104,10 +104,10 @@ export default function PerfilCliente({ user }: Props) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-white text-sm">
-              Cambiar contraseña
+              Cambiar PIN
             </p>
             <p className="text-xs text-gray-500">
-              Actualiza tu contraseña
+              Actualiza tu PIN de acceso
             </p>
           </div>
           <span className="text-gray-500">›</span>
@@ -142,10 +142,12 @@ export default function PerfilCliente({ user }: Props) {
         nombreActual={user.nombre}
       />
 
-      <CambiarPasswordModal
-        open={modalPassword}
-        onClose={() => setModalPassword(false)}
-      />
+      {modalPassword && (
+        <CambiarPasswordModal
+          open={modalPassword}
+          onClose={() => setModalPassword(false)}
+        />
+      )}
     </div>
   )
 }

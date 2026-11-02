@@ -6,10 +6,7 @@ import { registrarCliente, setSessionCookie } from '@/lib/auth'
 const schema = z.object({
   celular: z.string().regex(/^9\d{8}$/, 'Celular debe ser 9 dígitos empezando con 9'),
   nombre: z.string().min(2, 'Mínimo 2 caracteres').max(120),
-  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').refine(
-    (value) => Buffer.byteLength(value, 'utf8') <= 72,
-    'La contraseña es demasiado larga',
-  ),
+  password: z.string().regex(/^\d{4}$/, 'El PIN debe tener exactamente 4 dígitos'),
   direccion_temporal: z
     .object({
       etiqueta: z.string().max(40),
