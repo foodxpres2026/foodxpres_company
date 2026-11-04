@@ -16,6 +16,9 @@ function RegistroForm() {
   const [password, setPassword] = useState('')
   const [codigo, setCodigo] = useState('')
   const [codigoEnviado, setCodigoEnviado] = useState(false)
+  const [captchaVisible, setCaptchaVisible] = useState(false)
+  const [captchaLista, setCaptchaLista] = useState(false)
+  const [segundosReenvio, setSegundosReenvio] = useState(0)
   const [mostrarPassword, setMostrarPassword] = useState(false)
   const [enviandoCodigo, setEnviandoCodigo] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -26,13 +29,27 @@ function RegistroForm() {
 
   useEffect(() => () => recaptcha.current?.clear(), [])
 
+  useEffect(() => {
+    if (segundosReenvio <= 0) return
+    const timer = window.setTimeout(() => setSegundosReenvio((segundos) => segundos - 1), 1000)
+    return () => window.clearTimeout(timer)
+  }, [segundosReenvio])
+
   function mensajeErrorFirebase(error: unknown) {
     const code = (error as { code?: string })?.code
     if (code === 'auth/invalid-phone-number') return 'Revisa el número de celular.'
     if (code === 'auth/too-many-requests' || code === 'auth/quota-exceeded') {
       return 'Se alcanzó el límite de intentos. Espera un momento antes de volver a intentar.'
     }
-    if (code === 'auth/captcha-check-failed') return 'No se pudo validar el control de seguridad. Intenta otra vez.'
+    if (code === 'auth/network-request-failed') {
+      return 'No se pudo conectar con Firebase. Revisa tu conexión e intenta nuevamente.'
+    }
+    if (code === 'auth/captcha-check-failed' || code === 'auth/internal-error') {
+      return 'No cargó la verificación de seguridad. Recarga la página; si persiste, prueba otra conexión o navegador.'
+    }
+    if (code === 'foodxpres/recaptcha-timeout') {
+      return 'La verificación tardó demasiado. Intenta otra vez o prueba una conexión distinta.'
+    }
     if (code === 'auth/operation-not-allowed') return 'La verificación por teléfono no está habilitada en Firebase.'
     if (code === 'auth/invalid-verification-code') return 'El código ingresado no es correcto.'
     if (code === 'auth/code-expired' || code === 'auth/session-expired') {
@@ -58,10 +75,14 @@ function RegistroForm() {
   }
 
   async function enviarCodigo() {
+    if (enviandoCodigo) return
     setError(null)
     if (!validarDatosRegistro()) return
 
     setEnviandoCodigo(true)
+    setCaptchaVisible(true)
+    setCaptchaLista(false)
+    let timeoutId: number | undefined
     try {
       const [{ getAuth, RecaptchaVerifier, signInWithPhoneNumber }, { app }] = await Promise.all([
         import('firebase/auth'),
@@ -71,18 +92,42 @@ function RegistroForm() {
       if (!recaptcha.current) {
         if (!recaptchaContainer.current) throw new Error('No se encontró el contenedor de reCAPTCHA')
         recaptcha.current = new RecaptchaVerifier(auth, recaptchaContainer.current, {
-          size: 'invisible',
+          size: 'normal',
+          theme: 'dark',
+          'expired-callback': () => {
+            setCaptchaLista(false)
+            setError('La verificación venció. Marca nuevamente la casilla.')
+          },
         })
       }
 
-      const result = await signInWithPhoneNumber(auth, `+51${celular}`, recaptcha.current)
+      await recaptcha.current.render()
+      setCaptchaLista(true)
+
+      const result = await Promise.race([
+        signInWithPhoneNumber(auth, `+51${celular}`, recaptcha.current),
+        new Promise<never>((_, reject) => {
+          timeoutId = window.setTimeout(() => {
+            reject(Object.assign(new Error('reCAPTCHA timeout'), { code: 'foodxpres/recaptcha-timeout' }))
+          }, 30000)
+        }),
+      ])
       setConfirmation(result)
       setCodigoEnviado(true)
+      setCodigo('')
+      setSegundosReenvio(30)
+      recaptcha.current.clear()
+      recaptcha.current = null
+      setCaptchaVisible(false)
+      setCaptchaLista(false)
     } catch (error) {
       setError(mensajeErrorFirebase(error))
       recaptcha.current?.clear()
       recaptcha.current = null
+      setCaptchaVisible(false)
+      setCaptchaLista(false)
     } finally {
+      if (timeoutId) window.clearTimeout(timeoutId)
       setEnviandoCodigo(false)
     }
   }
@@ -92,6 +137,9 @@ function RegistroForm() {
     recaptcha.current = null
     setConfirmation(null)
     setCodigoEnviado(false)
+    setCaptchaVisible(false)
+    setCaptchaLista(false)
+    setSegundosReenvio(0)
     setCodigo('')
     setError(null)
   }
@@ -102,7 +150,7 @@ function RegistroForm() {
 
     if (!validarDatosRegistro()) return
     if (!confirmation || !codigoEnviado) {
-      setError('Primero solicita el código de verificación.')
+      await enviarCodigo()
       return
     }
     if (!/^\d{6}$/.test(codigo)) {
@@ -145,6 +193,7 @@ function RegistroForm() {
         setConfirmation(null)
         setCodigoEnviado(false)
         setCodigo('')
+        setSegundosReenvio(0)
         setLoading(false)
         return
       }
@@ -166,9 +215,13 @@ function RegistroForm() {
         if (auth.currentUser) await signOut(auth)
       } catch {}
       setError(mensajeErrorFirebase(error))
-      setConfirmation(null)
-      setCodigoEnviado(false)
-      setCodigo('')
+      const code = (error as { code?: string })?.code
+      if (code !== 'auth/invalid-verification-code') {
+        setConfirmation(null)
+        setCodigoEnviado(false)
+        setCodigo('')
+        setSegundosReenvio(0)
+      }
       setLoading(false)
     }
   }
@@ -194,6 +247,16 @@ function RegistroForm() {
             <p className="text-gray-500 mt-2">
               Verifica tu celular para crear tu cuenta
             </p>
+          </div>
+
+          <div className="mb-4 rounded-xl border border-line bg-surface px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+              {codigoEnviado ? 'Paso 2 de 2 · Verifica tu celular' : 'Paso 1 de 2 · Tus datos'}
+            </p>
+            <div className="mt-2 flex gap-2" aria-hidden="true">
+              <span className="h-1.5 flex-1 rounded-full bg-brand" />
+              <span className={`h-1.5 flex-1 rounded-full ${codigoEnviado ? 'bg-brand' : 'bg-line-light'}`} />
+            </div>
           </div>
 
           <form
@@ -238,56 +301,14 @@ function RegistroForm() {
                 />
               </div>
               <p className="text-xs text-gray-600 mt-1">
-                Lo usarás para iniciar sesión
+                Lo usarás para iniciar sesión. Te enviaremos un código por SMS.
               </p>
-            </div>
-
-            {!codigoEnviado ? (
-              <button
-                type="button"
-                onClick={enviarCodigo}
-                disabled={enviandoCodigo || loading}
-                className="w-full border border-brand/50 text-brand hover:bg-brand/10 disabled:opacity-50 font-semibold py-3 rounded-xl transition-all"
-              >
-                {enviandoCodigo ? 'Enviando código...' : 'Enviar código SMS'}
-              </button>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm text-brand">Código enviado al +51 {celular}</p>
-                  <button type="button" onClick={cambiarNumero} className="text-xs text-gray-400 hover:text-white underline">
-                    Cambiar número
-                  </button>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
-                    Código SMS
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    value={codigo}
-                    onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    required
-                    minLength={6}
-                    maxLength={6}
-                    pattern="[0-9]{6}"
-                    placeholder="6 dígitos"
-                    className="w-full px-4 py-4 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={enviarCodigo}
-                  disabled={enviandoCodigo || loading}
-                  className="text-sm text-gray-400 hover:text-white underline disabled:opacity-50"
-                >
-                  {enviandoCodigo ? 'Enviando...' : 'Reenviar código'}
+              {codigoEnviado && (
+                <button type="button" onClick={cambiarNumero} className="mt-2 text-xs text-gray-400 hover:text-white underline">
+                  Corregir celular
                 </button>
-              </div>
-            )}
-            <div ref={recaptchaContainer} />
+              )}
+            </div>
 
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
@@ -312,19 +333,82 @@ function RegistroForm() {
               <p className="text-xs text-gray-600 mt-1">Usa exactamente 4 dígitos.</p>
             </div>
 
+            <div className={captchaVisible ? 'rounded-xl border border-line-light bg-surface-dark p-4' : 'hidden'}>
+              <p className="mb-3 text-sm text-gray-300">
+                {captchaLista
+                  ? 'Marca la casilla de seguridad para enviar el SMS.'
+                  : 'Cargando la verificación de seguridad…'}
+              </p>
+              <div ref={recaptchaContainer} className="min-h-[78px]" />
+              <p className="mt-2 text-xs text-gray-500">Este paso ayuda a evitar solicitudes automáticas.</p>
+            </div>
+
+            {codigoEnviado && (
+              <div className="space-y-3 rounded-xl border border-brand/30 bg-brand/5 p-4">
+                <div>
+                  <p className="font-semibold text-white">Ya enviamos el código</p>
+                  <p className="mt-1 text-sm text-gray-400">Revisa los SMS de +51 {celular} e ingrésalo aquí.</p>
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-400" htmlFor="codigo-sms">
+                    Código de 6 dígitos
+                  </label>
+                  <input
+                    id="codigo-sms"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    required
+                    minLength={6}
+                    maxLength={6}
+                    pattern="[0-9]{6}"
+                    placeholder="000000"
+                    className="w-full rounded-xl border border-line-light bg-surface-dark px-4 py-4 text-center text-xl tracking-[0.35em] text-white placeholder-gray-600 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={enviarCodigo}
+                  disabled={enviandoCodigo || loading || segundosReenvio > 0}
+                  className="text-sm font-medium text-brand hover:underline disabled:text-gray-500 disabled:no-underline"
+                >
+                  {enviandoCodigo
+                    ? 'Preparando nuevo código…'
+                    : segundosReenvio > 0
+                      ? `Reenviar código en ${segundosReenvio} s`
+                      : 'No recibí el código · Reenviar'}
+                </button>
+              </div>
+            )}
+
             {error && (
               <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded-xl text-sm">
                 {error}
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading || !codigoEnviado}
-              className="w-full bg-brand hover:bg-brand-dark disabled:bg-brand/40 text-black font-bold py-4 rounded-xl transition-all active:scale-[0.98]"
-            >
-              {loading ? 'Verificando y creando cuenta...' : 'Crear cuenta'}
-            </button>
+            {codigoEnviado ? (
+              <button
+                type="submit"
+                disabled={loading || enviandoCodigo}
+                className="w-full rounded-xl bg-brand py-4 font-bold text-black transition-all hover:bg-brand-dark disabled:opacity-50 active:scale-[0.98]"
+              >
+                {loading ? 'Verificando celular…' : 'Verificar y crear cuenta'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={enviarCodigo}
+                disabled={enviandoCodigo || loading}
+                className="w-full rounded-xl bg-brand py-4 font-bold text-black transition-all hover:bg-brand-dark disabled:opacity-50 active:scale-[0.98]"
+              >
+                {enviandoCodigo
+                  ? captchaLista ? 'Completa la verificación de seguridad' : 'Cargando verificación…'
+                  : 'Enviar código y continuar'}
+              </button>
+            )}
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">
