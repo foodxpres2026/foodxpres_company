@@ -98,14 +98,16 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 }
 
 export async function registrarCliente(celular: string, nombre: string, password: string): Promise<{ ok: true; user: SessionUser } | { ok: false; error: string }> {
-  const existe = (await sql`SELECT id FROM usuarios WHERE celular = ${celular} LIMIT 1`) as any[]
+  const existe = (await sql`SELECT id FROM usuarios WHERE celular = ${celular} LIMIT 1`) as { id: string }[]
   if (existe.length > 0) return { ok: false, error: 'Este celular ya está registrado' }
   const passwordHash = await hashPassword(password)
   const rows = (await sql`
-    INSERT INTO usuarios (role, celular, password_hash, nombre)
-    VALUES ('CUSTOMER', ${celular}, ${passwordHash}, ${nombre})
+    INSERT INTO usuarios (
+      role, celular, password_hash, nombre, celular_verificado, celular_verificado_en
+    )
+    VALUES ('CUSTOMER', ${celular}, ${passwordHash}, ${nombre}, TRUE, NOW())
     RETURNING id, celular, nombre
-  `) as any[]
+  `) as { id: string; celular: string; nombre: string }[]
   return { ok: true, user: { id: rows[0].id, role: 'CUSTOMER', celular: rows[0].celular, nombre: rows[0].nombre } }
 }
 
@@ -113,7 +115,7 @@ export async function autenticarCliente(celular: string, password: string): Prom
   const rows = (await sql`
     SELECT id, celular, nombre, password_hash FROM usuarios
     WHERE celular = ${celular} AND role = 'CUSTOMER' AND activo = TRUE LIMIT 1
-  `) as any[]
+  `) as { id: string; celular: string; nombre: string; password_hash: string | null }[]
   const user = rows[0]
   if (!user?.password_hash || !(await verifyPassword(password, user.password_hash))) return null
   return { id: user.id, role: 'CUSTOMER', celular: user.celular, nombre: user.nombre }

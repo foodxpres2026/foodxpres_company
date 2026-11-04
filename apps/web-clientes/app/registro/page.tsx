@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useEffect, useRef, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import type { ConfirmationResult, RecaptchaVerifier } from 'firebase/auth'
 import Logo from '@/components/layout/logo'
 
 function RegistroForm() {
@@ -13,26 +14,112 @@ function RegistroForm() {
   const [nombre, setNombre] = useState('')
   const [celular, setCelular] = useState('')
   const [password, setPassword] = useState('')
+  const [codigo, setCodigo] = useState('')
+  const [codigoEnviado, setCodigoEnviado] = useState(false)
   const [mostrarPassword, setMostrarPassword] = useState(false)
+  const [enviandoCodigo, setEnviandoCodigo] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(null)
+  const recaptcha = useRef<RecaptchaVerifier | null>(null)
+  const recaptchaContainer = useRef<HTMLDivElement>(null)
+
+  useEffect(() => () => recaptcha.current?.clear(), [])
+
+  function mensajeErrorFirebase(error: unknown) {
+    const code = (error as { code?: string })?.code
+    if (code === 'auth/invalid-phone-number') return 'Revisa el número de celular.'
+    if (code === 'auth/too-many-requests' || code === 'auth/quota-exceeded') {
+      return 'Se alcanzó el límite de intentos. Espera un momento antes de volver a intentar.'
+    }
+    if (code === 'auth/captcha-check-failed') return 'No se pudo validar el control de seguridad. Intenta otra vez.'
+    if (code === 'auth/operation-not-allowed') return 'La verificación por teléfono no está habilitada en Firebase.'
+    if (code === 'auth/invalid-verification-code') return 'El código ingresado no es correcto.'
+    if (code === 'auth/code-expired' || code === 'auth/session-expired') {
+      return 'El código venció. Solicita uno nuevo.'
+    }
+    return 'No se pudo completar la verificación. Intenta nuevamente.'
+  }
+
+  function validarDatosRegistro() {
+    if (nombre.trim().length < 2) {
+      setError('Ingresa tu nombre (mínimo 2 caracteres).')
+      return false
+    }
+    if (!/^9\d{8}$/.test(celular)) {
+      setError('El celular debe tener 9 dígitos y empezar con 9.')
+      return false
+    }
+    if (!/^\d{4}$/.test(password)) {
+      setError('El PIN debe tener exactamente 4 dígitos.')
+      return false
+    }
+    return true
+  }
+
+  async function enviarCodigo() {
+    setError(null)
+    if (!validarDatosRegistro()) return
+
+    setEnviandoCodigo(true)
+    try {
+      const [{ getAuth, RecaptchaVerifier, signInWithPhoneNumber }, { app }] = await Promise.all([
+        import('firebase/auth'),
+        import('@/lib/firebase/config'),
+      ])
+      const auth = getAuth(app)
+      if (!recaptcha.current) {
+        if (!recaptchaContainer.current) throw new Error('No se encontró el contenedor de reCAPTCHA')
+        recaptcha.current = new RecaptchaVerifier(auth, recaptchaContainer.current, {
+          size: 'invisible',
+        })
+      }
+
+      const result = await signInWithPhoneNumber(auth, `+51${celular}`, recaptcha.current)
+      setConfirmation(result)
+      setCodigoEnviado(true)
+    } catch (error) {
+      setError(mensajeErrorFirebase(error))
+      recaptcha.current?.clear()
+      recaptcha.current = null
+    } finally {
+      setEnviandoCodigo(false)
+    }
+  }
+
+  function cambiarNumero() {
+    recaptcha.current?.clear()
+    recaptcha.current = null
+    setConfirmation(null)
+    setCodigoEnviado(false)
+    setCodigo('')
+    setError(null)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
-    if (celular.length !== 9) {
-      setError('El celular debe tener 9 dígitos')
+    if (!validarDatosRegistro()) return
+    if (!confirmation || !codigoEnviado) {
+      setError('Primero solicita el código de verificación.')
       return
     }
-    if (!/^\d{4}$/.test(password)) {
-      setError('El PIN debe tener exactamente 4 dígitos')
+    if (!/^\d{6}$/.test(codigo)) {
+      setError('Ingresa el código de 6 dígitos que recibiste por SMS.')
       return
     }
 
     setLoading(true)
 
     try {
+      const [{ getAuth, signOut }, { app }] = await Promise.all([
+        import('firebase/auth'),
+        import('@/lib/firebase/config'),
+      ])
+      const credential = await confirmation.confirm(codigo)
+      const firebaseIdToken = await credential.user.getIdToken()
+
       let direccionTemporal = null
       try {
         const raw = localStorage.getItem('foodxpres-direccion-temporal')
@@ -46,25 +133,42 @@ function RegistroForm() {
           celular,
           nombre,
           password,
+          firebase_id_token: firebaseIdToken,
           direccion_temporal: direccionTemporal,
         }),
       })
       const data = await res.json()
 
       if (!res.ok || !data.ok) {
+        await signOut(getAuth(app))
         setError(data.error || 'Error al registrarte')
+        setConfirmation(null)
+        setCodigoEnviado(false)
+        setCodigo('')
         setLoading(false)
         return
       }
 
+      await signOut(getAuth(app))
       if (direccionTemporal) {
         localStorage.removeItem('foodxpres-direccion-temporal')
       }
 
       router.push(redirect)
       router.refresh()
-    } catch {
-      setError('Error de conexión')
+    } catch (error) {
+      try {
+        const [{ getAuth, signOut }, { app }] = await Promise.all([
+          import('firebase/auth'),
+          import('@/lib/firebase/config'),
+        ])
+        const auth = getAuth(app)
+        if (auth.currentUser) await signOut(auth)
+      } catch {}
+      setError(mensajeErrorFirebase(error))
+      setConfirmation(null)
+      setCodigoEnviado(false)
+      setCodigo('')
       setLoading(false)
     }
   }
@@ -88,7 +192,7 @@ function RegistroForm() {
               Crea tu cuenta 🚀
             </h1>
             <p className="text-gray-500 mt-2">
-              Solo necesitas 3 datos para empezar a pedir
+              Verifica tu celular para crear tu cuenta
             </p>
           </div>
 
@@ -126,6 +230,7 @@ function RegistroForm() {
                   onChange={(e) =>
                     setCelular(e.target.value.replace(/\D/g, '').slice(0, 9))
                   }
+                  disabled={codigoEnviado}
                   required
                   autoComplete="tel"
                   placeholder="999 999 999"
@@ -136,6 +241,53 @@ function RegistroForm() {
                 Lo usarás para iniciar sesión
               </p>
             </div>
+
+            {!codigoEnviado ? (
+              <button
+                type="button"
+                onClick={enviarCodigo}
+                disabled={enviandoCodigo || loading}
+                className="w-full border border-brand/50 text-brand hover:bg-brand/10 disabled:opacity-50 font-semibold py-3 rounded-xl transition-all"
+              >
+                {enviandoCodigo ? 'Enviando código...' : 'Enviar código SMS'}
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm text-brand">Código enviado al +51 {celular}</p>
+                  <button type="button" onClick={cambiarNumero} className="text-xs text-gray-400 hover:text-white underline">
+                    Cambiar número
+                  </button>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
+                    Código SMS
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    required
+                    minLength={6}
+                    maxLength={6}
+                    pattern="[0-9]{6}"
+                    placeholder="6 dígitos"
+                    className="w-full px-4 py-4 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={enviarCodigo}
+                  disabled={enviandoCodigo || loading}
+                  className="text-sm text-gray-400 hover:text-white underline disabled:opacity-50"
+                >
+                  {enviandoCodigo ? 'Enviando...' : 'Reenviar código'}
+                </button>
+              </div>
+            )}
+            <div ref={recaptchaContainer} />
 
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
@@ -168,10 +320,10 @@ function RegistroForm() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !codigoEnviado}
               className="w-full bg-brand hover:bg-brand-dark disabled:bg-brand/40 text-black font-bold py-4 rounded-xl transition-all active:scale-[0.98]"
             >
-              {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+              {loading ? 'Verificando y creando cuenta...' : 'Crear cuenta'}
             </button>
           </form>
 
