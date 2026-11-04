@@ -17,6 +17,7 @@ export function proxy(req: NextRequest) {
     "img-src 'self' data: blob: https:",
     "font-src 'self' data: https:",
     "connect-src 'self' https: wss:",
+    "frame-src 'self' https://www.google.com https://recaptcha.google.com https://www.recaptcha.net",
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
