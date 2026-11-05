@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import {
   RestauranteHero,
   RestauranteGrid,
@@ -25,7 +26,12 @@ export default function HomeRestaurantes({
   categoriaActiva,
   direccionDeBD,
 }: Props) {
+  const [limiteLocales, setLimiteLocales] = useState(10)
   const direccionActual = useDireccionActual(direccionDeBD)
+
+  useEffect(() => {
+    setLimiteLocales(10)
+  }, [categoriaActiva, todos.length])
 
   // Juntar TODOS los ids únicos para calcular envíos de una sola vez
   const todosLosIds = [
@@ -124,10 +130,19 @@ export default function HomeRestaurantes({
             🍽️ Todos los restaurantes
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {todosDec.map((r) => (
+            {todosDec.slice(0, limiteLocales).map((r) => (
               <RestauranteGrid key={r.id} restaurante={r} />
             ))}
           </div>
+          {todosDec.length > limiteLocales && (
+            <button
+              type="button"
+              onClick={() => setLimiteLocales((limite) => limite + 10)}
+              className="mt-5 w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm font-bold text-brand transition-colors hover:border-brand/50 hover:bg-surface-light"
+            >
+              Ver más restaurantes
+            </button>
+          )}
         </section>
       )}
 
@@ -138,10 +153,19 @@ export default function HomeRestaurantes({
             🎯 Resultados ({todosDec.length})
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {todosDec.map((r) => (
+            {todosDec.slice(0, limiteLocales).map((r) => (
               <RestauranteGrid key={r.id} restaurante={r} />
             ))}
           </div>
+          {todosDec.length > limiteLocales && (
+            <button
+              type="button"
+              onClick={() => setLimiteLocales((limite) => limite + 10)}
+              className="mt-5 w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm font-bold text-brand transition-colors hover:border-brand/50 hover:bg-surface-light"
+            >
+              Ver más restaurantes
+            </button>
+          )}
         </section>
       )}
 

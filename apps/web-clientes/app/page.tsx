@@ -17,7 +17,7 @@ async function getData(categoriaSlug?: string) {
     SELECT 
       r.id, r.slug, r.nombre, r.subtitulo, r.banner_url, r.logo_url,
       r.tiempo_estimado, r.monto_minimo,
-      r.activo, r.creado_en,
+      r.activo, r.creado_en, r.orden_inicio,
       COALESCE((
         SELECT json_agg(
           jsonb_build_object('id', c.id, 'nombre', c.nombre, 'emoji', c.emoji)
@@ -50,7 +50,7 @@ async function getData(categoriaSlug?: string) {
           : sql``
       }
     GROUP BY r.id
-    ORDER BY r.creado_en DESC
+    ORDER BY r.orden_inicio ASC, r.creado_en DESC
   `) as any[]
 
   const categorias = (await sql`
@@ -75,6 +75,8 @@ async function getData(categoriaSlug?: string) {
   restaurantes.sort((a, b) => {
     if (a.abierto && !b.abierto) return -1
     if (!a.abierto && b.abierto) return 1
+    const orden = Number(a.orden_inicio ?? 0) - Number(b.orden_inicio ?? 0)
+    if (orden !== 0) return orden
     return new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime()
   })
 

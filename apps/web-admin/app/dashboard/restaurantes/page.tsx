@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { sql } from '@/lib/db'
 import AccionesFila from './_components/acciones-fila'
+import OrdenRestaurante from './_components/orden-restaurante'
 
 interface Restaurante {
   id: string
@@ -12,14 +13,15 @@ interface Restaurante {
   monto_minimo: string
   activo: boolean
   creado_en: string
+  orden_inicio: number
 }
 
 async function getRestaurantes(): Promise<Restaurante[]> {
   return (await sql`
     SELECT id, slug, nombre, subtitulo, direccion_fisica, celular,
-           monto_minimo, activo, creado_en
+           monto_minimo, activo, creado_en, orden_inicio
     FROM restaurantes
-    ORDER BY activo DESC, creado_en DESC
+    ORDER BY orden_inicio ASC, creado_en DESC
   `) as Restaurante[]
 }
 
@@ -64,39 +66,30 @@ export default async function RestaurantesPage() {
           {/* MOBILE */}
           <div className="md:hidden space-y-3">
             {restaurantes.map((r) => (
-              <Link
-                key={r.id}
-                href={`/dashboard/restaurantes/${r.id}`}
-                className="block bg-surface border border-line rounded-2xl p-4 hover:border-brand/40 transition-colors"
-              >
-                <div className="flex justify-between items-start mb-2 gap-2">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-white truncate">
-                      {r.nombre}
-                    </h3>
-                    {r.subtitulo && (
-                      <p className="text-xs text-gray-500 mt-0.5 truncate">
-                        {r.subtitulo}
-                      </p>
-                    )}
-                  </div>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
-                      r.activo
-                        ? 'bg-brand/15 text-brand'
-                        : 'bg-gray-800 text-gray-500'
-                    }`}
-                  >
-                    {r.activo ? 'Activo' : 'Inactivo'}
-                  </span>
+              <div key={r.id} className="bg-surface border border-line rounded-2xl p-4">
+                <div className="flex items-start gap-3">
+                  <OrdenRestaurante
+                    id={r.id}
+                    nombre={r.nombre}
+                    index={restaurantes.findIndex((item) => item.id === r.id)}
+                    total={restaurantes.length}
+                    ids={restaurantes.map((item) => item.id)}
+                  />
+                  <Link href={`/dashboard/restaurantes/${r.id}`} className="min-w-0 flex-1 hover:opacity-90">
+                    <div className="flex justify-between items-start mb-2 gap-2">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-white truncate">{r.nombre}</h3>
+                        {r.subtitulo && <p className="text-xs text-gray-500 mt-0.5 truncate">{r.subtitulo}</p>}
+                      </div>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${r.activo ? 'bg-brand/15 text-brand' : 'bg-gray-800 text-gray-500'}`}>
+                        {r.activo ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 truncate">📍 {r.direccion_fisica || 'Sin dirección'}</p>
+                    <p className="text-xs text-gray-400 mt-1">🛵 Mínimo S/ {Number(r.monto_minimo).toFixed(2)}</p>
+                  </Link>
                 </div>
-                <p className="text-xs text-gray-400 truncate">
-                  📍 {r.direccion_fisica || 'Sin dirección'}
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  🛵 Mínimo S/ {Number(r.monto_minimo).toFixed(2)}
-                </p>
-              </Link>
+              </div>
             ))}
           </div>
 
@@ -105,6 +98,9 @@ export default async function RestaurantesPage() {
             <table className="w-full">
               <thead className="bg-surface-dark border-b border-line">
                 <tr>
+                  <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase">
+                    Orden
+                  </th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">
                     Nombre
                   </th>
@@ -128,6 +124,15 @@ export default async function RestaurantesPage() {
               <tbody className="divide-y divide-line">
                 {restaurantes.map((r) => (
                   <tr key={r.id} className="hover:bg-surface-light transition-colors">
+                    <td className="px-3 py-4">
+                      <OrdenRestaurante
+                        id={r.id}
+                        nombre={r.nombre}
+                        index={restaurantes.findIndex((item) => item.id === r.id)}
+                        total={restaurantes.length}
+                        ids={restaurantes.map((item) => item.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <Link
                         href={`/dashboard/restaurantes/${r.id}`}
