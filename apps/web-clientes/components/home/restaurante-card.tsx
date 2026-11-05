@@ -66,18 +66,16 @@ export function RestauranteHero({
 
       <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5">
         <div className="flex items-center gap-3 mb-2">
-          {restaurante.logo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={restaurante.logo_url}
-              alt={restaurante.nombre}
-              className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover border-2 border-white/20 flex-shrink-0"
-            />
-          ) : (
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-brand/20 border-2 border-white/20 flex items-center justify-center text-xl md:text-2xl flex-shrink-0">
-              🏪
-            </div>
-          )}
+          <div className="w-10 h-10 md:w-12 md:h-12 shrink-0 overflow-hidden rounded-xl border-2 border-white/20 bg-white p-1 flex items-center justify-center">
+            {restaurante.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={restaurante.logo_url} alt={restaurante.nombre} className="h-full w-full object-contain" />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center rounded-lg bg-brand/20 text-xl md:text-2xl">
+                🏪
+              </span>
+            )}
+          </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-base md:text-xl font-black text-white truncate">
               {restaurante.nombre}
@@ -168,14 +166,16 @@ export function RestauranteGrid({
             )}
           </div>
           <div className="w-14 md:w-[72px] flex flex-col items-center justify-start gap-1">
-            {restaurante.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={restaurante.logo_url} alt={`Logo de ${restaurante.nombre}`} className="w-12 h-12 md:w-16 md:h-16 rounded-xl object-cover border border-white/20 shadow-md" />
-            ) : (
-              <div role="img" aria-label={`Logo de ${restaurante.nombre}`} className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-brand/15 border border-white/20 flex items-center justify-center text-2xl">
-                🏪
-              </div>
-            )}
+            <div className="w-12 h-12 md:w-16 md:h-16 shrink-0 overflow-hidden rounded-xl border border-white/20 bg-white p-1 shadow-md flex items-center justify-center">
+              {restaurante.logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={restaurante.logo_url} alt={`Logo de ${restaurante.nombre}`} className="h-full w-full object-contain" />
+              ) : (
+                <span role="img" aria-label={`Logo de ${restaurante.nombre}`} className="flex h-full w-full items-center justify-center rounded-lg bg-brand/15 text-2xl">
+                  🏪
+                </span>
+              )}
+            </div>
             {restaurante.tiempo_estimado && (
               <span className="w-full text-center text-[9px] leading-tight text-gray-400 line-clamp-2">
                 ⏱ {restaurante.tiempo_estimado}

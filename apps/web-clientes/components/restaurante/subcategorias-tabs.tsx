@@ -15,7 +15,17 @@ export default function SubcategoriasTabs({
 }) {
   const [activa, setActiva] = useState<string>(subcategorias[0]?.id || '')
   const stripRef = useRef<HTMLDivElement>(null)
+  const botonesRef = useRef(new Map<string, HTMLButtonElement>())
   const dragRef = useRef({ pointerId: -1, startX: 0, scrollLeft: 0, moved: false })
+
+  useEffect(() => {
+    const strip = stripRef.current
+    const boton = botonesRef.current.get(activa)
+    if (!strip || !boton) return
+
+    const left = boton.offsetLeft - (strip.clientWidth - boton.clientWidth) / 2
+    strip.scrollTo({ left: Math.max(0, left), behavior: 'smooth' })
+  }, [activa])
 
   function iniciarArrastre(event: React.PointerEvent<HTMLDivElement>) {
     if (event.pointerType !== 'mouse' || event.button !== 0) return
@@ -104,6 +114,10 @@ export default function SubcategoriasTabs({
           return (
             <button
               key={sub.id}
+              ref={(element) => {
+                if (element) botonesRef.current.set(sub.id, element)
+                else botonesRef.current.delete(sub.id)
+              }}
               type="button"
               onClick={() => irA(sub.id)}
               className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all flex-shrink-0 ${
