@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DriverUser } from '@/lib/auth'
+import { playPushSound } from '@/lib/push/sound'
 import PushNotifications from './push-notifications'
 
 type Section = 'available' | 'current' | 'history'
@@ -45,6 +46,9 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
   const [refreshAt, setRefreshAt] = useState<Date | null>(null)
   const [commissionBalance, setCommissionBalance] = useState(0)
   const [overdueCommission, setOverdueCommission] = useState(0)
+  const availableSoundTimes = useRef(new Map<string, number>())
+  const availableIds = useRef(new Set<string>())
+  const firstAvailableLoad = useRef(true)
 
   const load = useCallback(async (target: Section, append = false, quiet = false) => {
     if (!quiet) setLoading(true)
@@ -67,6 +71,37 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
   }, [])
 
   useEffect(() => { void load(section) }, [section, load])
+  useEffect(() => {
+    const currentAvailable = new Set(section === 'available' ? orders.map((order) => order.id) : [])
+    availableIds.current = currentAvailable
+
+    if (firstAvailableLoad.current) {
+      firstAvailableLoad.current = false
+      for (const id of currentAvailable) availableSoundTimes.current.set(id, Date.now())
+      return
+    }
+
+    for (const id of currentAvailable) {
+      if (availableSoundTimes.current.has(id)) continue
+      availableSoundTimes.current.set(id, Date.now())
+      playPushSound()
+    }
+    for (const id of availableSoundTimes.current.keys()) {
+      if (!currentAvailable.has(id)) availableSoundTimes.current.delete(id)
+    }
+  }, [orders, section])
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return
+      const now = Date.now()
+      for (const [id, lastPlayedAt] of availableSoundTimes.current) {
+        if (!availableIds.current.has(id) || now - lastPlayedAt < 5 * 60_000) continue
+        playPushSound()
+        availableSoundTimes.current.set(id, now)
+      }
+    }, 15_000)
+    return () => window.clearInterval(interval)
+  }, [])
   useEffect(() => {
     if (section === 'history') return
     const timer = window.setInterval(() => {

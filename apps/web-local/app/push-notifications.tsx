@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { app, vapidKey } from '@/lib/firebase/config'
-import { enablePushSound, playPushSound } from '@/lib/push/sound'
+import { enablePushSound } from '@/lib/push/sound'
 
 type State = 'checking' | 'ready' | 'asking' | 'active' | 'denied' | 'unsupported' | 'error'
 
@@ -53,7 +53,6 @@ export default function PushNotifications() {
     let unsubscribe: (() => void) | undefined
     void import('firebase/messaging').then(async ({ getMessaging, isSupported, onMessage }) => {
       if (await isSupported()) unsubscribe = onMessage(getMessaging(app), (payload) => {
-        playPushSound()
         setMessage(`${payload.notification?.title ?? 'FOODXPRES'}: ${payload.notification?.body ?? 'Tienes una actualización.'}`)
         window.setTimeout(() => setMessage(''), 8000)
       })

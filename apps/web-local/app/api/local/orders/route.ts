@@ -17,6 +17,7 @@ export async function GET() {
              p.codigo AS pedido_codigo, p.total AS pedido_total, p.notas AS notas_pedido,
              CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.nombre ELSE u.nombre END AS cliente_nombre,
              CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN COALESCE(sp.direccion_snapshot->>'celular', r.celular) ELSE u.celular END AS cliente_celular,
+             (SELECT COUNT(*)::int FROM pedidos cliente_pedidos WHERE cliente_pedidos.usuario_id = p.usuario_id) AS cliente_pedidos_total,
              d.nombre AS driver_nombre, d.celular AS driver_celular,
              p.vip, p.costo_vip,
              (p.usuario_id = ${staff.id} AND sp.direccion_snapshot->>'etiqueta' = 'Autopedido') AS autopedido_propio

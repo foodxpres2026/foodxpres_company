@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LocalUser } from '@/lib/auth'
+import { playPushSound } from '@/lib/push/sound'
 import AutopedidosPanel from './autopedidos-panel'
 import PushNotifications from './push-notifications'
 
@@ -15,7 +16,7 @@ type Order = {
   notas_local: string | null; notas_pedido: string | null; motivo_rechazo: string | null
   creado_en: string; aceptado_en: string | null; listo_en: string | null; entregado_en: string | null; entrega_cerrada_local_en: string | null
   direccion_snapshot: { direccion?: string; referencia?: string; etiqueta?: string } | null
-  pedido_codigo: string; pedido_total: number | string; cliente_nombre: string; cliente_celular: string
+  pedido_codigo: string; pedido_total: number | string; cliente_nombre: string; cliente_celular: string; cliente_pedidos_total: number
   driver_nombre: string | null; driver_celular: string | null
   autopedido_propio: boolean
   items: OrderItem[]
@@ -61,6 +62,9 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
   const [showCommissionBalance, setShowCommissionBalance] = useState(false)
   const [sharedLocation, setSharedLocation] = useState<SharedLocation | null>(null)
   const [sharedLocationError, setSharedLocationError] = useState(false)
+  const pendingSoundTimes = useRef(new Map<string, number>())
+  const pendingIds = useRef(new Set<string>())
+  const firstOrdersLoad = useRef(true)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -98,6 +102,37 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
   }, [])
 
   useEffect(() => { void load() }, [load])
+  useEffect(() => {
+    const currentPending = new Set(orders.filter((order) => order.estado === 'PENDIENTE').map((order) => order.id))
+    pendingIds.current = currentPending
+
+    if (firstOrdersLoad.current) {
+      firstOrdersLoad.current = false
+      for (const id of currentPending) pendingSoundTimes.current.set(id, Date.now())
+      return
+    }
+
+    for (const id of currentPending) {
+      if (pendingSoundTimes.current.has(id)) continue
+      pendingSoundTimes.current.set(id, Date.now())
+      playPushSound()
+    }
+    for (const id of pendingSoundTimes.current.keys()) {
+      if (!currentPending.has(id)) pendingSoundTimes.current.delete(id)
+    }
+  }, [orders])
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return
+      const now = Date.now()
+      for (const [id, lastPlayedAt] of pendingSoundTimes.current) {
+        if (!pendingIds.current.has(id) || now - lastPlayedAt < 5 * 60_000) continue
+        playPushSound()
+        pendingSoundTimes.current.set(id, now)
+      }
+    }, 15_000)
+    return () => window.clearInterval(interval)
+  }, [])
   useEffect(() => { void loadCommissionBalance() }, [loadCommissionBalance])
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -194,6 +229,7 @@ function LocalOrderCard({ order, busy, onAccept, onReject, onReady, onConfirm }:
   return <article className={`local-order-card ${isAutopedido ? 'autopedido-card' : 'normal-order-card'}`}>
     <div className="local-order-card-head"><div><span className="local-order-code">#{order.pedido_codigo}</span><span className={`local-state ${order.estado.toLowerCase()}`}>{stateLabel[order.estado] ?? order.estado}</span></div><time>{timeAgo(order.creado_en)}</time></div>
     <div className="local-order-kind">{isAutopedido ? 'AUTOPEDIDO' : `Cliente · ${order.cliente_nombre}`}</div>
+    {!isAutopedido && <div className="local-customer-history"><span>{order.cliente_pedidos_total} {order.cliente_pedidos_total === 1 ? 'pedido' : 'pedidos'} en FOODXPRES</span>{order.cliente_pedidos_total === 1 && <strong>Cliente nuevo</strong>}</div>}
     {!isAutopedido && order.tiempo_estimado != null && <p className="local-order-prep-time">Preparación estimada · {order.tiempo_estimado} min</p>}
     {isAutopedido ? <div className="local-order-customer-info"><a href={`tel:${order.cliente_celular}`}>☎ {order.cliente_celular || 'Sin celular'}</a><span>📍 {order.direccion_snapshot?.direccion || 'Dirección no disponible'}</span>{order.direccion_snapshot?.referencia && <small>Ref.: {order.direccion_snapshot.referencia}</small>}</div> : <div className="local-order-items">{order.items.length ? order.items.map((item) => <div className="local-order-item" key={item.id}>
       <div className="local-order-item-line"><strong><b>{item.cantidad} ×</b> {item.nombre_snapshot}</strong><strong>{money(item.subtotal)}</strong></div>
