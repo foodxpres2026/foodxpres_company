@@ -46,45 +46,42 @@ export default function EstadoTimeline({
 
   return (
     <div>
-      <div className="mb-2 flex justify-between" aria-hidden="true">
+      <div className="mb-2 grid grid-cols-5" aria-hidden="true">
         {PASOS.map((paso, i) => (
-          <span key={paso.key} className={`flex h-10 w-10 items-center justify-center rounded-xl text-[26px] transition-all sm:h-12 sm:w-12 sm:text-3xl ${i < indexActual ? 'opacity-100' : i === indexActual ? 'order-step-icon-current' : 'opacity-60 grayscale-[35%]'}`}>
+          <span key={paso.key} className={`flex h-10 items-center justify-center text-[26px] transition-all sm:h-12 sm:text-3xl ${i < indexActual ? 'opacity-100' : i === indexActual ? 'order-step-icon-current' : 'opacity-60 grayscale-[35%]'}`}>
             {paso.icon}
           </span>
         ))}
       </div>
       {/* Barra de progreso */}
-      <div className="flex items-center gap-1">
-        {PASOS.map((paso, i) => {
-          const completado = i <= indexActual
-          const esActual = i === indexActual
+      <div className="relative">
+        <div className="absolute left-[10%] right-[10%] top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-gray-700" />
+        <div
+          className="absolute left-[10%] top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-brand transition-all duration-500"
+          style={{ width: `${(indexActual / (PASOS.length - 1)) * 80}%` }}
+        />
+        <div className="relative z-10 grid grid-cols-5 items-center">
+          {PASOS.map((paso, i) => {
+            const completado = i <= indexActual
+            const esActual = i === indexActual
 
-          return (
-            <div key={paso.key} className="flex items-center flex-1">
-              {/* Punto */}
-              <div
-                className={`rounded-full flex-shrink-0 transition-all ${
-                  compact ? 'w-2 h-2' : 'w-3 h-3'
-                } ${
-                  completado
-                    ? esActual
-                      ? 'bg-brand ring-4 ring-brand/20'
-                      : 'bg-brand'
-                    : 'bg-gray-700'
-                }`}
-              />
-
-              {/* Línea conectora */}
-              {i < PASOS.length - 1 && (
+            return (
+              <div key={paso.key} className="flex h-3 items-center justify-center">
                 <div
-                  className={`flex-1 h-0.5 mx-1 transition-colors ${
-                    i < indexActual ? 'bg-brand' : 'bg-gray-700'
+                  className={`rounded-full flex-shrink-0 transition-all ${
+                    compact ? 'w-2 h-2' : 'w-3 h-3'
+                  } ${
+                    completado
+                      ? esActual
+                        ? 'bg-brand ring-4 ring-brand/20'
+                        : 'bg-brand'
+                      : 'bg-gray-700'
                   }`}
                 />
-              )}
-            </div>
-          )
-        })}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* Etiquetas de todas las etapas */}
