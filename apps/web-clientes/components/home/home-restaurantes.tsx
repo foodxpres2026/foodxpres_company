@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import CategoriasChips from './categorias-chips'
 import {
   RestauranteHero,
   RestauranteGrid,
@@ -15,7 +15,8 @@ interface Props {
   abiertos: RestauranteCardData[]
   masPedidos: RestauranteCardData[]
   todos: RestauranteCardData[]
-  categoriaActiva?: string
+  categorias: { id: string; slug: string; nombre: string; emoji: string | null }[]
+  categoriaInicial: string | null
   direccionDeBD: DireccionLocal | null
 }
 
@@ -23,20 +24,42 @@ export default function HomeRestaurantes({
   abiertos,
   masPedidos,
   todos,
-  categoriaActiva,
+  categorias,
+  categoriaInicial,
   direccionDeBD,
 }: Props) {
   const [limiteLocales, setLimiteLocales] = useState(10)
+  const [categoriaActiva, setCategoriaActiva] = useState<string | null>(categoriaInicial)
   const direccionActual = useDireccionActual(direccionDeBD)
 
   useEffect(() => {
     setLimiteLocales(10)
   }, [categoriaActiva, todos.length])
 
+  function seleccionarCategoria(slug: string | null) {
+    setCategoriaActiva(slug)
+    setLimiteLocales(10)
+    window.history.replaceState(
+      null,
+      '',
+      slug ? `/?categoria=${encodeURIComponent(slug)}` : '/'
+    )
+  }
+
+  const localesFiltrados = categoriaActiva
+    ? todos.filter((r) => r.categorias?.some((categoria) => categoria.slug === categoriaActiva))
+    : todos
+  const abiertosVisibles = categoriaActiva
+    ? localesFiltrados.filter((r) => r.abierto)
+    : abiertos
+  const masPedidosVisibles = categoriaActiva
+    ? abiertosVisibles.slice(2, 6)
+    : masPedidos
+
   // Juntar TODOS los ids únicos para calcular envíos de una sola vez
   const todosLosIds = [
     ...new Set(
-      [...abiertos, ...masPedidos, ...todos].map((r) => r.id)
+      [...abiertosVisibles, ...masPedidosVisibles, ...localesFiltrados].map((r) => r.id)
     ),
   ]
 
@@ -56,15 +79,41 @@ export default function HomeRestaurantes({
     }
   }
 
-  const abiertosDec = abiertos.map(decorar)
-  const masPedidosDec = masPedidos.map(decorar)
-  const todosDec = todos.map(decorar)
+  const abiertosDec = abiertosVisibles.map(decorar)
+  const masPedidosDec = masPedidosVisibles.map(decorar)
+  const todosDec = localesFiltrados.map(decorar)
 
   // Si no hay dirección, mostrar aviso
   const sinDireccion = !direccionActual
 
   return (
     <>
+      <section className="mb-3">
+        <h2 className="text-base font-bold text-white mb-3">
+          ¿Qué se te antoja? 🤔
+        </h2>
+      </section>
+
+      <div className="sticky top-[57px] z-30 -mx-4 px-4 py-2 mb-6 bg-surface-dark/95 backdrop-blur-lg border-b border-line">
+        <CategoriasChips
+          categorias={categorias}
+          activa={categoriaActiva}
+          onSeleccionar={seleccionarCategoria}
+        />
+      </div>
+
+      {categoriaActiva && (
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => seleccionarCategoria(null)}
+            className="text-xs text-brand hover:underline"
+          >
+            ← Quitar filtro
+          </button>
+        </div>
+      )}
+
       {/* AVISO SIN DIRECCIÓN */}
       {sinDireccion && (
         <button
@@ -85,7 +134,7 @@ export default function HomeRestaurantes({
       )}
 
       {/* SECCIÓN 1: ABIERTO AHORA */}
-      {abiertosDec.length > 0 && (
+      {!categoriaActiva && abiertosDec.length > 0 && (
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -110,7 +159,7 @@ export default function HomeRestaurantes({
       )}
 
       {/* SECCIÓN 2: MÁS PEDIDOS */}
-      {masPedidosDec.length > 0 && (
+      {!categoriaActiva && masPedidosDec.length > 0 && (
         <section className="mb-8">
           <h2 className="text-base font-bold text-white mb-3 flex items-center gap-2">
             🔥 Los más pedidos hoy
@@ -179,12 +228,13 @@ export default function HomeRestaurantes({
               : 'No hay restaurantes disponibles'}
           </p>
           {categoriaActiva && (
-            <Link
-              href="/"
+            <button
+              type="button"
+              onClick={() => seleccionarCategoria(null)}
               className="text-brand hover:underline text-sm mt-3 inline-block"
             >
               Ver todos →
-            </Link>
+            </button>
           )}
         </div>
       )}

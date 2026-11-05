@@ -12,7 +12,7 @@ export interface RestauranteCardData {
   tiempo_estimado: string | null
   monto_minimo: string
   abierto: boolean
-  categorias?: { id: string; nombre: string; emoji: string | null }[]
+  categorias?: { id: string; slug?: string; nombre: string; emoji: string | null }[]
   // Envío (calculado dinámicamente)
   envio_costo?: number | null
   envio_km?: number | null

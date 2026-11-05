@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Categoria {
   id: string
@@ -12,12 +11,13 @@ interface Categoria {
 
 export default function CategoriasChips({
   categorias,
+  activa,
+  onSeleccionar,
 }: {
   categorias: Categoria[]
+  activa: string | null
+  onSeleccionar: (slug: string | null) => void
 }) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const activa = searchParams.get('categoria')
   const stripRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef({ pointerId: -1, startX: 0, scrollLeft: 0, moved: false })
 
@@ -54,11 +54,7 @@ export default function CategoriasChips({
   }
 
   function seleccionar(slug: string | null) {
-    if (!slug) {
-      router.push('/')
-    } else {
-      router.push(`/?categoria=${slug}`)
-    }
+    onSeleccionar(slug)
   }
 
   return (
@@ -74,6 +70,7 @@ export default function CategoriasChips({
       {/* Chip "Todos" */}
       <button
         type="button"
+        aria-pressed={!activa}
         onClick={() => seleccionar(null)}
         className={`flex flex-col items-center gap-2 min-w-[72px] flex-shrink-0 transition-opacity ${
           !activa ? 'opacity-100' : 'opacity-60 hover:opacity-100'
@@ -103,6 +100,7 @@ export default function CategoriasChips({
           <button
             key={cat.id}
             type="button"
+            aria-pressed={isActive}
             onClick={() => seleccionar(cat.slug)}
             className={`flex flex-col items-center gap-2 min-w-[72px] flex-shrink-0 transition-opacity ${
               isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100'

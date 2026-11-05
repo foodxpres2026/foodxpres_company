@@ -4,7 +4,6 @@ import Header from '@/components/layout/header'
 import BottomNav from '@/components/layout/bottom-nav'
 import FondoDecorativo from '@/components/home/fondo-decorativo'
 import PromoCarousel from '@/components/home/promo-carousel'
-import CategoriasChips from '@/components/home/categorias-chips'
 import HomeRestaurantes from '@/components/home/home-restaurantes'
 import { estaAbierto, type HorarioDia } from '@/lib/horarios/esta-abierto'
 import { SkeletonRestaurante } from '@/components/ui/skeleton'
@@ -12,7 +11,7 @@ import { Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
 
-async function getData(categoriaSlug?: string) {
+async function getData() {
   const restaurantesRows = (await sql`
     SELECT 
       r.id, r.slug, r.nombre, r.subtitulo, r.banner_url, r.logo_url,
@@ -20,7 +19,7 @@ async function getData(categoriaSlug?: string) {
       r.activo, r.creado_en, r.orden_inicio,
       COALESCE((
         SELECT json_agg(
-          jsonb_build_object('id', c.id, 'nombre', c.nombre, 'emoji', c.emoji)
+          jsonb_build_object('id', c.id, 'slug', c.slug, 'nombre', c.nombre, 'emoji', c.emoji)
           ORDER BY c.orden, c.nombre
         )
         FROM restaurantes_categorias rc
@@ -40,15 +39,6 @@ async function getData(categoriaSlug?: string) {
     FROM restaurantes r
     LEFT JOIN horarios_atencion h ON h.restaurante_id = r.id
     WHERE r.activo = TRUE
-      ${
-        categoriaSlug
-          ? sql`AND EXISTS (
-              SELECT 1 FROM restaurantes_categorias rc2
-              INNER JOIN categorias c2 ON c2.id = rc2.categoria_id
-              WHERE rc2.restaurante_id = r.id AND c2.slug = ${categoriaSlug}
-            )`
-          : sql``
-      }
     GROUP BY r.id
     ORDER BY r.orden_inicio ASC, r.creado_en DESC
   `) as any[]
@@ -92,7 +82,7 @@ export default async function HomePage({
   const categoriaActiva = params.categoria
 
   const user = await getSessionUser()
-  const { restaurantes, categorias, promos } = await getData(categoriaActiva)
+  const { restaurantes, categorias, promos } = await getData()
 
   let direccionDeBD = null
   if (user) {
@@ -118,27 +108,6 @@ export default async function HomePage({
           <PromoCarousel promos={promos as any[]} />
         </section>
 
-        <section className="mb-3">
-          <h2 className="text-base font-bold text-white mb-3">
-            ¿Qué se te antoja? 🤔
-          </h2>
-        </section>
-
-        <div className="sticky top-[57px] z-30 -mx-4 px-4 py-2 mb-6 bg-surface-dark/95 backdrop-blur-lg border-b border-line">
-          <CategoriasChips categorias={categorias as any[]} />
-        </div>
-
-        {categoriaActiva && (
-          <div className="mb-4">
-            <a
-              href="/"
-              className="text-xs text-brand hover:underline inline-flex items-center gap-1"
-            >
-              ← Quitar filtro
-            </a>
-          </div>
-        )}
-
         <Suspense
           fallback={
             <div className="space-y-8">
@@ -157,7 +126,8 @@ export default async function HomePage({
             abiertos={abiertos as any[]}
             masPedidos={masPedidos as any[]}
             todos={restaurantes as any[]}
-            categoriaActiva={categoriaActiva}
+            categorias={categorias as any[]}
+            categoriaInicial={categoriaActiva ?? null}
             direccionDeBD={direccionDeBD}
           />
         </Suspense>
