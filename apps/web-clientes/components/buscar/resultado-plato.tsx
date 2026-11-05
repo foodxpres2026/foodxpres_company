@@ -16,7 +16,7 @@ interface Plato {
 export default function ResultadoPlato({ plato }: { plato: Plato }) {
   return (
     <Link
-      href={`/restaurante/${plato.restaurante_slug}`}
+      href={`/restaurante/${plato.restaurante_slug}#plato-${plato.id}`}
       className="flex gap-3 p-3 bg-surface border border-line rounded-xl hover:border-brand/40 transition-colors"
     >
       {/* Imagen */}

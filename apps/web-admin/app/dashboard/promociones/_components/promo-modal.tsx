@@ -17,10 +17,12 @@ export interface PromoFormData {
   activo: boolean
 }
 
-interface Restaurante {
-  id: string
-  slug: string
-  nombre: string
+interface DestinoPromo {
+  restaurante_id: string
+  restaurante_slug: string
+  restaurante_nombre: string
+  plato_id: string | null
+  plato_nombre: string | null
 }
 
 // Opciones especiales del dropdown
@@ -61,8 +63,8 @@ export default function PromoModal({
     initialData ? ({ ...empty(), ...initialData } as PromoFormData) : empty()
   )
   const [error, setError] = useState<string | null>(null)
-  const [restaurantes, setRestaurantes] = useState<Restaurante[]>([])
-  const [loadingRestaurantes, setLoadingRestaurantes] = useState(true)
+  const [destinos, setDestinos] = useState<DestinoPromo[]>([])
+  const [loadingDestinos, setLoadingDestinos] = useState(true)
 
   useEffect(() => {
     if (open) {
@@ -74,27 +76,36 @@ export default function PromoModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialData])
 
-  // Cargar restaurantes para el dropdown
+  // Cargar restaurantes y platos disponibles para los destinos del banner
   useEffect(() => {
     if (!open) return
-    setLoadingRestaurantes(true)
-    fetch('/api/restaurantes')
+    setLoadingDestinos(true)
+    fetch('/api/promociones/destinos')
       .then((r) => r.json())
       .then((data) => {
-        if (data.ok) {
-          setRestaurantes(
-            data.data.map((r: any) => ({
-              id: r.id,
-              slug: r.slug,
-              nombre: r.nombre,
-            }))
-          )
-        }
+        if (data.ok && Array.isArray(data.data)) setDestinos(data.data)
       })
-      .finally(() => setLoadingRestaurantes(false))
+      .finally(() => setLoadingDestinos(false))
   }, [open])
 
   if (!open) return null
+
+  const destinosPorLocal = Array.from(
+    destinos.reduce((grupos, destino) => {
+      const grupo = grupos.get(destino.restaurante_id) ?? {
+        id: destino.restaurante_id,
+        slug: destino.restaurante_slug,
+        nombre: destino.restaurante_nombre,
+        platos: [] as { id: string; nombre: string }[],
+      }
+      if (destino.plato_id && destino.plato_nombre) {
+        grupo.platos.push({ id: destino.plato_id, nombre: destino.plato_nombre })
+      }
+      grupos.set(destino.restaurante_id, grupo)
+      return grupos
+    }, new Map<string, { id: string; slug: string; nombre: string; platos: { id: string; nombre: string }[] }>() )
+      .values()
+  )
 
   function update<K extends keyof PromoFormData>(
     key: K,
@@ -191,24 +202,27 @@ export default function PromoModal({
             <select
               value={form.link_url}
               onChange={(e) => update('link_url', e.target.value)}
-              disabled={loadingRestaurantes}
+              disabled={loadingDestinos}
               className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white focus:outline-none focus:border-brand disabled:opacity-50"
             >
               <option value="">— Selecciona una opción —</option>
 
-              <optgroup label="🏪 Restaurantes">
-                {loadingRestaurantes ? (
+              {loadingDestinos ? (
                   <option disabled>Cargando...</option>
-                ) : restaurantes.length === 0 ? (
-                  <option disabled>No hay restaurantes</option>
-                ) : (
-                  restaurantes.map((r) => (
-                    <option key={r.id} value={`/restaurante/${r.slug}`}>
-                      {r.nombre}
+                ) : destinosPorLocal.length === 0 ? (
+                  <option disabled>No hay locales disponibles</option>
+                ) : destinosPorLocal.map((local) => (
+                  <optgroup key={local.id} label={`🏪 ${local.nombre}`}>
+                    <option value={`/restaurante/${local.slug}`}>
+                      Ver local completo
                     </option>
-                  ))
-                )}
-              </optgroup>
+                    {local.platos.map((plato) => (
+                      <option key={plato.id} value={`/restaurante/${local.slug}#plato-${plato.id}`}>
+                        Plato: {plato.nombre}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
 
               <optgroup label="🔗 Links especiales">
                 {LINK_ESPECIALES.map((l) => (

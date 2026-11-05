@@ -5,12 +5,13 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const q = searchParams.get('q')?.trim() || ''
+    const categoriaSlug = searchParams.get('categoria')?.trim() || ''
 
-    if (q.length < 2) {
+    if (q.length < 2 && !categoriaSlug) {
       return Response.json({ ok: true, data: { restaurantes: [], platos: [] } })
     }
 
-    const term = `%${q}%`
+    const term = q.length >= 2 ? `%${q}%` : null
 
     // ============================================
     // Buscar restaurantes
@@ -33,11 +34,21 @@ export async function GET(req: NextRequest) {
       FROM restaurantes r
       LEFT JOIN horarios_atencion h ON h.restaurante_id = r.id
       WHERE r.activo = TRUE
-        AND (
-          r.nombre ILIKE ${term}
-          OR r.subtitulo ILIKE ${term}
-          OR r.direccion_fisica ILIKE ${term}
-        )
+        ${categoriaSlug ? sql`
+          AND EXISTS (
+            SELECT 1
+            FROM restaurantes_categorias rc
+            INNER JOIN categorias c ON c.id = rc.categoria_id
+            WHERE rc.restaurante_id = r.id AND c.slug = ${categoriaSlug}
+          )
+        ` : sql``}
+        ${term ? sql`
+          AND (
+            r.nombre ILIKE ${term}
+            OR r.subtitulo ILIKE ${term}
+            OR r.direccion_fisica ILIKE ${term}
+          )
+        ` : sql``}
       GROUP BY r.id
       ORDER BY r.nombre ASC
       LIMIT 20
@@ -58,10 +69,20 @@ export async function GET(req: NextRequest) {
       INNER JOIN restaurantes r ON r.id = p.restaurante_id
       WHERE r.activo = TRUE
         AND p.disponible = TRUE
-        AND (
-          p.nombre ILIKE ${term}
-          OR p.descripcion ILIKE ${term}
-        )
+        ${categoriaSlug ? sql`
+          AND EXISTS (
+            SELECT 1
+            FROM restaurantes_categorias rc
+            INNER JOIN categorias c ON c.id = rc.categoria_id
+            WHERE rc.restaurante_id = r.id AND c.slug = ${categoriaSlug}
+          )
+        ` : sql``}
+        ${term ? sql`
+          AND (
+            p.nombre ILIKE ${term}
+            OR p.descripcion ILIKE ${term}
+          )
+        ` : sql``}
       ORDER BY p.nombre ASC
       LIMIT 30
     `) as any[]

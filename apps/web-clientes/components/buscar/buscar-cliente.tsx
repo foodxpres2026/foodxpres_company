@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import ResultadoPlato from './resultado-plato'
 import {
@@ -9,7 +9,6 @@ import {
   type RestauranteCardData,
 } from '@/components/home/restaurante-card'
 import Skeleton, { SkeletonResultado } from '@/components/ui/skeleton'
-import CategoriasChips from '@/components/home/categorias-chips'
 
 interface Categoria {
   id: string
@@ -35,9 +34,9 @@ interface Resultados {
 }
 
 export default function BuscarCliente({ categorias }: { categorias: Categoria[] }) {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const qInicial = searchParams.get('q') || ''
+  const categoriaInicial = searchParams.get('categoria') || null
 
   const [query, setQuery] = useState(qInicial)
   const [resultados, setResultados] = useState<Resultados>({
@@ -46,39 +45,53 @@ export default function BuscarCliente({ categorias }: { categorias: Categoria[] 
   })
   const [loading, setLoading] = useState(false)
   const [busco, setBusco] = useState(false)
+  const [categoriaActiva, setCategoriaActiva] = useState<string | null>(categoriaInicial)
 
   // ============================================
   // Buscar con debounce
   // ============================================
   useEffect(() => {
-    if (query.trim().length < 2) {
+    const texto = query.trim()
+    if (texto.length < 2 && !categoriaActiva) {
       setResultados({ restaurantes: [], platos: [] })
       setBusco(false)
+      setLoading(false)
+      window.history.replaceState(null, '', '/buscar')
       return
     }
 
     setLoading(true)
     setBusco(true)
+    const controller = new AbortController()
 
     const timer = setTimeout(() => {
-      fetch(`/api/buscar?q=${encodeURIComponent(query.trim())}`)
+      const params = new URLSearchParams()
+      if (texto.length >= 2) params.set('q', texto)
+      if (categoriaActiva) params.set('categoria', categoriaActiva)
+
+      fetch(`/api/buscar?${params.toString()}`, { signal: controller.signal })
         .then((r) => r.json())
         .then((data) => {
           if (data.ok) {
             setResultados(data.data)
           }
         })
-        .finally(() => setLoading(false))
+        .catch((error) => {
+          if (error instanceof DOMException && error.name === 'AbortError') return
+          setResultados({ restaurantes: [], platos: [] })
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setLoading(false)
+        })
 
-      // Actualizar URL
-      router.replace(`/buscar?q=${encodeURIComponent(query.trim())}`, {
-        scroll: false,
-      })
+      window.history.replaceState(null, '', `/buscar?${params.toString()}`)
     }, 300)
 
-    return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query])
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [query, categoriaActiva])
 
   const totalResultados =
     resultados.restaurantes.length + resultados.platos.length
@@ -108,25 +121,57 @@ export default function BuscarCliente({ categorias }: { categorias: Categoria[] 
         </div>
       </div>
 
+      <section className="mb-5">
+        <h2 className="text-sm font-bold text-gray-300 mb-3">
+          Explora todas las categorías
+        </h2>
+        <div className="-mx-4 overflow-x-auto px-4 pb-1 scrollbar-hide">
+          <div className="flex w-max gap-2">
+            <button
+              type="button"
+              aria-pressed={!categoriaActiva}
+              onClick={() => setCategoriaActiva(null)}
+              className={`flex min-w-20 flex-col items-center gap-1.5 rounded-xl border px-3 py-2 transition-colors ${
+                !categoriaActiva
+                  ? 'border-brand bg-brand/10 text-brand'
+                  : 'border-line bg-surface text-gray-400 hover:border-brand/40'
+              }`}
+            >
+              <span className="text-xl">🍽️</span>
+              <span className="text-[11px] font-medium">Todos</span>
+            </button>
+            {categorias.map((categoria) => {
+              const activa = categoriaActiva === categoria.slug
+              return (
+                <button
+                  key={categoria.id}
+                  type="button"
+                  aria-pressed={activa}
+                  onClick={() => setCategoriaActiva(activa ? null : categoria.slug)}
+                  className={`flex min-w-20 flex-col items-center gap-1.5 rounded-xl border px-3 py-2 transition-colors ${
+                    activa
+                      ? 'border-brand bg-brand/10 text-brand'
+                      : 'border-line bg-surface text-gray-400 hover:border-brand/40'
+                  }`}
+                >
+                  <span className="text-xl">{categoria.emoji || '🍽️'}</span>
+                  <span className="max-w-24 truncate text-[11px] font-medium">
+                    {categoria.nombre}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ESTADOS */}
 
       {/* Sin búsqueda */}
       {!busco && (
-        <section className="pt-2">
-          <h2 className="text-sm font-bold text-gray-300 mb-4">
-            Explora todas las categorías
-          </h2>
-          {categorias.length > 0 ? (
-            <CategoriasChips categorias={categorias} />
-          ) : (
-            <p className="py-6 text-center text-sm text-gray-500">
-              No hay categorías disponibles por ahora.
-            </p>
-          )}
-          <p className="mt-5 text-center text-xs text-gray-500">
-            Busca restaurantes, platos o productos
-          </p>
-        </section>
+        <p className="py-6 text-center text-sm text-gray-500">
+          Busca restaurantes, platos o productos, o elige una categoría.
+        </p>
       )}
 
       {/* Cargando */}
@@ -147,7 +192,9 @@ export default function BuscarCliente({ categorias }: { categorias: Categoria[] 
             Sin resultados
           </h2>
           <p className="text-sm text-gray-500">
-            No encontramos nada para "{query}"
+            {query.trim().length >= 2
+              ? `No encontramos nada para “${query}”`
+              : `No hay locales ni platos en ${categorias.find((c) => c.slug === categoriaActiva)?.nombre || 'esta categoría'}`}
           </p>
           <Link
             href="/"

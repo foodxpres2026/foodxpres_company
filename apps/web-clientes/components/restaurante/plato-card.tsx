@@ -66,7 +66,8 @@ export default function PlatoCard({ plato, restaurante, onAbrirOpciones }: Props
 
   return (
     <div
-      className={`bg-surface border border-line rounded-2xl overflow-hidden transition-colors ${
+      id={`plato-${plato.id}`}
+      className={`scroll-mt-36 bg-surface border border-line rounded-2xl overflow-hidden transition-colors ${
         plato.disponible ? 'hover:border-brand/40' : 'opacity-60'
       }`}
     >
