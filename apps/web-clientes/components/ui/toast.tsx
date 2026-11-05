@@ -103,23 +103,11 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   )
 }
 
+const addSound = typeof Audio !== 'undefined' ? new Audio('/audio/notification.mp3') : null
+
 function playAddSound() {
-  if (typeof window === 'undefined' || !('AudioContext' in window)) return
-  try {
-    const context = new AudioContext()
-    const oscillator = context.createOscillator()
-    const gain = context.createGain()
-    const start = context.currentTime
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(660, start)
-    oscillator.frequency.setValueAtTime(880, start + 0.09)
-    gain.gain.setValueAtTime(0.0001, start)
-    gain.gain.exponentialRampToValueAtTime(0.055, start + 0.015)
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.22)
-    oscillator.connect(gain)
-    gain.connect(context.destination)
-    oscillator.start(start)
-    oscillator.stop(start + 0.23)
-    oscillator.onended = () => { void context.close() }
-  } catch { /* El sonido es opcional y no debe interrumpir la compra. */ }
+  if (!addSound) return
+  addSound.pause()
+  addSound.currentTime = 0
+  void addSound.play().catch(() => undefined)
 }
