@@ -15,6 +15,9 @@ export const dynamic = 'force-dynamic'
 
 export default async function BuscarPage() {
   const user = await getSessionUser()
+  const categorias = (await sql`
+    SELECT id, slug, nombre, emoji FROM categorias ORDER BY orden, nombre
+  `) as { id: string; slug: string; nombre: string; emoji: string | null }[]
 
   let direccionDeBD = null
   if (user) {
@@ -39,7 +42,7 @@ export default async function BuscarPage() {
             </div>
           }
         >
-          <BuscarCliente />
+          <BuscarCliente categorias={categorias} />
         </Suspense>
       </main>
 

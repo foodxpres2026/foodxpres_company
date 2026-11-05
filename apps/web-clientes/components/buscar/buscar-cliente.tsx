@@ -9,6 +9,14 @@ import {
   type RestauranteCardData,
 } from '@/components/home/restaurante-card'
 import Skeleton, { SkeletonResultado } from '@/components/ui/skeleton'
+import CategoriasChips from '@/components/home/categorias-chips'
+
+interface Categoria {
+  id: string
+  slug: string
+  nombre: string
+  emoji: string | null
+}
 
 interface Plato {
   id: string
@@ -26,7 +34,7 @@ interface Resultados {
   platos: Plato[]
 }
 
-export default function BuscarCliente() {
+export default function BuscarCliente({ categorias }: { categorias: Categoria[] }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const qInicial = searchParams.get('q') || ''
@@ -85,7 +93,6 @@ export default function BuscarCliente() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            autoFocus
             placeholder="Busca locales, platos y productos..."
             className="flex-1 bg-transparent py-3 text-white placeholder-gray-600 focus:outline-none text-sm"
           />
@@ -105,15 +112,21 @@ export default function BuscarCliente() {
 
       {/* Sin búsqueda */}
       {!busco && (
-        <div className="text-center py-16">
-          <p className="text-5xl mb-3">🔍</p>
-          <h2 className="text-lg font-bold text-white mb-1">
-            ¿Qué se te antoja hoy?
+        <section className="pt-2">
+          <h2 className="text-sm font-bold text-gray-300 mb-4">
+            Explora todas las categorías
           </h2>
-          <p className="text-sm text-gray-500">
+          {categorias.length > 0 ? (
+            <CategoriasChips categorias={categorias} />
+          ) : (
+            <p className="py-6 text-center text-sm text-gray-500">
+              No hay categorías disponibles por ahora.
+            </p>
+          )}
+          <p className="mt-5 text-center text-xs text-gray-500">
             Busca restaurantes, platos o productos
           </p>
-        </div>
+        </section>
       )}
 
       {/* Cargando */}

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useState, useEffect, useSyncExternalStore } from 'react'
 import UserMenu from './user-menu'
 import Logo from './logo'
@@ -24,19 +24,13 @@ interface HeaderProps {
     celular: string
   } | null
   direccionDeBD?: DireccionLocal | null
-  categoriasBusqueda?: { id: string; slug: string; nombre: string; emoji: string | null }[]
 }
 
-export default function Header({ user, direccionDeBD, categoriasBusqueda: categoriasIniciales = [] }: HeaderProps) {
-  const router = useRouter()
+export default function Header({ user, direccionDeBD }: HeaderProps) {
   const pathname = usePathname()
-  const [busquedaAbierta, setBusquedaAbierta] = useState(false)
-  const [query, setQuery] = useState('')
   const mounted = useSyncExternalStore(subscribeToMount, getClientMounted, getServerMounted)
   const [modalDireccionOpen, setModalDireccionOpen] = useState(false)
   const [selectorAbierto, setSelectorAbierto] = useState(false)
-  const [categorias, setCategorias] = useState(categoriasIniciales)
-  const [categoriasCargadas, setCategoriasCargadas] = useState(categoriasIniciales.length > 0)
 
   const totalItems = useCarrito((s) => s.totalItems())
   const direccionActual = useDireccionActual(direccionDeBD ?? null)
@@ -50,52 +44,12 @@ export default function Header({ user, direccionDeBD, categoriasBusqueda: catego
     return () => window.removeEventListener(ABRIR_DIRECCION_EVENT, abrirDesdeOtraSeccion)
   }, [user])
 
-  useEffect(() => {
-    if (busquedaAbierta) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [busquedaAbierta])
-
-  useEffect(() => {
-    if (!busquedaAbierta || categoriasCargadas) return
-    let cancelado = false
-    fetch('/api/categorias')
-      .then((response) => response.json())
-      .then((result) => {
-        if (cancelado) return
-        if (result.ok && Array.isArray(result.data)) setCategorias(result.data)
-        setCategoriasCargadas(true)
-      })
-      .catch(() => { if (!cancelado) setCategoriasCargadas(true) })
-    return () => { cancelado = true }
-  }, [busquedaAbierta, categoriasCargadas])
-
-  function handleBuscar(e: React.FormEvent) {
-    e.preventDefault()
-    if (query.trim()) {
-      router.push(`/buscar?q=${encodeURIComponent(query.trim())}`)
-      setBusquedaAbierta(false)
-      setQuery('')
-    }
-  }
-
   function abrirDireccion() {
     if (user) {
       setSelectorAbierto(true)
     } else {
       setModalDireccionOpen(true)
     }
-  }
-
-  function seleccionarCategoria(slug: string) {
-    router.push(`/?categoria=${encodeURIComponent(slug)}`)
-    setBusquedaAbierta(false)
-    setQuery('')
   }
 
   const sinDireccion = mounted && !direccionActual
@@ -108,34 +62,26 @@ export default function Header({ user, direccionDeBD, categoriasBusqueda: catego
         <div className="max-w-6xl mx-auto px-3 md:px-4 py-2.5">
           <div className="flex items-center gap-2 md:gap-3">
             {/* Emblema FOODXPRES para el encabezado compacto */}
-            <div className="flex items-center gap-2 flex-shrink-0" onClick={() => setBusquedaAbierta(false)}>
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Logo size={36} linkeado />
               <span className="text-white font-black tracking-tight text-sm md:text-base whitespace-nowrap">FOODXPRES</span>
             </div>
 
             {/* BÚSQUEDA (desktop) */}
-            <button
-              type="button"
-              onClick={() => setBusquedaAbierta(true)}
-              className="hidden md:flex flex-1 items-center gap-2 px-3.5 py-2 bg-surface border border-line rounded-xl text-gray-500 hover:border-brand/40 transition-colors text-left text-sm min-w-0"
-            >
-              <span className="text-base leading-none">🔍</span>
-              <span className="truncate">¿Qué se te antoja hoy?</span>
-            </button>
+            {pathname !== '/buscar' && (
+              <Link
+                href="/buscar"
+                className="hidden md:flex flex-1 items-center gap-2 px-3.5 py-2 bg-surface border border-line rounded-xl text-gray-500 hover:border-brand/40 transition-colors text-left text-sm min-w-0"
+              >
+                <span className="text-base leading-none">🔍</span>
+                <span className="truncate">¿Qué se te antoja hoy?</span>
+              </Link>
+            )}
 
             <div className="flex-1 md:hidden" />
 
             {/* ACCIONES */}
             <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
-              <button
-                type="button"
-                onClick={() => setBusquedaAbierta(true)}
-                className="md:hidden w-9 h-9 rounded-full bg-surface border border-line flex items-center justify-center hover:border-brand/40 transition-colors text-base"
-                aria-label="Buscar"
-              >
-                🔍
-              </button>
-
               <Link
                 href="/carrito"
                 className="relative w-9 h-9 md:w-10 md:h-10 rounded-full bg-surface border border-line flex items-center justify-center hover:border-brand/40 transition-colors text-base md:text-lg"
@@ -165,7 +111,7 @@ export default function Header({ user, direccionDeBD, categoriasBusqueda: catego
       </header>
 
       {/* Selector de ubicación fuera de la barra fija, también en escritorio */}
-      {pathname !== '/carrito' && (
+      {pathname !== '/carrito' && (!sinDireccion || ocultarDireccionMovil) && (
         <div className="hidden md:block max-w-6xl mx-auto px-4 w-full">
           <button
             type="button"
@@ -221,75 +167,6 @@ export default function Header({ user, direccionDeBD, categoriasBusqueda: catego
             <span className="text-brand text-xs font-bold">Cambiar</span>
           </div>
         </button>
-      )}
-
-      {/* MODAL BÚSQUEDA */}
-      {busquedaAbierta && (
-        <div className="fixed inset-0 z-50 bg-surface-dark flex flex-col">
-          <div className="p-3 md:p-4 border-b border-line">
-            <form
-              onSubmit={handleBuscar}
-              className="max-w-3xl mx-auto flex items-center gap-2 md:gap-3"
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  setBusquedaAbierta(false)
-                  setQuery('')
-                }}
-                className="text-gray-400 hover:text-white text-xl p-1 flex-shrink-0"
-              >
-                ←
-              </button>
-              <div className="flex-1 flex items-center bg-surface border border-brand/40 rounded-xl px-3.5">
-                <span className="text-brand mr-2 text-base leading-none">
-                  🔍
-                </span>
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  autoFocus
-                  placeholder="Busca locales, platos y productos..."
-                  className="flex-1 bg-transparent py-3 text-white placeholder-gray-600 focus:outline-none text-sm"
-                />
-              </div>
-            </form>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4">
-            {query.trim() ? (
-              <p className="text-center text-gray-500 text-sm py-12">
-                Presiona Enter para buscar “{query}”
-              </p>
-            ) : (
-              <section className="max-w-3xl mx-auto">
-                <h2 className="text-sm font-bold text-gray-300 mb-4">Explora todas las categorías</h2>
-                {categorias.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {categorias.map((categoria) => (
-                      <button
-                        key={categoria.id}
-                        type="button"
-                        onClick={() => seleccionarCategoria(categoria.slug)}
-                        className="min-h-16 flex items-center gap-3 p-3 rounded-xl bg-surface border border-line hover:border-brand/50 transition-colors text-left"
-                      >
-                        <span className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-2xl flex-shrink-0">
-                          {categoria.emoji || '🍽️'}
-                        </span>
-                        <span className="text-sm text-white font-medium leading-tight line-clamp-2">{categoria.nombre}</span>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 py-8 text-center">
-                    {categoriasCargadas ? 'No hay categorías disponibles.' : 'Cargando categorías…'}
-                  </p>
-                )}
-              </section>
-            )}
-          </div>
-        </div>
       )}
 
       {/* SELECTOR DE DIRECCIONES (cliente logueado) */}

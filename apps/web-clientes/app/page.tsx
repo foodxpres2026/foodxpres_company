@@ -111,7 +111,7 @@ export default async function HomePage({
   return (
     <>
       <FondoDecorativo />
-      <Header user={user} direccionDeBD={direccionDeBD} categoriasBusqueda={categorias} />
+      <Header user={user} direccionDeBD={direccionDeBD} />
 
       <main className="max-w-6xl mx-auto px-4 py-5 pb-24 md:pb-8">
         <section className="mb-6">
