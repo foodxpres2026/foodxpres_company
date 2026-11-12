@@ -383,6 +383,11 @@ html[data-theme='light'] .local-order-notes, html[data-theme='light'] .local-det
 html[data-theme='light'] .local-nav-item:hover, html[data-theme='light'] .local-nav-item.active { color: #20231d; background: #f0f5e8; }
 html[data-theme='light'] .local-nav-item > span { color: #737b70; }
 html[data-theme='light'] .local-nav-item b, html[data-theme='light'] .local-kanban-head > b { color: #596157; background: #eeeee7; }
+html[data-theme='light'] .local-mobile-tabs { background: #fffdf2; border-bottom-color: #e6e2d5; }
+html[data-theme='light'] .local-mobile-tabs button { color: #687064; }
+html[data-theme='light'] .local-mobile-tabs button span { color: #737b70; }
+html[data-theme='light'] .local-mobile-tabs button.active { color: #4d851e; }
+html[data-theme='light'] .local-mobile-tabs button.active span { color: #4d851e; }
 html[data-theme='light'] .local-order-card, html[data-theme='light'] .local-kanban-column,
 html[data-theme='light'] .local-empty, html[data-theme='light'] .auto-panel, html[data-theme='light'] .auto-summary,
 html[data-theme='light'] .auto-product, html[data-theme='light'] .auto-location-card,
@@ -396,6 +401,9 @@ html[data-theme='light'] .local-order-notes strong, html[data-theme='light'] .lo
 html[data-theme='light'] .local-detail-items > div > strong, html[data-theme='light'] .local-total-line.grand,
 html[data-theme='light'] .auto-panel-heading h2, html[data-theme='light'] .auto-summary h2,
 html[data-theme='light'] .auto-product-head strong { color: #252920; }
+html[data-theme='light'] .local-empty { background: #fffef9; border-color: #d9e6c9; }
+html[data-theme='light'] .local-empty-icon { color: #4d851e; background: #edf5e5; }
+html[data-theme='light'] .local-empty p { color: #687064; }
 html[data-theme='light'] .local-modal-actions { background: #f8f7ef; border-color: #e6e2d5; }
 html[data-theme='light'] .local-modal-head h2 { color: #252920; }
 html[data-theme='light'] .local-order-card-actions .local-order-details-button,
