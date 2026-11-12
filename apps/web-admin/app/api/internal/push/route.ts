@@ -87,8 +87,8 @@ export async function POST(request: Request) {
     })
     if (event === 'DRIVER_DELIVERED') await enviarNotificacion({
       usuarioId: order.cliente_id,
-      titulo: '📦 Pedido marcado como entregado',
-      mensaje: `El driver marcó como entregado tu pedido ${order.pedido_codigo}. Si ya lo recibiste, puedes confirmarlo en el detalle del pedido.`,
+      titulo: '📦 Confirma la recepción de tu pedido',
+      mensaje: `El driver reportó la entrega de tu pedido ${order.pedido_codigo}. Confirma que lo recibiste para cerrar el pedido y liberar al driver.`,
       url: `/pedido/${order.pedido_codigo}`, tag: `pedido-entregado-${order.id}`,
     })
     return Response.json({ ok: true })

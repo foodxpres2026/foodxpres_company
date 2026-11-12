@@ -57,7 +57,7 @@ export async function PATCH(
 
     // Verificar que existe + obtener pedido_id
     const exists = await sql`
-      SELECT id, pedido_id FROM sub_pedidos WHERE id = ${id} LIMIT 1
+      SELECT id, pedido_id, estado, entrega_reportada_en FROM sub_pedidos WHERE id = ${id} LIMIT 1
     `
     if (exists.length === 0) {
       return Response.json(
@@ -67,6 +67,13 @@ export async function PATCH(
     }
 
     const pedidoId = exists[0].pedido_id
+
+    if (estado === 'ENTREGADO' && (exists[0].estado !== 'ENTREGA_PENDIENTE_CONFIRMACION' || !exists[0].entrega_reportada_en)) {
+      return Response.json(
+        { ok: false, error: 'Solo puedes liberar el pedido después de que el driver reporte la entrega.' },
+        { status: 409 }
+      )
+    }
 
     const now = new Date()
 
@@ -181,6 +188,10 @@ export async function PATCH(
     return Response.json({ ok: true })
   } catch (error) {
     console.error('PATCH estado error:', error)
+    const message = error instanceof Error ? error.message : ''
+    if (message.includes('Solo se puede liberar')) {
+      return Response.json({ ok: false, error: message }, { status: 409 })
+    }
     return Response.json(
       { ok: false, error: 'Error al cambiar estado' },
       { status: 500 }

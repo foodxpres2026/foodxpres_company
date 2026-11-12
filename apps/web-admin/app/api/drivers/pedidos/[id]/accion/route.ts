@@ -59,7 +59,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         UPDATE driver_detalles SET disponible = TRUE, actualizado_en = NOW()
         WHERE usuario_id = ${driver.id} AND NOT EXISTS (
           SELECT 1 FROM sub_pedidos WHERE driver_id = ${driver.id}
-            AND estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO')
+            AND estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION')
         )
       `
     }

@@ -67,14 +67,14 @@ export default function PromoCarousel({ promos }: { promos: Promo[] }) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent md:hidden" />
               <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-black/10 to-black/25" />
 
-              <div className={`absolute bottom-0 left-0 right-0 p-5 md:hidden ${i === activo ? 'promo-content-motion' : ''}`}>
+              <div className={`promo-mobile-copy absolute bottom-0 left-0 right-0 p-5 md:hidden ${i === activo ? 'promo-content-motion' : ''}`}>
                 {promo.badge && <span className="text-[10px] bg-brand text-black font-bold px-2.5 py-1 rounded-full inline-flex items-center mb-2">{promo.badge}</span>}
                 <h2 className="text-xl font-black text-white leading-tight">{promo.titulo}</h2>
                 {promo.subtitulo && <p className="text-sm text-gray-200 mt-1 line-clamp-2">{promo.subtitulo}</p>}
               </div>
             </div>
 
-            <div className={`hidden md:flex min-w-0 flex-col justify-between p-5 lg:p-6 bg-gradient-to-br from-[#19252d] via-[#141c21] to-[#101510] ${i === activo ? 'promo-content-motion' : ''}`}>
+            <div className={`promo-copy-panel hidden md:flex min-w-0 flex-col justify-between p-5 lg:p-6 bg-gradient-to-br from-[#19252d] via-[#141c21] to-[#101510] ${i === activo ? 'promo-content-motion' : ''}`}>
               <div>
                 <span className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] font-bold text-brand mb-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-brand" />

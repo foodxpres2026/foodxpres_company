@@ -19,7 +19,7 @@ export default function ConfirmarEntrega({ subPedidoId, yaFinalizado = false }: 
   }
   return <div className="mt-4 rounded-xl border border-brand/30 bg-brand/5 p-4">
     <p className="text-sm font-bold text-white">{yaFinalizado ? '¿Recibiste correctamente este pedido?' : '¿Ya recibiste este pedido?'}</p>
-    <p className="mt-1 text-xs text-gray-400">{yaFinalizado ? 'La entrega ya fue finalizada por el driver. Tu confirmación es opcional y nos ayuda a saber que todo llegó bien.' : 'Confirma solo cuando tengas el pedido. Tu confirmación cerrará el pedido.'}</p>
+    <p className="mt-1 text-xs text-gray-400">{yaFinalizado ? 'Este pedido ya fue cerrado. Si lo recibiste, confirma para dejar constancia de la recepción.' : 'Confirma cuando tengas el pedido. Tu confirmación cerrará la entrega y permitirá que el driver continúe con otros pedidos.'}</p>
     {error && <p role="alert" className="mt-2 text-xs text-danger">{error}</p>}
     <button type="button" onClick={() => void confirm()} disabled={busy} className="mt-3 rounded-lg bg-brand px-4 py-2.5 text-sm font-bold text-black disabled:opacity-50">{busy ? 'Guardando…' : yaFinalizado ? 'Sí, recibí el pedido' : 'Sí, recibí mi pedido'}</button>
   </div>

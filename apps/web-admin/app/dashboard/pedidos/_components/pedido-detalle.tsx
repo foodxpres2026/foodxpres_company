@@ -64,7 +64,7 @@ const ESTADOS_SIGUIENTES: Record<string, string[]> = {
   PREPARANDO: ['LISTO', 'CANCELADO'], // legacy
   LISTO: ['EN_CAMINO', 'CANCELADO'],
   ASIGNADO: ['EN_CAMINO', 'CANCELADO'], // legacy
-  EN_CAMINO: ['ENTREGADO', 'CANCELADO'],
+  EN_CAMINO: ['CANCELADO'],
   ENTREGA_PENDIENTE_CONFIRMACION: ['ENTREGADO', 'CANCELADO'],
   ENTREGADO: [],
   RECHAZADO: [],
@@ -97,6 +97,7 @@ export default function PedidoDetalle({
 
   async function cambiarEstado(nuevoEstado: string) {
     let notas: string | null = null
+    if (nuevoEstado === 'ENTREGADO' && !window.confirm('¿Confirmas que el cliente recibió el pedido y quieres liberar al driver?')) return
     if (nuevoEstado === 'CANCELADO' || nuevoEstado === 'RECHAZADO') {
       notas = prompt(`Motivo de ${nuevoEstado.toLowerCase()}:`)
       if (notas === null) return // canceló el prompt
@@ -302,7 +303,7 @@ export default function PedidoDetalle({
                       : 'bg-brand hover:bg-brand-dark text-black disabled:bg-brand/40'
                   }`}
                 >
-                  {ESTADO_LABELS[est]}
+                  {est === 'ENTREGADO' ? 'Liberar pedido' : ESTADO_LABELS[est]}
                 </button>
               )
             })}

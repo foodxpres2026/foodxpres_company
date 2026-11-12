@@ -9,8 +9,12 @@ async function getRestaurantes() {
   `) as { id: string; nombre: string }[]
 }
 
+async function getDrivers() {
+  return (await sql`SELECT id, nombre FROM usuarios WHERE role = 'DRIVER' ORDER BY nombre`) as { id: string; nombre: string }[]
+}
+
 export default async function PedidosPage() {
-  const restaurantes = (await getRestaurantes()) as { id: string; nombre: string }[]
+  const [restaurantes, drivers] = await Promise.all([getRestaurantes(), getDrivers()])
   
   return (
     <div className="p-5 md:p-8 bg-surface-dark min-h-full">
@@ -21,7 +25,7 @@ export default async function PedidosPage() {
         </p>
       </div>
 
-      <PedidosKanban restaurantes={restaurantes} />
+      <PedidosKanban restaurantes={restaurantes} drivers={drivers} />
     </div>
   )
 }

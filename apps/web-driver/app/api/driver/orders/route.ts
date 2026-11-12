@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
                CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN COALESCE(sp.direccion_snapshot->>'celular', u.celular) ELSE u.celular END AS cliente_celular
         FROM sub_pedidos sp INNER JOIN pedidos p ON p.id = sp.pedido_id
         INNER JOIN restaurantes r ON r.id = sp.restaurante_id INNER JOIN usuarios u ON u.id = p.usuario_id
-        WHERE sp.driver_id = ${driver.id} AND sp.estado IN ('ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO', 'CANCELADO', 'RECHAZADO')
+        WHERE sp.driver_id = ${driver.id} AND sp.estado IN ('ENTREGADO', 'CANCELADO', 'RECHAZADO')
         ORDER BY COALESCE(sp.entregado_en, sp.creado_en) DESC LIMIT ${PAGE_SIZE + 1} OFFSET ${offset}
       ` as any[]
     }

@@ -15,6 +15,23 @@ export async function GET(request: NextRequest) {
   const user = await getSessionUser()
   if (!user || user.role !== 'ADMIN') return Response.json({ ok: false, error: 'No autorizado' }, { status: 401 })
   const codigoPedido = request.nextUrl.searchParams.get('codigo')?.trim() ?? ''
+  const beneficiarioTipoRaw = request.nextUrl.searchParams.get('beneficiario_tipo')
+  const beneficiarioTipo = beneficiarioTipoRaw && ['LOCAL', 'DRIVER'].includes(beneficiarioTipoRaw) ? beneficiarioTipoRaw : null
+  const beneficiarioIdRaw = request.nextUrl.searchParams.get('beneficiario_id')
+  const beneficiarioId = beneficiarioIdRaw && /^[0-9a-f-]{36}$/i.test(beneficiarioIdRaw) ? beneficiarioIdRaw : null
+  const desdeRaw = request.nextUrl.searchParams.get('desde') ?? ''
+  const hastaRaw = request.nextUrl.searchParams.get('hasta') ?? ''
+  const fechaValida = (value: string) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+    const parsed = new Date(`${value}T00:00:00Z`)
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
+  }
+  const desde = fechaValida(desdeRaw) ? desdeRaw : null
+  const hasta = fechaValida(hastaRaw) ? hastaRaw : null
+  if (beneficiarioTipoRaw && !beneficiarioTipo) return Response.json({ ok: false, error: 'Tipo de beneficiario inválido' }, { status: 400 })
+  if (beneficiarioIdRaw && !beneficiarioId) return Response.json({ ok: false, error: 'Beneficiario inválido' }, { status: 400 })
+  if ((desdeRaw && !desde) || (hastaRaw && !hasta) || (desde && hasta && desde > hasta)) return Response.json({ ok: false, error: 'Rango de fechas inválido' }, { status: 400 })
+  const cargosFiltrados = Boolean(codigoPedido || beneficiarioTipo || beneficiarioId || desde || hasta)
   try {
     const [restaurants, drivers, rules, localRules, charges] = await Promise.all([
       sql`
@@ -58,7 +75,11 @@ export async function GET(request: NextRequest) {
         LEFT JOIN restaurantes r ON cg.beneficiario_tipo = 'LOCAL' AND r.id = cg.beneficiario_id
         LEFT JOIN usuarios d ON cg.beneficiario_tipo = 'DRIVER' AND d.id = cg.beneficiario_id
         WHERE p.codigo ILIKE ${`%${codigoPedido}%`}
-        ORDER BY cg.creado_en DESC LIMIT 100
+          AND (${beneficiarioTipo}::text IS NULL OR cg.beneficiario_tipo = ${beneficiarioTipo})
+          AND (${beneficiarioId}::uuid IS NULL OR cg.beneficiario_id = ${beneficiarioId}::uuid)
+          AND (${desde}::date IS NULL OR cg.creado_en >= (${desde}::date::timestamp AT TIME ZONE 'America/Lima'))
+          AND (${hasta}::date IS NULL OR cg.creado_en < ((${hasta}::date + INTERVAL '1 day')::timestamp AT TIME ZONE 'America/Lima'))
+        ORDER BY cg.creado_en DESC LIMIT ${cargosFiltrados ? 100 : 5}
       `,
     ])
     return Response.json({ ok: true, data: { restaurants, drivers, driverRules: rules, localRules, charges } }, { headers: { 'Cache-Control': 'no-store' } })

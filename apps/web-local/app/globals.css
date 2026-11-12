@@ -1,4 +1,4 @@
-:root { color-scheme: dark; --bg: #0a0a0a; --panel: #151515; --line: #2a2a2a; --muted: #718096; --green: #7ed321; --green-hover: #6bb81a; --danger: #ef4444; }
+:root { color-scheme: dark; --bg: #0a0a0a; --panel: #151515; --line: #2a2a2a; --muted: #718096; --text: #fff; --input-bg: #0a0c0a; --input-text: #edf2e9; --green: #7ed321; --green-hover: #6bb81a; --danger: #ef4444; }
 * { box-sizing: border-box; }
 html, body { min-height: 100%; }
 body { margin: 0; background: var(--bg); color: #fff; font-family: Arial, Helvetica, sans-serif; }
@@ -359,7 +359,7 @@ button, input { font: inherit; }
 .local-theme-toggle:hover { color: var(--green); border-color: var(--green); }
 
 /* Tema claro cálido: conserva el verde FOODXPRES como color de acción */
-html[data-theme='light'] { color-scheme: light; --bg: #fffdf2; --panel: #ffffff; --line: #e6e2d5; }
+html[data-theme='light'] { color-scheme: light; --bg: #fffdf2; --panel: #ffffff; --line: #e6e2d5; --muted: #687064; --text: #20231d; --input-bg: #fff; --input-text: #20231d; }
 html[data-theme='light'] body { color: #20231d; background: var(--bg); }
 html[data-theme='light'] .local-shell { color: #20231d; background: var(--bg); }
 html[data-theme='light'] .local-topbar, html[data-theme='light'] .local-sidebar { background: #fff; border-color: #e6e2d5; }
@@ -367,6 +367,8 @@ html[data-theme='light'] .local-brand, html[data-theme='light'] .local-page-head
 html[data-theme='light'] .local-customer strong, html[data-theme='light'] .local-order-kind,
 html[data-theme='light'] .local-kanban-head h2, html[data-theme='light'] .local-empty h2 { color: #20231d; }
 html[data-theme='light'] .local-brand-mark { background: #fffdf2; }
+html[data-theme='light'] .local-brand-mark { background: #7ed321; }
+html[data-theme='light'] .local-brand-mark img { mix-blend-mode: screen; }
 html[data-theme='light'] .local-brand small, html[data-theme='light'] .local-top-profile, html[data-theme='light'] .local-top-profile .local-top-name,
 html[data-theme='light'] .local-profile span, html[data-theme='light'] .local-nav-item, html[data-theme='light'] .local-page-heading p:last-child,
 html[data-theme='light'] .local-list-meta, html[data-theme='light'] .local-customer span, html[data-theme='light'] .local-order-preview,
@@ -408,6 +410,34 @@ html[data-theme='light'] .local-order-amount.delivery-pay { background: #f2f7eb;
 html[data-theme='light'] .local-ticket-row button { color: #477d20; background: #f2f7eb; border-color: #d5e5c8; }
 html[data-theme='light'] .local-customer-history strong { color: #477d20; background: #edf5e5; }
 html[data-theme='light'] .auto-product-head b, html[data-theme='light'] .auto-qty b { color: #252920; }
+html[data-theme='light'] .auto-panel-heading p, html[data-theme='light'] .auto-summary-local,
+html[data-theme='light'] .auto-product-head small, html[data-theme='light'] .auto-options legend small,
+html[data-theme='light'] .auto-location-card > p, html[data-theme='light'] .auto-summary-items > small,
+html[data-theme='light'] .auto-vip small, html[data-theme='light'] .auto-hint,
+html[data-theme='light'] .auto-coordinate, html[data-theme='light'] .auto-location-help,
+html[data-theme='light'] .auto-empty { color: #687064; }
+html[data-theme='light'] .auto-options, html[data-theme='light'] .auto-summary-items { border-color: #e3e0d5; }
+html[data-theme='light'] .auto-options legend, html[data-theme='light'] .auto-options label,
+html[data-theme='light'] .auto-notes, html[data-theme='light'] .auto-summary-items > div,
+html[data-theme='light'] .auto-total { color: #535b4f; }
+html[data-theme='light'] .auto-options legend em, html[data-theme='light'] .auto-product-head span,
+html[data-theme='light'] .auto-shipping { color: #4d851e !important; }
+html[data-theme='light'] .auto-location-card h3, html[data-theme='light'] .auto-summary-items > div strong,
+html[data-theme='light'] .auto-total strong, html[data-theme='light'] .auto-total.grand { color: #252920; }
+html[data-theme='light'] .auto-location-card h3 { color: #252920; }
+html[data-theme='light'] .auto-vip { background: #f1f7e9; border-color: #d9e7cb; }
+html[data-theme='light'] .auto-vip b { color: #36442d; }
+html[data-theme='light'] .auto-vip small { color: #68765f; }
+html[data-theme='light'] .auto-notes textarea { color: #20231d; background: #fff; border-color: #dedbcf; }
+html[data-theme='light'] .auto-actions a:not(.local-primary-button) { color: #3d6e20; }
+html[data-theme='light'] .auto-summary-items { border-bottom-color: #e3e0d5; }
+html[data-theme='light'] .auto-total.grand { border-top-color: #e3e0d5; }
+html[data-theme='light'] .auto-fields input { color: var(--input-text) !important; background: var(--input-bg) !important; border-color: #dedbcf !important; }
+html[data-theme='light'] .local-modal-head { border-color: #e6e2d5; }
+html[data-theme='light'] .local-order-card-actions .local-order-details-button:hover,
+html[data-theme='light'] .local-refresh:hover,
+html[data-theme='light'] .local-top-profile button:hover { background: #eeeee5; }
+html[data-theme='light'] .local-customer a { color: #477d20; }
 html[data-theme='light'] .field label, html[data-theme='light'] .footer { color: #687064; }
 html[data-theme='light'] .field input { color: #20231d; background: #fff; border-color: #dedbcf; }
 html[data-theme='light'] .success strong, html[data-theme='light'] .logout { color: #20231d; }

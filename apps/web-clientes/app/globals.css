@@ -43,12 +43,26 @@ html[data-theme='light'] {
 }
 
 html[data-theme='light'] body { color: #191b16; }
-html[data-theme='light'] .text-white { color: #191b16; }
+html[data-theme='light'] .bg-surface .text-white,
+html[data-theme='light'] .bg-surface-dark .text-white,
+html[data-theme='light'] .bg-surface-light .text-white { color: #191b16; }
 html[data-theme='light'] .text-gray-300 { color: #454b43; }
 html[data-theme='light'] .text-gray-400 { color: #596157; }
 html[data-theme='light'] .text-gray-500 { color: #697266; }
 html[data-theme='light'] .text-gray-600 { color: #737b70; }
 html[data-theme='light'] .theme-toggle-client { color: #22271e; }
+html[data-theme='light'] .foodxpres-logo-mark { background: #7ed321; }
+html[data-theme='light'] .foodxpres-logo-mark .logo-mark-image { mix-blend-mode: screen; }
+html[data-theme='light'] .promo-copy-panel { background: linear-gradient(145deg, #fffef5, #f1f4e8) !important; }
+html[data-theme='light'] .promo-copy-panel h2 { color: #1d2419 !important; }
+html[data-theme='light'] .promo-copy-panel p { color: #4e5949 !important; }
+html[data-theme='light'] .promo-copy-panel > div:last-child { border-color: #e1e5d8 !important; }
+html[data-theme='light'] .promo-copy-panel > div:last-child > span:first-child { color: #6d7766 !important; }
+html[data-theme='light'] .promo-mobile-copy .text-white,
+html[data-theme='light'] .promo-mobile-copy .text-gray-200 { color: #fff !important; }
+html[data-theme='light'] .bg-black\/80.text-white,
+html[data-theme='light'] .bg-gray-900\/90.text-gray-400 { color: #fff !important; }
+html[data-theme='light'] .bg-brand.text-black { color: #10150b !important; }
 
 html {
   -webkit-tap-highlight-color: transparent;

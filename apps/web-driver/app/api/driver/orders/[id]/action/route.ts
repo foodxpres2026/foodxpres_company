@@ -65,7 +65,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       updated = await sql`
         SELECT confirmar_entrega_subpedido(${id}::uuid, ${driver.id}::uuid, 'DRIVER', NULL) AS id
       ` as any[]
-      state = 'ENTREGADO'
+      state = 'ENTREGA_PENDIENTE_CONFIRMACION'
       historyWritten = true
     }
     if (!updated.length) return Response.json({ ok: false, error: 'La acción no corresponde al estado actual del pedido.' }, { status: 409 })
@@ -76,7 +76,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (accion === 'ENTREGUE') await sql`
       UPDATE driver_detalles SET disponible = TRUE, actualizado_en = NOW() WHERE usuario_id = ${driver.id}
         AND NOT EXISTS (SELECT 1 FROM sub_pedidos WHERE driver_id = ${driver.id}
-          AND estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO'))
+          AND estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION'))
     `
     return Response.json({ ok: true })
   } catch (error) {

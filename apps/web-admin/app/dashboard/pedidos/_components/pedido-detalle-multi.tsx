@@ -28,6 +28,9 @@ interface Historial {
 interface SubPedido {
   id: string
   estado: string
+  entrega_reportada_en?: string | null
+  cliente_confirmo_en?: string | null
+  entrega_cerrada_admin_en?: string | null
   subtotal: string
   costo_envio: string
   distancia_km: string | null
@@ -99,7 +102,7 @@ const ESTADOS_SIGUIENTES: Record<string, string[]> = {
   PREPARANDO: ['LISTO', 'CANCELADO'],
   LISTO: ['EN_CAMINO', 'CANCELADO'],
   ASIGNADO: ['EN_CAMINO', 'CANCELADO'],
-  EN_CAMINO: ['ENTREGADO', 'CANCELADO'],
+  EN_CAMINO: ['CANCELADO'],
   ENTREGA_PENDIENTE_CONFIRMACION: ['ENTREGADO', 'CANCELADO'],
   ENTREGADO: [],
   RECHAZADO: [],
@@ -135,6 +138,7 @@ export default function PedidoDetalleMulti({
 
   async function cambiarEstado(subPedidoId: string, nuevoEstado: string, minutos?: number) {
     let notas: string | null = null
+    if (nuevoEstado === 'ENTREGADO' && !window.confirm('¿Confirmas que el cliente recibió el pedido y quieres liberar al driver?')) return
     if (nuevoEstado === 'CANCELADO' || nuevoEstado === 'RECHAZADO') {
       notas = prompt(`Motivo de ${nuevoEstado.toLowerCase()}:`)
       if (notas === null) return
@@ -313,6 +317,9 @@ export default function PedidoDetalleMulti({
                   >
                     {ESTADO_LABELS[sp.estado] || sp.estado}
                   </span>
+                  {sp.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && <span className="text-[9px] font-bold text-yellow-300">Driver esperando</span>}
+                  {sp.entrega_cerrada_admin_en && <span className="text-[9px] font-bold text-orange-300">Liberado por admin</span>}
+                  {sp.cliente_confirmo_en && <span className="text-[9px] font-bold text-brand">Confirmado por cliente</span>}
                 </div>
               ))}
             </div>
@@ -437,6 +444,16 @@ export default function PedidoDetalleMulti({
               )}
             </div>
 
+            {spActual.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && (
+              <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4">
+                <p className="text-sm font-bold text-yellow-200">Entrega reportada · falta confirmar</p>
+                <p className="mt-1 text-xs text-gray-300">El pedido sigue en curso y el driver permanece asignado hasta que el cliente confirme. Si no puede hacerlo, libera el pedido desde aquí.</p>
+              </div>
+            )}
+            {spActual.entrega_cerrada_admin_en && (
+              <div className="mt-4 rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-xs font-semibold text-orange-200">Liberado manualmente por administración el {new Date(spActual.entrega_cerrada_admin_en).toLocaleString('es-PE')}.</div>
+            )}
+
             {spActual.motivo_rechazo && (
               <div className="mt-3 p-3 bg-danger/10 border border-danger/30 rounded-lg">
                 <p className="text-xs text-danger">
@@ -548,7 +565,7 @@ export default function PedidoDetalleMulti({
                     >
                       {loading === spActual.id
                         ? '...'
-                        : ESTADO_LABELS[est] || est}
+                        : est === 'ENTREGADO' ? 'Liberar pedido' : ESTADO_LABELS[est] || est}
                     </button>
                   )
                 })}

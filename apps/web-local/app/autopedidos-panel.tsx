@@ -7,8 +7,8 @@ type Restaurant = { nombre: string; celular: string | null; direccion_fisica: st
 type Shipping = { costo: number | null; distancia_km: number; duracion_min: number; fuente: string; permitido: boolean; razon?: string | null }
 type Data = { restaurant: Restaurant }
 const money = (n: number) => `S/ ${n.toFixed(2)}`
-const inputStyle: CSSProperties = { width: '100%', minWidth: 0, padding: '11px 12px', color: '#edf2e9', background: '#0a0c0a', border: '1px solid #343a34', borderRadius: 9, outline: 'none' }
-const labelStyle: CSSProperties = { display: 'grid', gap: 6, color: '#9aa69a', fontSize: 11 }
+const inputStyle: CSSProperties = { width: '100%', minWidth: 0, padding: '11px 12px', color: 'var(--input-text)', background: 'var(--input-bg)', border: '1px solid var(--line)', borderRadius: 9, outline: 'none' }
+const labelStyle: CSSProperties = { display: 'grid', gap: 6, color: 'var(--muted)', fontSize: 11 }
 
 export default function AutopedidosPanel({ onBack, onCreated, sharedLocation, sharedLocationError }: { onBack: () => void; onCreated: () => void; sharedLocation: { lat: number; lng: number } | null; sharedLocationError: boolean }) {
   const [data, setData] = useState<Data | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('')

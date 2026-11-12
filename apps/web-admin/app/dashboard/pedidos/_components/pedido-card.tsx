@@ -9,8 +9,12 @@ export interface SubPedido {
   estado: string
   subtotal: string
   costo_envio: string
+  driver_id: string | null
   driver_nombre: string | null
   distancia_km: string | null
+  entrega_reportada_en?: string | null
+  cliente_confirmo_en?: string | null
+  entrega_cerrada_admin_en?: string | null
 }
 
 export interface Pedido {
@@ -73,6 +77,9 @@ export default function PedidoCard({
   )
   const dir = pedido.direccion_snapshot || {}
   const esMulti = pedido.num_locales > 1
+  const pendientesConfirmacion = pedido.sub_pedidos.filter((sub) => sub.estado === 'ENTREGA_PENDIENTE_CONFIRMACION').length
+  const liberadosAdmin = pedido.sub_pedidos.filter((sub) => sub.estado === 'ENTREGADO' && sub.entrega_cerrada_admin_en).length
+  const confirmadosCliente = pedido.sub_pedidos.filter((sub) => sub.estado === 'ENTREGADO' && sub.cliente_confirmo_en).length
 
   // ============================================
   // MODO COMPACTO
@@ -100,6 +107,9 @@ export default function PedidoCard({
                 {pedido.num_locales} LOCALES
               </span>
             )}
+            {pendientesConfirmacion > 0 && <span className="text-[9px] bg-yellow-500/15 text-yellow-300 px-1.5 py-0.5 rounded font-bold">📦 {pendientesConfirmacion > 1 ? `${pendientesConfirmacion} por confirmar` : 'Por confirmar · driver en espera'}</span>}
+            {liberadosAdmin > 0 && <span className="text-[9px] bg-orange-500/15 text-orange-300 px-1.5 py-0.5 rounded font-bold">Liberado por admin{liberadosAdmin > 1 ? ` · ${liberadosAdmin}` : ''}</span>}
+            {confirmadosCliente > 0 && <span className="text-[9px] bg-brand/15 text-brand px-1.5 py-0.5 rounded font-bold">Confirmado por cliente{confirmadosCliente > 1 ? ` · ${confirmadosCliente}` : ''}</span>}
           </div>
           <p className="text-xs text-gray-500 truncate">
             {pedido.cliente_nombre} · {pedido.restaurante_principal}
@@ -159,6 +169,9 @@ export default function PedidoCard({
           🏪 {pedido.num_locales} LOCALES
         </div>
       )}
+      {pendientesConfirmacion > 0 && <div className="mb-2 inline-flex items-center gap-1 bg-yellow-500/15 border border-yellow-500/25 text-yellow-300 text-[10px] font-bold px-2 py-1 rounded-full">📦 {pendientesConfirmacion > 1 ? `${pendientesConfirmacion} pedidos esperan confirmación` : 'Esperando confirmación · driver en espera'}</div>}
+      {liberadosAdmin > 0 && <div className="mb-2 inline-flex items-center gap-1 bg-orange-500/15 border border-orange-500/25 text-orange-300 text-[10px] font-bold px-2 py-1 rounded-full">Liberado por admin{liberadosAdmin > 1 ? ` · ${liberadosAdmin}` : ''}</div>}
+      {confirmadosCliente > 0 && <div className="mb-2 inline-flex items-center gap-1 bg-brand/15 border border-brand/25 text-brand text-[10px] font-bold px-2 py-1 rounded-full">Confirmado por cliente{confirmadosCliente > 1 ? ` · ${confirmadosCliente}` : ''}</div>}
 
       {/* CLIENTE */}
       <div className="mb-2">

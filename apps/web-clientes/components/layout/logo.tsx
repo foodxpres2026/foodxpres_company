@@ -21,7 +21,7 @@ export default function Logo({
       ) : (
         <span className="foodxpres-logo-mark" style={{ width: size, height: size }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mark.png" alt="FOODXPRES" />
+          <img className="logo-mark-image" src="/logo-mark.png" alt="FOODXPRES" />
         </span>
       )}
     </div>
