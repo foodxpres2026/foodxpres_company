@@ -89,7 +89,7 @@ export default function HomeRestaurantes({
   return (
     <>
       <section className="mb-3">
-        <h2 className="text-base font-bold text-white mb-3">
+        <h2 className="home-section-title text-base font-bold text-white mb-3">
           ¿Qué se te antoja? 🤔
         </h2>
       </section>
@@ -137,7 +137,7 @@ export default function HomeRestaurantes({
       {!categoriaActiva && abiertosDec.length > 0 && (
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <h2 className="home-section-title text-base font-bold text-white flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
               Abierto ahora
             </h2>
@@ -161,7 +161,7 @@ export default function HomeRestaurantes({
       {/* SECCIÓN 2: MÁS PEDIDOS */}
       {!categoriaActiva && masPedidosDec.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-base font-bold text-white mb-3 flex items-center gap-2">
+          <h2 className="home-section-title text-base font-bold text-white mb-3 flex items-center gap-2">
             🔥 Los más pedidos hoy
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -175,7 +175,7 @@ export default function HomeRestaurantes({
       {/* SECCIÓN 3: TODOS */}
       {todosDec.length > 0 && !categoriaActiva && (
         <section className="mb-8">
-          <h2 className="text-base font-bold text-white mb-3">
+          <h2 className="home-section-title text-base font-bold text-white mb-3">
             🍽️ Todos los restaurantes
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -198,7 +198,7 @@ export default function HomeRestaurantes({
       {/* FILTRO POR CATEGORÍA */}
       {categoriaActiva && todosDec.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-base font-bold text-white mb-3">
+          <h2 className="home-section-title text-base font-bold text-white mb-3">
             🎯 Resultados ({todosDec.length})
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

@@ -54,6 +54,8 @@ html[data-theme='light'] .theme-toggle-client { color: #22271e; }
 html[data-theme='light'] .foodxpres-logo-mark { background: #7ed321; }
 html[data-theme='light'] .foodxpres-logo-mark .logo-mark-image { mix-blend-mode: screen; }
 html[data-theme='light'] .foodxpres-wordmark { color: #191b16; }
+html[data-theme='light'] .home-section-title,
+html[data-theme='light'] .order-page-title { color: #20231d; }
 html[data-theme='light'] .home-category-bar { border-bottom-color: rgba(126, 211, 33, 0.32); }
 html[data-theme='light'] .home-category-chip:not([aria-pressed='true']) .home-category-icon {
   border-color: rgba(126, 211, 33, 0.42);

@@ -134,7 +134,7 @@ export default async function PedidoPage({
             <span>←</span>
             <span>Volver a mis pedidos</span>
           </Link>
-          <h1 className="text-2xl font-black text-white">
+          <h1 className="order-page-title text-2xl font-black text-white">
             Pedido {pedido.codigo}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
