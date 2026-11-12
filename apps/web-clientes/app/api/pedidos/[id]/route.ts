@@ -38,7 +38,6 @@ export async function GET(
         sp.direccion_snapshot, sp.notas, sp.creado_en,
         sp.aceptado_en, sp.listo_en, sp.recogido_en, sp.entregado_en,
         r.nombre as restaurante_nombre,
-        r.celular as restaurante_celular,
         d.nombre as driver_nombre,
         d.celular as driver_celular
       FROM sub_pedidos sp

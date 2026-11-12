@@ -54,7 +54,6 @@ async function getPedido(codigo: string, usuarioId: string) {
       sp.creado_en, sp.aceptado_en, sp.listo_en, sp.recogido_en, sp.entrega_reportada_en, sp.cliente_confirmo_en, sp.entregado_en,
       r.nombre as restaurante_nombre,
       r.tiempo_estimado as restaurante_tiempo_estimado,
-      r.celular as restaurante_celular,
       d.nombre as driver_nombre,
       d.celular as driver_celular
     FROM sub_pedidos sp
@@ -172,11 +171,6 @@ export default async function PedidoPage({
                     <h3 className="font-bold text-white text-base truncate">
                       🏪 {sp.restaurante_nombre}
                     </h3>
-                    {sp.restaurante_celular && (
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        📱 {sp.restaurante_celular}
-                      </p>
-                    )}
                   </div>
                   <span className="text-sm font-bold text-brand whitespace-nowrap">
                     S/ {Number(sp.subtotal).toFixed(2)}
