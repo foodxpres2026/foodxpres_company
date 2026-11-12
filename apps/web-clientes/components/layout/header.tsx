@@ -65,7 +65,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
             {/* Emblema FOODXPRES para el encabezado compacto */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <Logo size={36} linkeado />
-              <span className="text-white font-black tracking-tight text-sm md:text-base whitespace-nowrap">FOODXPRES</span>
+              <span className="foodxpres-wordmark font-black tracking-tight text-sm md:text-base whitespace-nowrap">FOODXPRES</span>
             </div>
 
             {/* BÚSQUEDA (desktop) */}
