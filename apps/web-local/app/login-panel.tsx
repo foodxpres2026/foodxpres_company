@@ -1,6 +1,7 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
+import ThemeToggle from './theme-toggle'
 
 export default function LoginPanel() {
   const [email, setEmail] = useState('')
@@ -24,6 +25,7 @@ export default function LoginPanel() {
 
   return (
     <main className="login-shell">
+      <ThemeToggle />
       <div className="login-wrap">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="logo" src="/logo.png" alt="FOODXPRES" />

@@ -33,6 +33,23 @@
   color-scheme: dark;
 }
 
+html[data-theme='light'] {
+  color-scheme: light;
+  --color-surface: #ffffff;
+  --color-surface-dark: #fffdf2;
+  --color-surface-light: #f4f2e9;
+  --color-line: #e8e5d9;
+  --color-line-light: #dedbcf;
+}
+
+html[data-theme='light'] body { color: #191b16; }
+html[data-theme='light'] .text-white { color: #191b16; }
+html[data-theme='light'] .text-gray-300 { color: #454b43; }
+html[data-theme='light'] .text-gray-400 { color: #596157; }
+html[data-theme='light'] .text-gray-500 { color: #697266; }
+html[data-theme='light'] .text-gray-600 { color: #737b70; }
+html[data-theme='light'] .theme-toggle-client { color: #22271e; }
+
 html {
   -webkit-tap-highlight-color: transparent;
 }

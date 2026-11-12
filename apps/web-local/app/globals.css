@@ -3,7 +3,8 @@
 html, body { min-height: 100%; }
 body { margin: 0; background: var(--bg); color: #fff; font-family: Arial, Helvetica, sans-serif; }
 button, input { font: inherit; }
-.login-shell { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 32px 16px; }
+.login-shell { position: relative; min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 32px 16px; }
+.login-shell > .local-theme-toggle { position: absolute; top: 18px; right: 18px; }
 .login-wrap { width: 100%; max-width: 340px; }
 .logo { display: block; width: 250px; height: 172px; object-fit: contain; margin: 0 auto 12px; }
 .heading { text-align: center; margin-bottom: 28px; }
@@ -113,6 +114,9 @@ button, input { font: inherit; }
 .local-order-card-actions .local-order-details-button:hover { background: #2a302a; }
 .local-order-card-actions button:disabled { opacity: .6; cursor: wait; }
 .local-order-kind { margin: 10px 0; color: #e5eadf; font-size: 12px; font-weight: 700; }
+.local-ticket-row { display: flex; justify-content: flex-end; margin: -4px 0 9px; }
+.local-ticket-row button { padding: 6px 9px; color: #bde995; background: #172016; border: 1px solid #35492b; border-radius: 7px; font-size: 10px; font-weight: 700; cursor: pointer; }
+.local-ticket-row button:hover { background: #22351b; }
 .local-customer-history { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: -3px 0 9px; color: #9ba694; font-size: 10px; }
 .local-customer-history strong { padding: 3px 8px; border-radius: 999px; color: #b9ef8e; background: #23341b; font-size: 9px; }
 .local-order-prep-time { margin: -4px 0 10px; color: #8fa08a; font-size: 10px; }
@@ -349,6 +353,64 @@ button, input { font: inherit; }
 .local-report-total { margin: 24px 0 0; padding-top: 13px; border-top: 1px solid #343a34; color: #f2f5ef; text-align: right; font-size: 16px; font-weight: 700; }
 .local-report-total strong { color: var(--green); }
 @media(max-width:600px) { .local-report-summary { grid-template-columns: 1fr; } .commission-report { padding: 16px; } .local-report-header h1 { font-size: 21px; } }
+
+/* Selector de apariencia */
+.local-theme-toggle { display: grid; width: 36px; height: 36px; flex: 0 0 36px; place-items: center; padding: 0; color: #dce5d8; background: #1b201a; border: 1px solid #343c32; border-radius: 50%; cursor: pointer; }
+.local-theme-toggle:hover { color: var(--green); border-color: var(--green); }
+
+/* Tema claro cálido: conserva el verde FOODXPRES como color de acción */
+html[data-theme='light'] { color-scheme: light; --bg: #fffdf2; --panel: #ffffff; --line: #e6e2d5; }
+html[data-theme='light'] body { color: #20231d; background: var(--bg); }
+html[data-theme='light'] .local-shell { color: #20231d; background: var(--bg); }
+html[data-theme='light'] .local-topbar, html[data-theme='light'] .local-sidebar { background: #fff; border-color: #e6e2d5; }
+html[data-theme='light'] .local-brand, html[data-theme='light'] .local-page-heading h1, html[data-theme='light'] .local-order-code,
+html[data-theme='light'] .local-customer strong, html[data-theme='light'] .local-order-kind,
+html[data-theme='light'] .local-kanban-head h2, html[data-theme='light'] .local-empty h2 { color: #20231d; }
+html[data-theme='light'] .local-brand-mark { background: #fffdf2; }
+html[data-theme='light'] .local-brand small, html[data-theme='light'] .local-top-profile, html[data-theme='light'] .local-top-profile .local-top-name,
+html[data-theme='light'] .local-profile span, html[data-theme='light'] .local-nav-item, html[data-theme='light'] .local-page-heading p:last-child,
+html[data-theme='light'] .local-list-meta, html[data-theme='light'] .local-customer span, html[data-theme='light'] .local-order-preview,
+html[data-theme='light'] .local-order-address-preview, html[data-theme='light'] .local-order-customer-info,
+html[data-theme='light'] .local-detail-summary span, html[data-theme='light'] .local-address,
+html[data-theme='light'] .local-order-notes, html[data-theme='light'] .local-detail-items > div,
+html[data-theme='light'] .local-total-line, html[data-theme='light'] .local-sidebar-bottom { color: #60675c; }
+html[data-theme='light'] .local-profile, html[data-theme='light'] .local-order-card-head,
+html[data-theme='light'] .local-order-card-foot, html[data-theme='light'] .local-order-amount,
+html[data-theme='light'] .local-detail-summary, html[data-theme='light'] .local-address,
+html[data-theme='light'] .local-order-notes, html[data-theme='light'] .local-detail-items { border-color: #e6e2d5; }
+html[data-theme='light'] .local-nav-item:hover, html[data-theme='light'] .local-nav-item.active { color: #20231d; background: #f0f5e8; }
+html[data-theme='light'] .local-nav-item > span { color: #737b70; }
+html[data-theme='light'] .local-nav-item b, html[data-theme='light'] .local-kanban-head > b { color: #596157; background: #eeeee7; }
+html[data-theme='light'] .local-order-card, html[data-theme='light'] .local-kanban-column,
+html[data-theme='light'] .local-empty, html[data-theme='light'] .auto-panel, html[data-theme='light'] .auto-summary,
+html[data-theme='light'] .auto-product, html[data-theme='light'] .auto-location-card,
+html[data-theme='light'] .local-modal, html[data-theme='light'] .local-commission-card { color: #262a23; background: #fff; border-color: #e6e2d5; box-shadow: 0 8px 22px #493f1b0d; }
+html[data-theme='light'] .local-order-item, html[data-theme='light'] .local-order-actions select,
+html[data-theme='light'] .local-order-actions textarea, html[data-theme='light'] .local-modal-actions select,
+html[data-theme='light'] .local-modal-actions textarea, html[data-theme='light'] .auto-product { color: #252920; background: #fffef9; border-color: #e2dfd3; }
+html[data-theme='light'] .local-order-item-line strong:first-child, html[data-theme='light'] .local-order-item-line strong:last-child,
+html[data-theme='light'] .local-detail-summary strong, html[data-theme='light'] .local-address strong,
+html[data-theme='light'] .local-order-notes strong, html[data-theme='light'] .local-detail-items h3,
+html[data-theme='light'] .local-detail-items > div > strong, html[data-theme='light'] .local-total-line.grand,
+html[data-theme='light'] .auto-panel-heading h2, html[data-theme='light'] .auto-summary h2,
+html[data-theme='light'] .auto-product-head strong { color: #252920; }
+html[data-theme='light'] .local-modal-actions { background: #f8f7ef; border-color: #e6e2d5; }
+html[data-theme='light'] .local-modal-head h2 { color: #252920; }
+html[data-theme='light'] .local-order-card-actions .local-order-details-button,
+html[data-theme='light'] .local-refresh, html[data-theme='light'] .local-top-profile button,
+html[data-theme='light'] .local-sidebar-bottom button, html[data-theme='light'] .local-reject-button { color: #454b43; background: #f5f4ed; border-color: #dedbcf; }
+html[data-theme='light'] .local-theme-toggle { color: #353b30; background: #f6f4e9; border-color: #dedbcf; }
+html[data-theme='light'] .local-order-note { color: #50584a; background: #f5f7ef; border-color: #a8c987; }
+html[data-theme='light'] .local-order-note strong, html[data-theme='light'] .local-order-driver strong { color: #343b2c; }
+html[data-theme='light'] .local-order-driver { color: #50584a; background: #f4f7ef; border-color: #d9e5cc; }
+html[data-theme='light'] .local-order-driver a, html[data-theme='light'] .local-order-customer-info a { color: #477d20; }
+html[data-theme='light'] .local-order-amount.delivery-pay { background: #f2f7eb; border-color: #d5e5c8; }
+html[data-theme='light'] .local-ticket-row button { color: #477d20; background: #f2f7eb; border-color: #d5e5c8; }
+html[data-theme='light'] .local-customer-history strong { color: #477d20; background: #edf5e5; }
+html[data-theme='light'] .auto-product-head b, html[data-theme='light'] .auto-qty b { color: #252920; }
+html[data-theme='light'] .field label, html[data-theme='light'] .footer { color: #687064; }
+html[data-theme='light'] .field input { color: #20231d; background: #fff; border-color: #dedbcf; }
+html[data-theme='light'] .success strong, html[data-theme='light'] .logout { color: #20231d; }
 .pwa-install-control { position: fixed; right: 16px; bottom: 16px; z-index: 1200; display: grid; justify-items: end; gap: 8px; }
 .pwa-install-control button { border: 1px solid #a3e635; border-radius: 10px; padding: 11px 15px; color: #10150b; background: #84cc16; font-weight: 700; box-shadow: 0 8px 24px #0008; cursor: pointer; }
 .pwa-install-control p { max-width: 300px; margin: 0; padding: 10px 12px; border: 1px solid #343a34; border-radius: 9px; color: #edf2e9; background: #151815; font-size: 12px; }

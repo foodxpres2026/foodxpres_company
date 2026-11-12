@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       LEFT JOIN usuarios u ON u.id = cp.registrado_por
       LEFT JOIN restaurantes r ON cp.beneficiario_tipo = 'LOCAL' AND r.id = cp.beneficiario_id
       LEFT JOIN usuarios d ON cp.beneficiario_tipo = 'DRIVER' AND d.id = cp.beneficiario_id
-      ORDER BY cp.pagado_en DESC
+      ORDER BY cp.pagado_en DESC LIMIT 5
     `
     return Response.json({ ok: true, data: rows }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {

@@ -55,6 +55,8 @@ interface PedidoDetalle {
   vip: boolean
   costo_vip: string
   total: string
+  metodo_pago?: 'EFECTIVO' | 'YAPE' | 'PLIN'
+  paga_con?: string | number | null
   notas: string | null
   estado_global: string
   creado_en: string
@@ -161,6 +163,9 @@ export default function PedidoDetalleMulti({
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <button type="button" onClick={() => printOrderTicket(pedido)} className="rounded-lg border border-brand/50 px-4 py-2 text-sm font-semibold text-brand hover:bg-brand/10">Imprimir / guardar ticket PDF</button>
+      </div>
       {error && (
         <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded-xl text-sm">
           {error}
@@ -624,4 +629,21 @@ export default function PedidoDetalleMulti({
       )}
     </div>
   )
+}
+
+function printOrderTicket(pedido: PedidoDetalle) {
+  const popup = window.open('', '_blank', 'width=760,height=900')
+  if (!popup) {
+    window.alert('Permite las ventanas emergentes para imprimir o guardar el ticket.')
+    return
+  }
+  const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!)
+  const money = (value: number | string | null | undefined) => `S/ ${Number(value ?? 0).toFixed(2)}`
+  const address = pedido.sub_pedidos[0]?.direccion_snapshot || {}
+  const method = pedido.metodo_pago === 'YAPE' ? 'Yape' : pedido.metodo_pago === 'PLIN' ? 'Plin' : 'Efectivo'
+  const shopSections = pedido.sub_pedidos.map((shop) => `<section><h2>${escape(shop.restaurante_nombre)}</h2><p class="muted">${escape(shop.estado)} · ${escape(shop.tiempo_estimado ? `${shop.tiempo_estimado} min estimados` : '')}</p><ul>${shop.items.map((item) => `<li><div class="row"><span>${item.cantidad} × ${escape(item.nombre_snapshot)}</span><strong>${money(item.subtotal)}</strong></div>${item.opciones.map((option) => `<p class="detail">${escape(option.grupo_titulo_snapshot)}: ${escape(option.choice_nombre_snapshot)}${Number(option.precio_extra) > 0 ? ` (+${money(option.precio_extra)})` : ''}</p>`).join('')}${item.notas ? `<p class="detail">Nota: ${escape(item.notas)}</p>` : ''}</li>`).join('')}</ul><div class="row"><span>Subtotal local</span><strong>${money(shop.subtotal)}</strong></div><div class="row"><span>Delivery</span><strong>${money(shop.costo_envio)}</strong></div></section>`).join('')
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Ticket ${escape(pedido.codigo)}</title><style>@page{size:80mm auto;margin:5mm}*{box-sizing:border-box}body{font:12px/1.4 Arial,sans-serif;color:#111;width:70mm;margin:0 auto}header{text-align:center;border-bottom:1px dashed #555;padding:0 0 10px;margin-bottom:10px}h1{font-size:18px;margin:0 0 4px}h2{font-size:13px;margin:0 0 4px}p{margin:3px 0}.muted,.detail{color:#555;font-size:10px}.row{display:flex;justify-content:space-between;gap:8px}.row span{min-width:0}section{padding:8px 0;border-bottom:1px dashed #777}ul{list-style:none;padding:0;margin:7px 0}li{padding:5px 0;border-bottom:1px dotted #bbb}.detail{margin-left:8px}.totals{padding-top:8px}.grand{font-size:15px;font-weight:bold;border-top:1px solid #111;padding-top:8px;margin-top:8px}.center{text-align:center;margin-top:12px}@media screen{body{padding:16px}}</style></head><body><header><h1>FOODXPRES</h1><p>Ticket de pedido</p></header><section><div class="row"><strong>Pedido</strong><strong>${escape(pedido.codigo)}</strong></div><p>Fecha: ${escape(new Date(pedido.creado_en).toLocaleString('es-PE'))}</p><p>Estado: ${escape(pedido.estado_global)}</p><p>Cliente: ${escape(pedido.cliente_nombre)}</p><p>Celular: ${escape(pedido.cliente_celular)}</p><p>Entrega: ${escape(address.direccion || 'Sin dirección')}${address.referencia ? ` · ${escape(address.referencia)}` : ''}</p><p>Pago: ${escape(method)}</p>${pedido.metodo_pago === 'EFECTIVO' && pedido.paga_con != null ? `<p>Paga con: ${money(pedido.paga_con)}</p>` : ''}${pedido.notas ? `<p>Nota: ${escape(pedido.notas)}</p>` : ''}</section>${shopSections}<section class="totals"><div class="row"><span>Subtotal productos</span><strong>${money(pedido.subtotal)}</strong></div><div class="row"><span>Delivery</span><strong>${money(pedido.total_envio)}</strong></div>${Number(pedido.propina) > 0 ? `<div class="row"><span>Propina</span><strong>${money(pedido.propina)}</strong></div>` : ''}${pedido.vip ? `<div class="row"><span>VIP</span><strong>${money(pedido.costo_vip)}</strong></div>` : ''}<div class="row grand"><span>Total</span><strong>${money(pedido.total)}</strong></div></section><p class="center">Gracias por usar FOODXPRES</p><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),250))</script></body></html>`
+  popup.document.open()
+  popup.document.write(html)
+  popup.document.close()
 }

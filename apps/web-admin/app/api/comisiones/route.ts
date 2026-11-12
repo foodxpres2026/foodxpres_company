@@ -11,9 +11,10 @@ const ruleSchema = z.object({
   valor: z.coerce.number().finite().min(0).max(100000),
 })
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const user = await getSessionUser()
   if (!user || user.role !== 'ADMIN') return Response.json({ ok: false, error: 'No autorizado' }, { status: 401 })
+  const codigoPedido = request.nextUrl.searchParams.get('codigo')?.trim() ?? ''
   try {
     const [restaurants, drivers, rules, localRules, charges] = await Promise.all([
       sql`
@@ -56,6 +57,7 @@ export async function GET() {
         INNER JOIN pedidos p ON p.id = sp.pedido_id
         LEFT JOIN restaurantes r ON cg.beneficiario_tipo = 'LOCAL' AND r.id = cg.beneficiario_id
         LEFT JOIN usuarios d ON cg.beneficiario_tipo = 'DRIVER' AND d.id = cg.beneficiario_id
+        WHERE p.codigo ILIKE ${`%${codigoPedido}%`}
         ORDER BY cg.creado_en DESC LIMIT 100
       `,
     ])

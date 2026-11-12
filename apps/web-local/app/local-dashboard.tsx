@@ -5,6 +5,7 @@ import type { LocalUser } from '@/lib/auth'
 import { playPushSound } from '@/lib/push/sound'
 import AutopedidosPanel from './autopedidos-panel'
 import PushNotifications from './push-notifications'
+import ThemeToggle from './theme-toggle'
 
 type SharedLocation = { lat: number; lng: number }
 
@@ -13,10 +14,13 @@ type OrderOption = { grupo: string; opcion: string; precio_extra: number | strin
 type OrderItem = { id: string; nombre_snapshot: string; cantidad: number; subtotal: number | string; notas: string | null; opciones: OrderOption[] }
 type Order = {
   id: string; estado: string; subtotal: number | string; costo_envio: number | string; tiempo_estimado: number | null
+  metodo_pago?: 'EFECTIVO' | 'YAPE' | 'PLIN'; paga_con?: number | string | null; propina?: number | string; vip?: boolean; costo_vip?: number | string
   notas_local: string | null; notas_pedido: string | null; motivo_rechazo: string | null
   creado_en: string; aceptado_en: string | null; listo_en: string | null; entregado_en: string | null; entrega_cerrada_local_en: string | null
-  direccion_snapshot: { direccion?: string; referencia?: string; etiqueta?: string } | null
+  direccion_snapshot: { direccion?: string; referencia?: string; etiqueta?: string; celular?: string } | null
   pedido_codigo: string; pedido_total: number | string; cliente_nombre: string; cliente_celular: string; cliente_pedidos_total: number
+  restaurante_celular?: string | null; restaurante_direccion?: string | null
+  restaurante_nombre?: string | null
   driver_nombre: string | null; driver_celular: string | null
   autopedido_propio: boolean
   items: OrderItem[]
@@ -185,7 +189,7 @@ export default function LocalDashboard({ user }: { user: LocalUser }) {
     <header className="local-topbar">
       <button className="local-menu-button" onClick={() => setDrawer(true)} aria-label="Abrir menú">☰</button>
       <a className="local-brand" href="/" aria-label="FOODXPRES Local"><span className="local-brand-mark"><img src="/logo-mark.png" alt=""/></span><span>FOOD<span>X</span>PRES <small>LOCAL</small></span></a>
-      <div className="local-top-profile"><span className="local-online-dot"/><span className="local-top-name">{user.restauranteNombre}</span><button onClick={logout} disabled={busy === 'logout'}>Salir</button></div>
+      <div className="local-top-profile"><span className="local-online-dot"/><span className="local-top-name">{user.restauranteNombre}</span><ThemeToggle /><button onClick={logout} disabled={busy === 'logout'}>Salir</button></div>
     </header>
     <div className="local-layout">
       <aside className={`local-sidebar ${drawer ? 'open' : ''}`}>
@@ -228,6 +232,7 @@ function LocalOrderCard({ order, busy, onAccept, onReject, onReady, onConfirm }:
 
   return <article className={`local-order-card ${isAutopedido ? 'autopedido-card' : 'normal-order-card'}`}>
     <div className="local-order-card-head"><div><span className="local-order-code">#{order.pedido_codigo}</span><span className={`local-state ${order.estado.toLowerCase()}`}>{stateLabel[order.estado] ?? order.estado}</span></div><time>{timeAgo(order.creado_en)}</time></div>
+    <div className="local-ticket-row"><button type="button" onClick={() => printLocalTicket(order)}>Imprimir / guardar ticket PDF</button></div>
     <div className="local-order-kind">{isAutopedido ? 'AUTOPEDIDO' : `Cliente · ${order.cliente_nombre}`}</div>
     {!isAutopedido && <div className="local-customer-history"><span>{order.cliente_pedidos_total} {order.cliente_pedidos_total === 1 ? 'pedido' : 'pedidos'} en FOODXPRES</span>{order.cliente_pedidos_total === 1 && <strong>Cliente nuevo</strong>}</div>}
     {!isAutopedido && order.tiempo_estimado != null && <p className="local-order-prep-time">Preparación estimada · {order.tiempo_estimado} min</p>}
@@ -251,4 +256,25 @@ function LocalOrderCard({ order, busy, onAccept, onReject, onReady, onConfirm }:
     {['ACEPTADO', 'PREPARANDO'].includes(order.estado) && onReady && <button className="local-primary-button local-ready-button" onClick={onReady} disabled={busy}>{busy ? 'Guardando…' : 'Marcar como listo'}</button>}
     {canConfirmOwnDelivery && <button className="local-primary-button local-ready-button" onClick={onConfirm} disabled={busy}>{busy ? 'Guardando…' : order.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' ? 'Confirmar que recibí el pedido' : 'Confirmar recepción (opcional)'}</button>}
   </article>
+}
+
+function printLocalTicket(order: Order) {
+  const popup = window.open('', '_blank', 'width=760,height=900')
+  if (!popup) {
+    window.alert('Permite las ventanas emergentes para imprimir o guardar el ticket.')
+    return
+  }
+  const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!)
+  const money = (value: number | string | null | undefined) => `S/ ${Number(value ?? 0).toFixed(2)}`
+  const address = order.direccion_snapshot || {}
+  const isAutopedido = address.etiqueta?.toLowerCase() === 'autopedido'
+  const customerName = isAutopedido ? 'Autopedido' : order.cliente_nombre
+  const customerPhone = isAutopedido ? address.celular || order.cliente_celular : order.cliente_celular
+  const payment = order.metodo_pago === 'YAPE' ? 'Yape' : order.metodo_pago === 'PLIN' ? 'Plin' : 'Efectivo'
+  const items = order.items.map((item) => `<li><div class="row"><span>${item.cantidad} × ${escape(item.nombre_snapshot)}</span><strong>${money(item.subtotal)}</strong></div>${item.opciones.map((option) => `<p class="detail">${escape(option.grupo)}: ${escape(option.opcion)}${Number(option.precio_extra) > 0 ? ` (+${money(option.precio_extra)})` : ''}</p>`).join('')}${item.notas ? `<p class="detail">Nota: ${escape(item.notas)}</p>` : ''}</li>`).join('')
+  const localTotal = Number(order.subtotal) + Number(order.costo_envio)
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Ticket ${escape(order.pedido_codigo)}</title><style>@page{size:80mm auto;margin:5mm}*{box-sizing:border-box}body{font:12px/1.4 Arial,sans-serif;color:#111;width:70mm;margin:0 auto}header{text-align:center;border-bottom:1px dashed #555;padding:0 0 10px;margin-bottom:10px}h1{font-size:18px;margin:0 0 4px}h2{font-size:13px;margin:0 0 4px}p{margin:3px 0}.muted,.detail{color:#555;font-size:10px}.row{display:flex;justify-content:space-between;gap:8px}.row span{min-width:0}section{padding:8px 0;border-bottom:1px dashed #777}ul{list-style:none;padding:0;margin:7px 0}li{padding:5px 0;border-bottom:1px dotted #bbb}.detail{margin-left:8px}.grand{font-size:15px;font-weight:bold;border-top:1px solid #111;padding-top:8px;margin-top:8px}.center{text-align:center;margin-top:12px}@media screen{body{padding:16px}}</style></head><body><header><h1>FOODXPRES</h1><p>${escape(order.restaurante_nombre || 'Ticket de pedido')}</p>${order.restaurante_celular ? `<p>☎ ${escape(order.restaurante_celular)}</p>` : ''}${order.restaurante_direccion ? `<p>${escape(order.restaurante_direccion)}</p>` : ''}</header><section><div class="row"><strong>Pedido</strong><strong>${escape(order.pedido_codigo)}</strong></div><p>Fecha: ${escape(new Date(order.creado_en).toLocaleString('es-PE'))}</p><p>Estado: ${escape(stateLabel[order.estado] ?? order.estado)}</p><p>Cliente: ${escape(customerName)}</p><p>Celular: ${escape(customerPhone)}</p><p>Entrega: ${escape(address.direccion || 'Sin dirección')}${address.referencia ? ` · ${escape(address.referencia)}` : ''}</p><p>Pago: ${escape(payment)}</p>${order.metodo_pago === 'EFECTIVO' && order.paga_con != null ? `<p>Paga con: ${money(order.paga_con)}</p>` : ''}${order.notas_pedido || order.notas_local ? `<p>Nota: ${escape(order.notas_pedido || order.notas_local)}</p>` : ''}</section><section><h2>Productos</h2><ul>${items || '<li>Sin productos</li>'}</ul><div class="row"><span>Subtotal del local</span><strong>${money(order.subtotal)}</strong></div><div class="row"><span>Delivery asociado</span><strong>${money(order.costo_envio)}</strong></div><div class="row grand"><span>Total local</span><strong>${money(localTotal)}</strong></div></section><p class="center">Gracias por usar FOODXPRES</p><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),250))</script></body></html>`
+  popup.document.open()
+  popup.document.write(html)
+  popup.document.close()
 }

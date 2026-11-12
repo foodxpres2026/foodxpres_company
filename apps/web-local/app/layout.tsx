@@ -13,5 +13,5 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#7ed321', viewportFit: 'cover' }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es"><body>{children}<InstallPwa /></body></html>
+  return <html lang="es" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: "try{var t=localStorage.getItem('foodxpres-local-theme');if(t==='light')document.documentElement.dataset.theme='light'}catch(e){}" }} /></head><body>{children}<InstallPwa /></body></html>
 }

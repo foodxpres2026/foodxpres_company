@@ -82,8 +82,13 @@ export async function GET(request: NextRequest) {
     const page = rows.slice(0, PAGE_SIZE)
     const ids = page.map((order) => order.id)
     const items = ids.length ? await sql`
-      SELECT pi.sub_pedido_id, pi.id, pi.nombre_snapshot, pi.cantidad, pi.subtotal, pi.notas
-      FROM pedido_items pi WHERE pi.sub_pedido_id = ANY(${ids}::uuid[]) ORDER BY pi.creado_en
+      SELECT pi.sub_pedido_id, pi.id, pi.nombre_snapshot, pi.cantidad, pi.subtotal, pi.notas,
+             COALESCE(json_agg(json_build_object('grupo', io.grupo_titulo_snapshot, 'opcion', io.choice_nombre_snapshot, 'precio_extra', io.precio_extra) ORDER BY io.grupo_titulo_snapshot, io.choice_nombre_snapshot) FILTER (WHERE io.id IS NOT NULL), '[]'::json) AS opciones
+      FROM pedido_items pi
+      LEFT JOIN item_opciones io ON io.item_id = pi.id
+      WHERE pi.sub_pedido_id = ANY(${ids}::uuid[])
+      GROUP BY pi.id, pi.sub_pedido_id, pi.nombre_snapshot, pi.cantidad, pi.subtotal, pi.notas, pi.creado_en
+      ORDER BY pi.creado_en
     ` as any[] : []
     const itemsByOrder = new Map<string, any[]>()
     for (const item of items) itemsByOrder.set(item.sub_pedido_id, [...(itemsByOrder.get(item.sub_pedido_id) ?? []), item])

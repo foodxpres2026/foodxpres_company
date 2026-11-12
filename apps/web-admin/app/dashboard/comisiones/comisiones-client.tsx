@@ -5,10 +5,12 @@ import { useCallback, useEffect, useState } from 'react'
 type Rule = { id: string; modalidad: 'FIJA' | 'PORCENTAJE'; valor: number | string; creado_en: string }
 type Local = { id: string; nombre: string; regla: Rule | null; regla_autopedido: Rule | null; saldo: string | number }
 type Driver = { id: string; nombre: string; celular: string; saldo: string | number }
-type Data = { restaurants: Local[]; drivers: Driver[]; driverRules: Rule[]; localRules: (Rule & { restaurante_id: string; restaurante_nombre: string; tipo_pedido: 'NORMAL' | 'AUTOPEDIDO' })[]; charges: any[] }
+type Charge = { id: string; pedido_codigo: string; tipo_pedido: 'NORMAL' | 'AUTOPEDIDO'; beneficiario_nombre: string; beneficiario_tipo: 'LOCAL' | 'DRIVER'; base: number | string; modalidad: 'FIJA' | 'PORCENTAJE'; valor_regla: number | string; monto: number | string; creado_en: string }
+type Data = { restaurants: Local[]; drivers: Driver[]; driverRules: Rule[]; localRules: (Rule & { restaurante_id: string; restaurante_nombre: string; tipo_pedido: 'NORMAL' | 'AUTOPEDIDO' })[]; charges: Charge[] }
 type Beneficiary = { tipo: 'LOCAL' | 'DRIVER'; id: string; nombre: string; saldo: number }
 const money = (value: number | string) => `S/ ${Number(value).toFixed(2)}`
 const date = (value: string) => new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))
+const normalizeSearch = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es-PE')
 
 export default function ComisionesClient() {
   const [data, setData] = useState<Data | null>(null)
@@ -23,6 +25,12 @@ export default function ComisionesClient() {
   const [error, setError] = useState('')
   const [payments, setPayments] = useState<any[]>([])
   const [allPayments, setAllPayments] = useState<any[]>([])
+  const [chargeSearch, setChargeSearch] = useState('')
+  const [searchedCharges, setSearchedCharges] = useState<Charge[] | null>(null)
+  const [chargeSearchBusy, setChargeSearchBusy] = useState(false)
+  const [chargeSearchError, setChargeSearchError] = useState('')
+  const [localSearch, setLocalSearch] = useState('')
+  const [driverSearch, setDriverSearch] = useState('')
   const [selected, setSelected] = useState<Beneficiary | null>(null)
   const [payAmount, setPayAmount] = useState('')
   const [payNote, setPayNote] = useState('')
@@ -46,6 +54,29 @@ export default function ComisionesClient() {
   }, [localId])
 
   useEffect(() => { void load() }, [load])
+  useEffect(() => {
+    const codigo = chargeSearch.trim()
+    if (!codigo) return
+
+    const controller = new AbortController()
+    const timer = window.setTimeout(async () => {
+      setChargeSearchBusy(true)
+      setChargeSearchError('')
+      try {
+        const response = await fetch(`/api/comisiones?codigo=${encodeURIComponent(codigo)}`, { cache: 'no-store', signal: controller.signal })
+        const result = await response.json()
+        if (!response.ok || !result.ok) throw new Error(result.error || 'No se pudo buscar el pedido')
+        setSearchedCharges(result.data.charges as Charge[])
+      } catch (cause) {
+        if (cause instanceof DOMException && cause.name === 'AbortError') return
+        setChargeSearchError(cause instanceof Error ? cause.message : 'Error de conexión')
+      } finally {
+        if (!controller.signal.aborted) setChargeSearchBusy(false)
+      }
+    }, 250)
+
+    return () => { window.clearTimeout(timer); controller.abort() }
+  }, [chargeSearch])
   const loadPaymentHistory = useCallback(async () => {
     try {
       const response = await fetch('/api/comisiones/pagos', { cache: 'no-store' })
@@ -56,6 +87,8 @@ export default function ComisionesClient() {
   }, [])
   useEffect(() => { void loadPaymentHistory() }, [loadPaymentHistory])
   const selectedLocal = data?.restaurants.find((local) => local.id === localId)
+  const localMatches = data?.restaurants.filter((local) => normalizeSearch(local.nombre).includes(normalizeSearch(localSearch.trim()))) ?? []
+  const driverMatches = data?.drivers.filter((driver) => normalizeSearch(driver.nombre).includes(normalizeSearch(driverSearch.trim()))) ?? []
 
   async function saveRule(tipo: 'LOCAL' | 'DRIVER', tipoPedido: 'NORMAL' | 'AUTOPEDIDO' = 'NORMAL') {
     setBusy(true); setMessage(''); setError('')
@@ -107,7 +140,13 @@ export default function ComisionesClient() {
 
       <section className="rounded-2xl border border-line bg-surface p-5 space-y-3">
         <div><h2 className="font-bold text-white">Últimas comisiones generadas</h2><p className="mt-1 text-xs text-gray-500">Cada fila conserva la modalidad, tasa/base y monto del pedido en que se generó.</p></div>
-        {data.charges.length ? <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-xs"><thead className="text-gray-500"><tr><th className="py-2">Pedido</th><th>Tipo</th><th>Beneficiario</th><th>Base</th><th>Regla guardada</th><th>Monto</th><th>Fecha</th></tr></thead><tbody>{data.charges.map((charge) => <tr key={charge.id} className="border-t border-line text-gray-300"><td className="py-2">{charge.pedido_codigo}</td><td>{charge.tipo_pedido === 'AUTOPEDIDO' ? 'Autopedido' : 'Normal'}</td><td>{charge.beneficiario_nombre} · {charge.beneficiario_tipo === 'LOCAL' ? 'Local' : 'Driver'}</td><td>{money(charge.base)}</td><td>{charge.modalidad === 'FIJA' ? `${money(charge.valor_regla)} fijo` : `${Number(charge.valor_regla)}%`}</td><td className="font-bold text-brand">{money(charge.monto)}</td><td>{date(charge.creado_en)}</td></tr>)}</tbody></table></div> : <p className="text-xs text-gray-500">Aún no hay comisiones generadas.</p>}
+        <label className="block max-w-md text-xs text-gray-400">Buscar por código de pedido<input className="mt-1 block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-white placeholder:text-gray-600" value={chargeSearch} maxLength={40} onChange={(event) => { const next = event.target.value; setChargeSearch(next); setSearchedCharges(null); setChargeSearchBusy(Boolean(next.trim())); setChargeSearchError('') }} placeholder="Ej. P-35E204F2F2" /></label>
+        {chargeSearchError && <p role="alert" className="text-xs text-danger">{chargeSearchError}</p>}
+        {chargeSearchBusy ? <p className="text-xs text-gray-500">Buscando comisiones…</p> : (() => {
+          const charges = (chargeSearch.trim() ? searchedCharges ?? [] : data.charges).slice(0, 5)
+          if (!charges.length) return <p className="text-xs text-gray-500">{chargeSearch.trim() ? 'No se encontraron comisiones para ese código.' : 'Aún no hay comisiones generadas.'}</p>
+          return <><div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-xs"><thead className="text-gray-500"><tr><th className="py-2">Pedido</th><th>Tipo</th><th>Beneficiario</th><th>Base</th><th>Regla guardada</th><th>Monto</th><th>Fecha</th></tr></thead><tbody>{charges.map((charge) => <tr key={charge.id} className="border-t border-line text-gray-300"><td className="py-2">{charge.pedido_codigo}</td><td>{charge.tipo_pedido === 'AUTOPEDIDO' ? 'Autopedido' : 'Normal'}</td><td>{charge.beneficiario_nombre} · {charge.beneficiario_tipo === 'LOCAL' ? 'Local' : 'Driver'}</td><td>{money(charge.base)}</td><td>{charge.modalidad === 'FIJA' ? `${money(charge.valor_regla)} fijo` : `${Number(charge.valor_regla)}%`}</td><td className="font-bold text-brand">{money(charge.monto)}</td><td>{date(charge.creado_en)}</td></tr>)}</tbody></table></div><p className="text-xs text-gray-500">{chargeSearch.trim() ? `Mostrando hasta 5 coincidencias de “${chargeSearch.trim()}”.` : 'Mostrando las 5 comisiones más recientes.'}</p></>
+        })()}
       </section>
 
       <section className="rounded-2xl border border-line bg-surface p-5 space-y-4">
@@ -136,14 +175,24 @@ export default function ComisionesClient() {
       <section className="rounded-2xl border border-line bg-surface p-5 space-y-4">
         <div><h2 className="font-bold text-white">Saldos pendientes y pagos</h2><p className="mt-1 text-xs text-gray-500">Solo se generan comisiones cuando el pedido queda entregado. Los pagos se guardan con fecha y usuario administrador.</p></div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <div className="space-y-2"><h3 className="text-xs font-bold uppercase text-gray-500">Locales</h3>{data.restaurants.map((local) => <BalanceRow key={local.id} name={local.nombre} saldo={local.saldo} onPay={() => void openPayments({ tipo: 'LOCAL', id: local.id, nombre: local.nombre, saldo: Number(local.saldo) })} />)}</div>
-          <div className="space-y-2"><h3 className="text-xs font-bold uppercase text-gray-500">Drivers</h3>{data.drivers.map((driver) => <BalanceRow key={driver.id} name={driver.nombre} saldo={driver.saldo} onPay={() => void openPayments({ tipo: 'DRIVER', id: driver.id, nombre: driver.nombre, saldo: Number(driver.saldo) })} />)}</div>
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold uppercase text-gray-500">Locales</h3>
+            <input aria-label="Buscar local" className="block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-xs text-white placeholder:text-gray-600" value={localSearch} maxLength={80} onChange={(event) => setLocalSearch(event.target.value)} placeholder="Buscar local por nombre…" />
+            <p className="text-[10px] text-gray-500">Mostrando {Math.min(localMatches.length, 10)} de {localMatches.length} coincidencias{localSearch.trim() ? '' : ' · máximo 10'}</p>
+            {localMatches.length ? localMatches.slice(0, 10).map((local) => <BalanceRow key={local.id} name={local.nombre} saldo={local.saldo} onPay={() => void openPayments({ tipo: 'LOCAL', id: local.id, nombre: local.nombre, saldo: Number(local.saldo) })} />) : <p className="rounded-lg border border-line bg-surface-dark p-3 text-xs text-gray-500">No se encontraron locales.</p>}
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold uppercase text-gray-500">Drivers</h3>
+            <input aria-label="Buscar driver" className="block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-xs text-white placeholder:text-gray-600" value={driverSearch} maxLength={80} onChange={(event) => setDriverSearch(event.target.value)} placeholder="Buscar driver por nombre…" />
+            <p className="text-[10px] text-gray-500">Mostrando {Math.min(driverMatches.length, 10)} de {driverMatches.length} coincidencias{driverSearch.trim() ? '' : ' · máximo 10'}</p>
+            {driverMatches.length ? driverMatches.slice(0, 10).map((driver) => <BalanceRow key={driver.id} name={driver.nombre} saldo={driver.saldo} onPay={() => void openPayments({ tipo: 'DRIVER', id: driver.id, nombre: driver.nombre, saldo: Number(driver.saldo) })} />) : <p className="rounded-lg border border-line bg-surface-dark p-3 text-xs text-gray-500">No se encontraron drivers.</p>}
+          </div>
         </div>
       </section>
 
       <section className="rounded-2xl border border-line bg-surface p-5 space-y-3">
         <div><h2 className="font-bold text-white">Historial de pagos realizados</h2><p className="mt-1 text-xs text-gray-500">Registro cronológico de los pagos abonados a locales y drivers.</p></div>
-        {allPayments.length ? <div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-xs"><thead className="text-gray-500"><tr><th className="py-2">Fecha</th><th>Beneficiario</th><th>Tipo</th><th>Monto</th><th>Nota / referencia</th><th>Registrado por</th></tr></thead><tbody>{allPayments.map((payment) => <tr key={payment.id} className="border-t border-line text-gray-300"><td className="py-2">{date(payment.pagado_en)}</td><td>{payment.beneficiario_nombre || 'Beneficiario'}</td><td>{payment.beneficiario_tipo === 'LOCAL' ? 'Local' : 'Driver'}</td><td className="font-bold text-brand">{money(payment.monto)}</td><td>{payment.nota || '—'}</td><td>{payment.admin_nombre || 'Administrador'}</td></tr>)}</tbody></table></div> : <p className="text-xs text-gray-500">Aún no hay pagos registrados.</p>}
+        {allPayments.length ? <div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-xs"><thead className="text-gray-500"><tr><th className="py-2">Fecha</th><th>Beneficiario</th><th>Tipo</th><th>Monto</th><th>Nota / referencia</th><th>Registrado por</th></tr></thead><tbody>{allPayments.slice(0, 5).map((payment) => <tr key={payment.id} className="border-t border-line text-gray-300"><td className="py-2">{date(payment.pagado_en)}</td><td>{payment.beneficiario_nombre || 'Beneficiario'}</td><td>{payment.beneficiario_tipo === 'LOCAL' ? 'Local' : 'Driver'}</td><td className="font-bold text-brand">{money(payment.monto)}</td><td>{payment.nota || '—'}</td><td>{payment.admin_nombre || 'Administrador'}</td></tr>)}</tbody></table><p className="pt-2 text-xs text-gray-500">Mostrando los 5 pagos más recientes.</p></div> : <p className="text-xs text-gray-500">Aún no hay pagos registrados.</p>}
       </section>
 
       {selected && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Registrar pago de comisión"><div className="max-h-[90vh] w-full max-w-lg overflow-auto rounded-2xl border border-line bg-surface p-5"><div className="mb-4 flex justify-between"><div><h2 className="font-bold text-white">Pago · {selected.nombre}</h2><p className="text-xs text-gray-400">Saldo pendiente: {money(selected.saldo)}</p></div><button onClick={() => setSelected(null)} aria-label="Cerrar" className="text-xl text-gray-400">×</button></div><div className="grid gap-3 sm:grid-cols-2"><label className="text-xs text-gray-400">Monto pagado (S/)<input className="mt-1 block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-white" type="number" min="0.01" max={selected.saldo} step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} /></label><label className="text-xs text-gray-400">Nota o referencia<input className="mt-1 block w-full rounded-lg border border-line-light bg-surface-dark px-3 py-2 text-white" value={payNote} onChange={(e) => setPayNote(e.target.value)} maxLength={500} placeholder="Opcional" /></label></div><div className="mt-4"><h3 className="mb-2 text-xs font-bold text-gray-400">Últimos pagos</h3>{payments.length ? payments.map((payment) => <p key={payment.id} className="border-t border-line py-2 text-xs text-gray-300">{money(payment.monto)} · {date(payment.pagado_en)}{payment.nota ? ` · ${payment.nota}` : ''}{payment.admin_nombre ? ` · por ${payment.admin_nombre}` : ''}</p>) : <p className="text-xs text-gray-500">No hay pagos registrados.</p>}</div><button disabled={busy || !Number(payAmount) || Number(payAmount) > selected.saldo} onClick={() => void registerPayment()} className="mt-4 w-full rounded-lg bg-brand px-4 py-3 font-bold text-black disabled:opacity-50">{busy ? 'Guardando...' : 'Registrar pago'}</button></div></div>}

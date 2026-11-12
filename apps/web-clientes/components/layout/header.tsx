@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect, useSyncExternalStore } from 'react'
 import UserMenu from './user-menu'
 import Logo from './logo'
+import ThemeToggle from './theme-toggle'
 import { useCarrito } from '@/lib/carrito/store'
 import {
   useDireccionActual,
@@ -82,6 +83,7 @@ export default function Header({ user, direccionDeBD }: HeaderProps) {
 
             {/* ACCIONES */}
             <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+              <ThemeToggle />
               <Link
                 href="/carrito"
                 className="relative w-9 h-9 md:w-10 md:h-10 rounded-full bg-surface border border-line flex items-center justify-center hover:border-brand/40 transition-colors text-base md:text-lg"

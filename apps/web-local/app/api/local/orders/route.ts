@@ -15,9 +15,12 @@ export async function GET() {
              sp.motivo_rechazo, sp.creado_en, sp.aceptado_en, sp.listo_en,
              sp.entregado_en, sp.entrega_cerrada_local_en, sp.direccion_snapshot,
              p.codigo AS pedido_codigo, p.total AS pedido_total, p.notas AS notas_pedido,
+             r.nombre AS restaurante_nombre,
+             p.metodo_pago, p.paga_con, p.propina, p.vip, p.costo_vip,
              CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.nombre ELSE u.nombre END AS cliente_nombre,
              CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN COALESCE(sp.direccion_snapshot->>'celular', r.celular) ELSE u.celular END AS cliente_celular,
              (SELECT COUNT(*)::int FROM pedidos cliente_pedidos WHERE cliente_pedidos.usuario_id = p.usuario_id) AS cliente_pedidos_total,
+             r.celular AS restaurante_celular, r.direccion_fisica AS restaurante_direccion,
              d.nombre AS driver_nombre, d.celular AS driver_celular,
              p.vip, p.costo_vip,
              (p.usuario_id = ${staff.id} AND sp.direccion_snapshot->>'etiqueta' = 'Autopedido') AS autopedido_propio
