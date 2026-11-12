@@ -72,12 +72,12 @@ export default function CategoriasChips({
         type="button"
         aria-pressed={!activa}
         onClick={() => seleccionar(null)}
-        className={`flex flex-col items-center gap-2 min-w-[72px] flex-shrink-0 transition-opacity ${
+          className={`home-category-chip flex flex-col items-center gap-2 min-w-[72px] flex-shrink-0 transition-opacity ${
           !activa ? 'opacity-100' : 'opacity-60 hover:opacity-100'
         }`}
       >
         <div
-          className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors border-2 ${
+          className={`home-category-icon w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors border-2 ${
             !activa
               ? 'bg-brand/15 border-brand'
               : 'bg-surface border-line'
@@ -102,12 +102,12 @@ export default function CategoriasChips({
             type="button"
             aria-pressed={isActive}
             onClick={() => seleccionar(cat.slug)}
-            className={`flex flex-col items-center gap-2 min-w-[72px] flex-shrink-0 transition-opacity ${
+            className={`home-category-chip flex flex-col items-center gap-2 min-w-[72px] flex-shrink-0 transition-opacity ${
               isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100'
             }`}
           >
             <div
-              className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors border-2 ${
+              className={`home-category-icon w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-colors border-2 ${
                 isActive
                   ? 'bg-brand/15 border-brand'
                   : 'bg-surface border-line'

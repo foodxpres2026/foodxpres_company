@@ -29,7 +29,7 @@ export function RestauranteHero({
   return (
     <Link
       href={`/restaurante/${restaurante.slug}`}
-      className="block relative h-44 md:h-64 rounded-2xl overflow-hidden group"
+      className="home-restaurant-hero block relative h-44 md:h-64 rounded-2xl overflow-hidden group"
     >
       {restaurante.banner_url ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -112,7 +112,7 @@ export function RestauranteGrid({
   return (
     <Link
       href={`/restaurante/${restaurante.slug}`}
-      className="block bg-surface border border-line rounded-2xl overflow-hidden hover:border-brand/40 transition-colors group"
+      className="home-restaurant-card block bg-surface border border-line rounded-2xl overflow-hidden hover:border-brand/40 transition-colors group"
     >
       <div className="relative h-32 md:h-36 overflow-hidden">
         {restaurante.banner_url ? (

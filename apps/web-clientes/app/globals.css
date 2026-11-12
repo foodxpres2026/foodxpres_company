@@ -54,6 +54,20 @@ html[data-theme='light'] .theme-toggle-client { color: #22271e; }
 html[data-theme='light'] .foodxpres-logo-mark { background: #7ed321; }
 html[data-theme='light'] .foodxpres-logo-mark .logo-mark-image { mix-blend-mode: screen; }
 html[data-theme='light'] .foodxpres-wordmark { color: #191b16; }
+html[data-theme='light'] .home-category-bar { border-bottom-color: rgba(126, 211, 33, 0.32); }
+html[data-theme='light'] .home-category-chip:not([aria-pressed='true']) .home-category-icon {
+  border-color: rgba(126, 211, 33, 0.42);
+  background-color: rgba(126, 211, 33, 0.06);
+}
+html[data-theme='light'] .home-category-chip[aria-pressed='true'] .home-category-icon {
+  border-color: #7ed321;
+  background-color: rgba(126, 211, 33, 0.18);
+  box-shadow: 0 4px 14px rgba(126, 211, 33, 0.16);
+}
+html[data-theme='light'] .home-promo-frame { border-color: rgba(126, 211, 33, 0.4); }
+html[data-theme='light'] .home-restaurant-card { border-color: rgba(126, 211, 33, 0.26); }
+html[data-theme='light'] .home-restaurant-card:hover { border-color: rgba(126, 211, 33, 0.72); }
+html[data-theme='light'] .home-restaurant-hero { box-shadow: 0 0 0 1px rgba(126, 211, 33, 0.22); }
 html[data-theme='light'] .promo-copy-panel { background: linear-gradient(145deg, #fffef5, #f1f4e8) !important; }
 html[data-theme='light'] .promo-copy-panel h2 { color: #1d2419 !important; }
 html[data-theme='light'] .promo-copy-panel p { color: #4e5949 !important; }

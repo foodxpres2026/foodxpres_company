@@ -94,7 +94,7 @@ export default function HomeRestaurantes({
         </h2>
       </section>
 
-      <div className="sticky top-[57px] z-30 -mx-4 px-4 py-2 mb-6 bg-surface-dark/95 backdrop-blur-lg border-b border-line">
+      <div className="home-category-bar sticky top-[57px] z-30 -mx-4 px-4 py-2 mb-6 bg-surface-dark/95 backdrop-blur-lg border-b border-line">
         <CategoriasChips
           categorias={categorias}
           activa={categoriaActiva}

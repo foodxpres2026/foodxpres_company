@@ -46,7 +46,7 @@ export default function PromoCarousel({ promos }: { promos: Promo[] }) {
 
   return (
     <div className="relative mx-auto w-full max-w-4xl">
-      <div className="promo-frame relative h-40 md:h-64 lg:h-72 rounded-2xl overflow-hidden bg-surface border border-line isolate">
+      <div className="home-promo-frame promo-frame relative h-40 md:h-64 lg:h-72 rounded-2xl overflow-hidden bg-surface border border-line isolate">
         {promos.map((promo, i) => (
           <Link
             key={promo.id}
