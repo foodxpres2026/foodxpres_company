@@ -10,7 +10,7 @@ type Item = { id: string; nombre_snapshot: string; cantidad: number; subtotal: n
 type Order = {
   id: string; estado: string; subtotal: number | string; costo_envio: number | string; distancia_km: number | string | null
   tiempo_estimado: number | null; direccion_snapshot: { direccion?: string; etiqueta?: string; referencia?: string; lat?: number; lng?: number } | null
-  creado_en: string; driver_asignado_en: string | null; driver_llego_en: string | null; listo_en: string | null
+  creado_en: string; finalizado_en?: string | null; driver_asignado_en: string | null; driver_llego_en: string | null; listo_en: string | null
   pedido_total: number | string; metodo_pago: 'EFECTIVO' | 'YAPE' | 'PLIN'; paga_con: number | string | null
   driver_llego_cliente_en?: string | null
   recogido_en: string | null; entregado_en: string | null; pedido_codigo: string; pedido_notas: string | null
@@ -30,6 +30,13 @@ const whatsappLink = (phone: string | null, message: string) => {
   return `https://wa.me/${digits.startsWith('51') ? digits : `51${digits}`}?text=${encodeURIComponent(message)}`
 }
 const dateTime = (value: string | null) => value ? new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'
+const elapsedLabel = (start: string, endOrNow: number | string) => {
+  const startMs = new Date(start).getTime(), endMs = typeof endOrNow === 'number' ? endOrNow : new Date(endOrNow).getTime()
+  const seconds = Math.max(0, Math.floor((endMs - startMs) / 1000))
+  const days = Math.floor(seconds / 86400), hours = Math.floor((seconds % 86400) / 3600), minutes = Math.floor((seconds % 3600) / 60), remainder = seconds % 60
+  const clock = [hours, minutes, remainder].map((value) => String(value).padStart(2, '0')).join(':')
+  return days ? `${days} d ${clock}` : clock
+}
 
 export default function DriverDashboard({ user }: { user: DriverUser }) {
   const [section, setSection] = useState<Section>('available')
@@ -44,11 +51,18 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
   const [availabilityBusy, setAvailabilityBusy] = useState(false)
   const [drawer, setDrawer] = useState(false)
   const [refreshAt, setRefreshAt] = useState<Date | null>(null)
+  const [clockNow, setClockNow] = useState(0)
   const [commissionBalance, setCommissionBalance] = useState(0)
   const [overdueCommission, setOverdueCommission] = useState(0)
   const availableSoundTimes = useRef(new Map<string, number>())
   const availableIds = useRef(new Set<string>())
   const firstAvailableLoad = useRef(true)
+
+  useEffect(() => {
+    setClockNow(Date.now())
+    const timer = window.setInterval(() => setClockNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   const load = useCallback(async (target: Section, append = false, quiet = false) => {
     if (!quiet) setLoading(true)
@@ -173,7 +187,7 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
         {overdueCommission > 0 && <div className="error-panel" role="alert"><span>Tienes una deuda de comisión vencida por {money(overdueCommission)}. Ya pasaron 2 días desde que se generó; no podrás tomar nuevos pedidos hasta que administración registre tu pago.</span></div>}
         {error && <div className="error-panel" role="alert"><span>{error}</span><button onClick={() => void load(section)}>Reintentar</button></div>}
         {loading && orders.length === 0 ? <div className="empty-state"><div className="spinner"/><p>Cargando pedidos...</p></div> : orders.length === 0 && !error ? <div className="empty-state"><div className="empty-icon">{section === 'available' ? '✓' : section === 'current' ? '◷' : '↺'}</div><h2>{section === 'available' ? 'No hay pedidos sin driver' : section === 'current' ? 'No tienes pedidos en curso' : 'Aún no tienes pedidos en el historial'}</h2><p>{section === 'available' ? 'Aquí aparecerán los pedidos activos que todavía no tengan un driver asignado.' : 'Cuando haya actividad, la verás en este apartado.'}</p></div> : <div className="orders-grid">
-          {orders.map((order) => <OrderCard key={order.id} order={order} driverName={user.nombre} section={section} canTake={disponible !== false && overdueCommission <= 0} takeBlockedLabel={overdueCommission > 0 ? 'Deuda vencida' : 'No disponible'} busy={busy === order.id} onTake={() => mutate(order, `/api/driver/orders/${order.id}/take`, 'POST')} onAction={(accion) => mutate(order, `/api/driver/orders/${order.id}/action`, 'PATCH', { accion })} />)}
+          {orders.map((order) => <OrderCard key={order.id} order={order} driverName={user.nombre} section={section} clockNow={clockNow} canTake={disponible !== false && overdueCommission <= 0} takeBlockedLabel={overdueCommission > 0 ? 'Deuda vencida' : 'No disponible'} busy={busy === order.id} onTake={() => mutate(order, `/api/driver/orders/${order.id}/take`, 'POST')} onAction={(accion) => mutate(order, `/api/driver/orders/${order.id}/action`, 'PATCH', { accion })} />)}
         </div>}
         {hasMore && <button className="load-more" disabled={loading} onClick={() => void load(section, true)}>{loading ? 'Cargando...' : 'Cargar más pedidos'}</button>}
         <p className="content-footer">FOODXPRES · Pucallpa</p>
@@ -182,7 +196,7 @@ export default function DriverDashboard({ user }: { user: DriverUser }) {
   </main>
 }
 
-function OrderCard({ order, driverName, section, canTake, takeBlockedLabel, busy, onTake, onAction }: { order: Order; driverName: string; section: Section; canTake: boolean; takeBlockedLabel: string; busy: boolean; onTake: () => void; onAction: (action: 'LLEGUE' | 'RECOGI' | 'LLEGUE_CLIENTE' | 'ENTREGUE') => void }) {
+function OrderCard({ order, driverName, section, clockNow, canTake, takeBlockedLabel, busy, onTake, onAction }: { order: Order; driverName: string; section: Section; clockNow: number; canTake: boolean; takeBlockedLabel: string; busy: boolean; onTake: () => void; onAction: (action: 'LLEGUE' | 'RECOGI' | 'LLEGUE_CLIENTE' | 'ENTREGUE') => void }) {
   const [whatsappTarget, setWhatsappTarget] = useState<'restaurant' | 'customer' | null>(null)
   const address = order.direccion_snapshot?.direccion || 'Dirección de entrega no disponible'
   const customerAddress = [address, order.direccion_snapshot?.referencia].filter(Boolean).join(' · ')
@@ -204,8 +218,10 @@ function OrderCard({ order, driverName, section, canTake, takeBlockedLabel, busy
   const metodoPago = order.metodo_pago === 'YAPE' ? 'Yape' : order.metodo_pago === 'PLIN' ? 'Plin' : 'Efectivo'
   const vueltoEsperado = order.paga_con == null ? null : Math.max(0, Number(order.paga_con) - Number(order.pedido_total))
   const statusLabel = order.estado === 'EN_CLIENTE' ? 'Llegaste al cliente' : order.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' ? (order.direccion_snapshot?.etiqueta === 'Autopedido' ? 'Listo para cerrar' : 'Esperando confirmación del cliente') : order.estado.replaceAll('_', ' ')
+  const elapsedEnd = order.finalizado_en || order.entregado_en || (['ENTREGADO', 'CANCELADO', 'RECHAZADO'].includes(order.estado) ? order.creado_en : clockNow)
   return <article className="order-card">
     <div className="order-card-head"><div><span className="order-id">PEDIDO {order.pedido_codigo || order.id.slice(0, 8).toUpperCase()}</span><span className={`state-pill ${order.estado.toLowerCase()}`}>{statusLabel}</span></div><span className="order-date">{dateTime(order.driver_asignado_en ?? order.listo_en ?? order.creado_en)}</span></div>
+    <div className="order-elapsed" aria-live="off"><span aria-hidden="true">⏱</span><span>Tiempo del pedido</span><strong>{clockNow ? elapsedLabel(order.creado_en, elapsedEnd) : '…'}</strong></div>
     <div className="order-money"><div><span>Productos</span><strong>{money(order.subtotal)}</strong></div><div><span>Costo de envío</span><strong>{money(order.costo_envio)}</strong></div><div className="money-total"><span>Total pedido</span><strong>{money(total)}</strong></div></div>
     <div className="items-box payment-box"><strong>Pago del cliente · {metodoPago}</strong>{order.metodo_pago === 'EFECTIVO' && <><div className="item-line"><span>Pagará con</span><strong>{money(order.paga_con)}</strong></div><div className="item-line"><span>Vuelto esperado</span><strong>{money(vueltoEsperado)}</strong></div></>}</div>
     <div className="place-row"><span className="place-icon">⌂</span><div className="place-body"><strong>{order.restaurante_nombre}</strong><span>{order.restaurante_direccion || 'Dirección no disponible'}</span><div className="contact-links">{order.restaurante_celular && <><a href={phoneLink(order.restaurante_celular)}>Llamar · {order.restaurante_celular}</a><button type="button" className="whatsapp-link" onClick={() => setWhatsappTarget('restaurant')}>WhatsApp</button></>}</div></div></div>
@@ -225,7 +241,7 @@ type MessageTemplate = { id: string; title: string; description: string; message
 function WhatsAppMessageModal({ order, driverName, target, onClose }: { order: Order; driverName: string; target: MessageTarget; onClose: () => void }) {
   const orderCode = order.pedido_codigo || order.id.slice(0, 8).toUpperCase()
   const templates: MessageTemplate[] = target === 'restaurant' ? [
-    { id: 'pending', title: 'Pedido pendiente de aceptar', description: 'Avisar al local para que revise el pedido.', message: (o, driver) => `Buenas, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor de FOODXPRES. El pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre} aún figura pendiente de aceptación. ¿Podrían revisarlo cuando tengan un momento para evitar demoras? Muchas gracias.` },
+    { id: 'pending', title: 'Pedido pendiente de aceptar', description: 'Avisar al local para que revise el pedido.', message: (o, driver) => `Buenas, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor de FOODXPRES. El pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre} aún figura pendiente de aceptación. ¿Podrían revisarlo cuando tengan un momento para evitar demoras? Pueden ingresar al panel del local aquí: https://local.foodxpres.pe\nMuchas gracias.` },
     { id: 'arrived', title: 'Llegué al restaurante', description: 'Avisar que el driver ya está esperando.', message: (o, driver) => `Buenas, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor de FOODXPRES. Ya llegué al local para recoger el pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre}. Quedo atento a que esté listo. ¡Gracias!` },
     { id: 'ready', title: 'Consulta si está listo', description: 'Preguntar por el estado de preparación.', message: (o, driver) => `Hola, equipo de ${o.restaurante_nombre} 👋\nSoy ${driver}, repartidor asignado al pedido ${o.pedido_codigo || o.id.slice(0, 8).toUpperCase()} de ${o.cliente_nombre}. ¿Me confirman, por favor, si ya está listo para recoger? Gracias.` },
   ] : [

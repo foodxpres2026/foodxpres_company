@@ -54,8 +54,8 @@ export async function POST(request: Request) {
           WHERE u.role = 'DRIVER' AND u.activo = TRUE AND d.disponible = TRUE`,
       ])
       const sendStaff = staff.length ? enviarNotificacionAUsuarios(staff.map((row) => row.id), {
-        titulo: '📦 Nuevo pedido', mensaje: `Tienes un pedido nuevo ${order.pedido_codigo} por revisar.`,
-        url: '/', tag: `local-pedido-${order.id}`,
+        titulo: '📦 Nuevo pedido', mensaje: `Tienes un pedido nuevo ${order.pedido_codigo} por revisar. Abre el panel del local para aceptarlo.`,
+        url: 'https://local.foodxpres.pe/', tag: `local-pedido-${order.id}`,
       }) : Promise.resolve({ enviados: 0, fallidos: 0 })
       const sendDrivers = drivers.length ? enviarNotificacionAUsuarios(drivers.map((row) => row.id), {
         titulo: '🛵 Nuevo pedido disponible', mensaje: `${order.restaurante_nombre} · Pedido ${order.pedido_codigo}`,

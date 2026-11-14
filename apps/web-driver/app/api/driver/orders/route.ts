@@ -44,6 +44,11 @@ export async function GET(request: NextRequest) {
                (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE' ORDER BY h.creado_en LIMIT 1) AS driver_llego_en,
                COALESCE(sp.driver_llego_cliente_en, (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE_CLIENTE' ORDER BY h.creado_en LIMIT 1)) AS driver_llego_cliente_en,
                sp.listo_en, sp.recogido_en, sp.entregado_en,
+               CASE WHEN sp.estado IN ('ENTREGADO', 'CANCELADO', 'RECHAZADO') THEN COALESCE(
+                 sp.entregado_en,
+                 (SELECT MAX(h.creado_en) FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.estado = sp.estado),
+                 sp.creado_en
+               ) END AS finalizado_en,
                sp.entrega_reportada_en, sp.driver_comision_monto,
                p.codigo AS pedido_codigo, p.notas AS pedido_notas,
                p.total AS pedido_total, p.metodo_pago, p.paga_con,
@@ -64,6 +69,11 @@ export async function GET(request: NextRequest) {
                (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE' ORDER BY h.creado_en LIMIT 1) AS driver_llego_en,
                COALESCE(sp.driver_llego_cliente_en, (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE_CLIENTE' ORDER BY h.creado_en LIMIT 1)) AS driver_llego_cliente_en,
                sp.listo_en, sp.recogido_en, sp.entregado_en,
+               CASE WHEN sp.estado IN ('ENTREGADO', 'CANCELADO', 'RECHAZADO') THEN COALESCE(
+                 sp.entregado_en,
+                 (SELECT MAX(h.creado_en) FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.estado = sp.estado),
+                 sp.creado_en
+               ) END AS finalizado_en,
                sp.entrega_reportada_en, sp.driver_comision_monto,
                p.codigo AS pedido_codigo, p.notas AS pedido_notas,
                p.total AS pedido_total, p.metodo_pago, p.paga_con,
