@@ -128,10 +128,12 @@ BEGIN
   IF p_modo = 'CLIENTE' AND v_sub.estado NOT IN ('EN_CLIENTE', 'ENTREGA_PENDIENTE_CONFIRMACION') THEN
     RAISE EXCEPTION 'El driver todavía no llegó al cliente';
   END IF;
-  IF p_modo = 'ADMIN' AND (
-    v_sub.estado <> 'ENTREGA_PENDIENTE_CONFIRMACION' OR v_sub.entrega_reportada_en IS NULL
-  ) THEN RAISE EXCEPTION 'Solo se puede liberar un pedido cuya entrega ya reportó el driver'; END IF;
-  IF p_modo IN ('ADMIN', 'LOCAL') AND v_sub.estado IN ('ENTREGADO', 'RECHAZADO', 'CANCELADO') THEN
+  IF p_modo = 'ADMIN' AND NOT (
+    (v_sub.estado = 'ENTREGA_PENDIENTE_CONFIRMACION' AND v_sub.entrega_reportada_en IS NOT NULL)
+    OR (v_sub.estado IN ('EN_CLIENTE', 'CANCELADO') AND v_sub.driver_llego_cliente_en IS NOT NULL)
+  ) THEN RAISE EXCEPTION 'Solo se puede liberar un pedido cuando el driver ya llegó al cliente'; END IF;
+  IF p_modo IN ('ADMIN', 'LOCAL') AND v_sub.estado IN ('ENTREGADO', 'RECHAZADO', 'CANCELADO')
+    AND NOT (p_modo = 'ADMIN' AND v_sub.estado = 'CANCELADO' AND v_sub.driver_llego_cliente_en IS NOT NULL) THEN
     RAISE EXCEPTION 'El pedido ya está finalizado';
   END IF;
 
@@ -144,7 +146,7 @@ BEGIN
   INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)
   VALUES (p_sub_pedido, 'ENTREGADO', p_actor,
     COALESCE(NULLIF(p_nota, ''), CASE p_modo
-      WHEN 'ADMIN' THEN 'Liberado manualmente por administración tras reporte de entrega'
+      WHEN 'ADMIN' THEN 'Administración confirmó la recepción y liberó al driver'
       WHEN 'LOCAL' THEN 'Confirmación de entrega por el local (autopedido)'
       ELSE 'Cliente confirmó recepción y liberó al driver'
     END));

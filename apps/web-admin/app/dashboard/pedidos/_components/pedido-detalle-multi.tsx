@@ -106,11 +106,11 @@ const ESTADOS_SIGUIENTES: Record<string, string[]> = {
   LISTO: ['EN_CAMINO', 'CANCELADO'],
   ASIGNADO: ['EN_CAMINO', 'CANCELADO'],
   EN_CAMINO: ['CANCELADO'],
-  EN_CLIENTE: ['CANCELADO'],
+  EN_CLIENTE: ['ENTREGADO', 'CANCELADO'],
   ENTREGA_PENDIENTE_CONFIRMACION: ['ENTREGADO', 'CANCELADO'],
+  CANCELADO: ['ENTREGADO'],
   ENTREGADO: [],
   RECHAZADO: [],
-  CANCELADO: [],
 }
 
 export default function PedidoDetalleMulti({
@@ -449,10 +449,10 @@ export default function PedidoDetalleMulti({
               )}
             </div>
 
-            {spActual.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && (
+            {(['EN_CLIENTE', 'ENTREGA_PENDIENTE_CONFIRMACION'].includes(spActual.estado) || (spActual.estado === 'CANCELADO' && Boolean(spActual.driver_llego_cliente_en))) && (
               <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4">
-                <p className="text-sm font-bold text-yellow-200">Entrega reportada · falta confirmar</p>
-                <p className="mt-1 text-xs text-gray-300">El pedido sigue en curso y el driver permanece asignado hasta que el cliente confirme. Si no puede hacerlo, libera el pedido desde aquí.</p>
+                <p className="text-sm font-bold text-yellow-200">{spActual.estado === 'EN_CLIENTE' ? 'Driver llegó al cliente' : spActual.estado === 'CANCELADO' ? 'Pedido cancelado con llegada registrada' : 'Entrega reportada · falta confirmar'}</p>
+                <p className="mt-1 text-xs text-gray-300">Si el cliente no puede confirmar la recepción, puedes marcarlo como recibido y liberar al driver. En pedidos cancelados, esta opción requiere que la llegada del driver esté registrada.</p>
               </div>
             )}
             {spActual.entrega_cerrada_admin_en && (
@@ -535,13 +535,13 @@ export default function PedidoDetalleMulti({
           </div>
 
           {/* Cambiar estado */}
-          {ESTADOS_SIGUIENTES[spActual.estado]?.length > 0 && (
+          {ESTADOS_SIGUIENTES[spActual.estado]?.filter((est) => est !== 'ENTREGADO' || spActual.estado !== 'CANCELADO' || Boolean(spActual.driver_llego_cliente_en)).length > 0 && (
             <div className="bg-surface border border-line rounded-2xl p-5 md:p-6">
               <h3 className="text-base font-bold text-white mb-3">
                 Cambiar estado de este local
               </h3>
               <div className="flex flex-wrap gap-2">
-                {ESTADOS_SIGUIENTES[spActual.estado].map((est) => {
+                {ESTADOS_SIGUIENTES[spActual.estado].filter((est) => est !== 'ENTREGADO' || spActual.estado !== 'CANCELADO' || Boolean(spActual.driver_llego_cliente_en)).map((est) => {
                   const esCancelacion =
                     est === 'CANCELADO' || est === 'RECHAZADO'
                   return (
@@ -570,7 +570,7 @@ export default function PedidoDetalleMulti({
                     >
                       {loading === spActual.id
                         ? '...'
-                        : est === 'ENTREGADO' ? 'Liberar pedido' : ESTADO_LABELS[est] || est}
+                        : est === 'ENTREGADO' ? 'Marcar recibido y liberar driver' : ESTADO_LABELS[est] || est}
                     </button>
                   )
                 })}

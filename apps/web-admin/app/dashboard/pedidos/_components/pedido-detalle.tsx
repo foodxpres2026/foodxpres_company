@@ -41,6 +41,7 @@ export interface PedidoDetalle {
   listo_en: string | null
   recogido_en: string | null
   entregado_en: string | null
+  driver_llego_cliente_en?: string | null
   direccion_snapshot: any
   motivo_rechazo: string | null
   propina: string
@@ -65,11 +66,11 @@ const ESTADOS_SIGUIENTES: Record<string, string[]> = {
   LISTO: ['EN_CAMINO', 'CANCELADO'],
   ASIGNADO: ['EN_CAMINO', 'CANCELADO'], // legacy
   EN_CAMINO: ['CANCELADO'],
-  EN_CLIENTE: ['CANCELADO'],
+  EN_CLIENTE: ['ENTREGADO', 'CANCELADO'],
   ENTREGA_PENDIENTE_CONFIRMACION: ['ENTREGADO', 'CANCELADO'],
+  CANCELADO: ['ENTREGADO'],
   ENTREGADO: [],
   RECHAZADO: [],
-  CANCELADO: [],
 }
 const ESTADO_LABELS: Record<string, string> = {
   PENDIENTE: 'Pendiente',
@@ -95,7 +96,9 @@ export default function PedidoDetalle({
   const [error, setError] = useState<string | null>(null)
 
   const dir = pedido.direccion_snapshot || {}
-  const siguientes = ESTADOS_SIGUIENTES[pedido.estado] ?? []
+  const siguientes = (ESTADOS_SIGUIENTES[pedido.estado] ?? []).filter(
+    (estado) => estado !== 'ENTREGADO' || pedido.estado !== 'CANCELADO' || Boolean(pedido.driver_llego_cliente_en)
+  )
 
   async function cambiarEstado(nuevoEstado: string) {
     let notas: string | null = null
@@ -305,7 +308,7 @@ export default function PedidoDetalle({
                       : 'bg-brand hover:bg-brand-dark text-black disabled:bg-brand/40'
                   }`}
                 >
-                  {est === 'ENTREGADO' ? 'Liberar pedido' : ESTADO_LABELS[est]}
+                  {est === 'ENTREGADO' ? 'Marcar recibido y liberar driver' : ESTADO_LABELS[est]}
                 </button>
               )
             })}

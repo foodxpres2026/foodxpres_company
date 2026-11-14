@@ -57,7 +57,7 @@ export async function PATCH(
 
     // Verificar que existe + obtener pedido_id
     const exists = await sql`
-      SELECT id, pedido_id, estado, entrega_reportada_en FROM sub_pedidos WHERE id = ${id} LIMIT 1
+      SELECT id, pedido_id, estado, entrega_reportada_en, driver_llego_cliente_en FROM sub_pedidos WHERE id = ${id} LIMIT 1
     `
     if (exists.length === 0) {
       return Response.json(
@@ -74,16 +74,19 @@ export async function PATCH(
       LISTO: ['EN_CAMINO', 'CANCELADO'],
       ASIGNADO: ['EN_CAMINO', 'CANCELADO'],
       EN_CAMINO: ['CANCELADO'],
-      EN_CLIENTE: ['CANCELADO'],
+      EN_CLIENTE: ['ENTREGADO', 'CANCELADO'],
       ENTREGA_PENDIENTE_CONFIRMACION: ['ENTREGADO', 'CANCELADO'],
+      CANCELADO: ['ENTREGADO'],
     }
     if (!transiciones[exists[0].estado]?.includes(estado)) {
       return Response.json({ ok: false, error: `No se puede cambiar de ${exists[0].estado} a ${estado}.` }, { status: 409 })
     }
 
-    if (estado === 'ENTREGADO' && !exists[0].entrega_reportada_en) {
+    const driverLlego = Boolean(exists[0].driver_llego_cliente_en)
+    const puedeLiberarSinReporte = ['EN_CLIENTE', 'CANCELADO'].includes(exists[0].estado) && driverLlego
+    if (estado === 'ENTREGADO' && !exists[0].entrega_reportada_en && !puedeLiberarSinReporte) {
       return Response.json(
-        { ok: false, error: 'Solo puedes liberar el pedido después de que el driver reporte la entrega.' },
+        { ok: false, error: 'Solo puedes liberar el pedido después de que el driver llegue al cliente o reporte la entrega.' },
         { status: 409 }
       )
     }
