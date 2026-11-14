@@ -11,10 +11,16 @@ export async function GET() {
   try {
     const sql = getSql()
     const orders = await sql`
-      SELECT sp.id, sp.estado, sp.subtotal, sp.costo_envio, sp.tiempo_estimado, sp.notas AS notas_local,
+      SELECT sp.id, sp.estado, sp.subtotal,
+             CASE
+               WHEN sp.tipo_pedido = 'AUTOPEDIDO' OR sp.direccion_snapshot->>'etiqueta' = 'Autopedido'
+                 THEN sp.costo_envio
+               ELSE NULL
+             END AS costo_envio,
+             sp.tipo_pedido, sp.tiempo_estimado, sp.notas AS notas_local,
              sp.motivo_rechazo, sp.creado_en, sp.aceptado_en, sp.listo_en,
              sp.entregado_en, sp.entrega_cerrada_local_en, sp.direccion_snapshot,
-             p.codigo AS pedido_codigo, p.total AS pedido_total, p.notas AS notas_pedido,
+             p.codigo AS pedido_codigo, p.notas AS notas_pedido,
              r.nombre AS restaurante_nombre,
              p.metodo_pago, p.paga_con, p.propina, p.vip, p.costo_vip,
              CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN r.nombre ELSE u.nombre END AS cliente_nombre,
