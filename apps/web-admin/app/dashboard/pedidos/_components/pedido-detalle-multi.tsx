@@ -29,6 +29,7 @@ interface SubPedido {
   id: string
   estado: string
   entrega_reportada_en?: string | null
+  driver_llego_cliente_en?: string | null
   cliente_confirmo_en?: string | null
   entrega_cerrada_admin_en?: string | null
   subtotal: string
@@ -75,6 +76,7 @@ const ESTADO_COLORES: Record<string, string> = {
   LISTO: 'bg-cyan-500/15 text-cyan-400',
   ASIGNADO: 'bg-orange-500/15 text-orange-400',
   EN_CAMINO: 'bg-orange-500/15 text-orange-400',
+  EN_CLIENTE: 'bg-emerald-500/15 text-emerald-300',
   ENTREGA_PENDIENTE_CONFIRMACION: 'bg-yellow-500/15 text-yellow-300',
   ENTREGADO: 'bg-brand/15 text-brand',
   RECHAZADO: 'bg-red-500/15 text-red-400',
@@ -89,6 +91,7 @@ const ESTADO_LABELS: Record<string, string> = {
   LISTO: 'Listo',
   ASIGNADO: 'En camino',
   EN_CAMINO: 'En camino',
+  EN_CLIENTE: 'Driver llegó al cliente',
   ENTREGA_PENDIENTE_CONFIRMACION: 'Esperando confirmación del cliente',
   ENTREGADO: 'Entregado',
   RECHAZADO: 'Rechazado',
@@ -103,6 +106,7 @@ const ESTADOS_SIGUIENTES: Record<string, string[]> = {
   LISTO: ['EN_CAMINO', 'CANCELADO'],
   ASIGNADO: ['EN_CAMINO', 'CANCELADO'],
   EN_CAMINO: ['CANCELADO'],
+  EN_CLIENTE: ['CANCELADO'],
   ENTREGA_PENDIENTE_CONFIRMACION: ['ENTREGADO', 'CANCELADO'],
   ENTREGADO: [],
   RECHAZADO: [],
@@ -127,7 +131,7 @@ export default function PedidoDetalleMulti({
   const celularWhatsAppLocal = celularLocal.startsWith('51') ? celularLocal : `51${celularLocal}`
 
   const totalAceptados = pedido.sub_pedidos.filter((sp) =>
-    ['ACEPTADO', 'PREPARANDO', 'LISTO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO'].includes(
+    ['ACEPTADO', 'PREPARANDO', 'LISTO', 'EN_CAMINO', 'EN_CLIENTE', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO'].includes(
       sp.estado
     )
   ).length
@@ -317,7 +321,8 @@ export default function PedidoDetalleMulti({
                   >
                     {ESTADO_LABELS[sp.estado] || sp.estado}
                   </span>
-                  {sp.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && <span className="text-[9px] font-bold text-yellow-300">Driver esperando</span>}
+                  {sp.estado === 'EN_CLIENTE' && <span className="text-[9px] font-bold text-emerald-300">Driver llegó · pendiente confirmar recepción</span>}
+                  {sp.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && <span className="text-[9px] font-bold text-yellow-300">Driver esperando confirmación</span>}
                   {sp.entrega_cerrada_admin_en && <span className="text-[9px] font-bold text-orange-300">Liberado por admin</span>}
                   {sp.cliente_confirmo_en && <span className="text-[9px] font-bold text-brand">Confirmado por cliente</span>}
                 </div>

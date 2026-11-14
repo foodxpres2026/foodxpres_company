@@ -8,6 +8,8 @@ const COLUMNAS_ACTIVAS = [
   { estado: 'ACEPTADO', label: 'Aceptados', icon: '✅' },
   { estado: 'LISTO', label: 'Listos', icon: '🍽️' },
   { estado: 'EN_CAMINO', label: 'En camino', icon: '🛵' },
+  { estado: 'EN_CLIENTE', label: 'Llegó al cliente', icon: '📍' },
+  { estado: 'ENTREGA_PENDIENTE_CONFIRMACION', label: 'Esperando confirmación', icon: '📦' },
 ] as const
 
 interface Restaurante {
@@ -76,8 +78,6 @@ export default function PedidosKanban({
       const estadoNormalizado =
         p.estado === 'ASIGNADO'
           ? 'EN_CAMINO'
-          : p.estado === 'ENTREGA_PENDIENTE_CONFIRMACION'
-          ? 'EN_CAMINO'
           : p.estado === 'PREPARANDO'
           ? 'ACEPTADO'
           : p.estado
@@ -132,7 +132,7 @@ export default function PedidosKanban({
             {drivers.map((driver) => <option key={driver.id} value={driver.id}>{driver.nombre}</option>)}
           </select>
           <select aria-label="Filtrar por estado" value={estadoFiltro} onChange={(event) => setEstadoFiltro(event.target.value)} className="rounded-lg border border-line bg-surface px-3 py-2 text-sm text-white focus:border-brand focus:outline-none">
-            <option value="TODOS">Todos los estados</option><option value="ACTIVOS">Activos</option><option value="PENDIENTE">Pendiente</option><option value="ACEPTADO">Aceptado</option><option value="LISTO">Listo</option><option value="EN_CAMINO">En camino</option><option value="ENTREGADO">Entregado</option><option value="RECHAZADO">Rechazado</option><option value="CANCELADO">Cancelado</option>
+            <option value="TODOS">Todos los estados</option><option value="ACTIVOS">Activos</option><option value="PENDIENTE">Pendiente</option><option value="ACEPTADO">Aceptado</option><option value="LISTO">Listo</option><option value="EN_CAMINO">En camino</option><option value="EN_CLIENTE">Driver llegó al cliente</option><option value="ENTREGA_PENDIENTE_CONFIRMACION">Esperando confirmación</option><option value="ENTREGADO">Entregado</option><option value="RECHAZADO">Rechazado</option><option value="CANCELADO">Cancelado</option>
           </select>
           <label className="flex items-center gap-2 text-xs text-gray-500">Desde<input aria-label="Fecha desde" type="date" value={desde} max={hasta || undefined} onChange={(event) => setDesde(event.target.value)} className="rounded-lg border border-line bg-surface px-2 py-2 text-xs text-white" /></label>
           <label className="flex items-center gap-2 text-xs text-gray-500">Hasta<input aria-label="Fecha hasta" type="date" value={hasta} min={desde || undefined} onChange={(event) => setHasta(event.target.value)} className="rounded-lg border border-line bg-surface px-2 py-2 text-xs text-white" /></label>

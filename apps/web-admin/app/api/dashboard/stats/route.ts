@@ -14,7 +14,7 @@ export async function GET() {
         sql`SELECT COUNT(*)::int as total FROM pedidos WHERE creado_en >= CURRENT_DATE`,
         sql`
           SELECT COUNT(*)::int as total FROM sub_pedidos 
-          WHERE estado IN ('PENDIENTE','ACEPTADO','PREPARANDO','LISTO','ASIGNADO','EN_CAMINO')
+          WHERE estado IN ('PENDIENTE','ACEPTADO','PREPARANDO','LISTO','ASIGNADO','EN_CAMINO','EN_CLIENTE','ENTREGA_PENDIENTE_CONFIRMACION')
         `,
         sql`SELECT COUNT(*)::int as total FROM restaurantes WHERE activo = TRUE`,
         sql`SELECT COUNT(*)::int as total FROM usuarios WHERE role = 'DRIVER' AND activo = TRUE`,

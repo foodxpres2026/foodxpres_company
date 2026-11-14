@@ -12,7 +12,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   } catch (error) {
     console.error('POST confirmar entrega error:', error)
     const message = error instanceof Error ? error.message : ''
-    const pendiente = message.includes('todavía no espera') || message.includes('todavía no reportó')
-    return Response.json({ ok: false, error: pendiente ? 'El driver todavía no ha reportado la entrega.' : 'No se pudo confirmar la entrega.' }, { status: pendiente ? 409 : 500 })
+    const pendiente = message.includes('todavía no')
+    return Response.json({ ok: false, error: pendiente ? 'El repartidor todavía no llegó a tu ubicación.' : 'No se pudo confirmar la entrega.' }, { status: pendiente ? 409 : 500 })
   }
 }

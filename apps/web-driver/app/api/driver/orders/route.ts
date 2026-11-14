@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
                sp.tiempo_estimado, sp.direccion_snapshot, sp.creado_en,
                (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas IN ('Pedido aceptado por el driver', 'Pedido reservado por el driver') ORDER BY h.creado_en LIMIT 1) AS driver_asignado_en,
                (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE' ORDER BY h.creado_en LIMIT 1) AS driver_llego_en,
-               (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE_CLIENTE' ORDER BY h.creado_en LIMIT 1) AS driver_llego_cliente_en,
+               COALESCE(sp.driver_llego_cliente_en, (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE_CLIENTE' ORDER BY h.creado_en LIMIT 1)) AS driver_llego_cliente_en,
                sp.listo_en, sp.recogido_en, sp.entregado_en,
                sp.entrega_reportada_en, sp.driver_comision_monto,
                p.codigo AS pedido_codigo, p.notas AS pedido_notas,
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
                CASE WHEN sp.direccion_snapshot->>'etiqueta' = 'Autopedido' THEN COALESCE(sp.direccion_snapshot->>'celular', u.celular) ELSE u.celular END AS cliente_celular
         FROM sub_pedidos sp INNER JOIN pedidos p ON p.id = sp.pedido_id
         INNER JOIN restaurantes r ON r.id = sp.restaurante_id INNER JOIN usuarios u ON u.id = p.usuario_id
-        WHERE sp.driver_id = ${driver.id} AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION')
+        WHERE sp.driver_id = ${driver.id} AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'EN_CLIENTE', 'ENTREGA_PENDIENTE_CONFIRMACION')
         ORDER BY sp.creado_en DESC LIMIT ${PAGE_SIZE + 1} OFFSET ${offset}
       ` as any[]
     } else {
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
                sp.tiempo_estimado, sp.direccion_snapshot, sp.creado_en,
                (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas IN ('Pedido aceptado por el driver', 'Pedido reservado por el driver') ORDER BY h.creado_en LIMIT 1) AS driver_asignado_en,
                (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE' ORDER BY h.creado_en LIMIT 1) AS driver_llego_en,
-               (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE_CLIENTE' ORDER BY h.creado_en LIMIT 1) AS driver_llego_cliente_en,
+               COALESCE(sp.driver_llego_cliente_en, (SELECT h.creado_en FROM pedido_estado_historial h WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = sp.driver_id AND h.notas = 'LLEGUE_CLIENTE' ORDER BY h.creado_en LIMIT 1)) AS driver_llego_cliente_en,
                sp.listo_en, sp.recogido_en, sp.entregado_en,
                sp.entrega_reportada_en, sp.driver_comision_monto,
                p.codigo AS pedido_codigo, p.notas AS pedido_notas,

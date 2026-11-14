@@ -29,6 +29,7 @@ const ESTADO_LABELS: Record<string, string> = {
   LISTO: 'Listo',
   ASIGNADO: 'En camino',
   EN_CAMINO: 'En camino',
+  EN_CLIENTE: 'El repartidor llegó',
   ENTREGA_PENDIENTE_CONFIRMACION: 'Esperando tu confirmación',
   ENTREGADO: 'Entregado',
   RECHAZADO: 'Rechazado',
@@ -188,7 +189,7 @@ export default async function PedidoPage({
                   </div>
                 </div>
                 <EstadoTimeline estado={sp.estado} />
-              {sp.estado === 'ENTREGA_PENDIENTE_CONFIRMACION' && <ConfirmarEntrega subPedidoId={sp.id} />}
+              {['EN_CLIENTE', 'ENTREGA_PENDIENTE_CONFIRMACION'].includes(sp.estado) && <ConfirmarEntrega subPedidoId={sp.id} llegadaRegistrada={sp.estado === 'EN_CLIENTE'} />}
               {sp.estado === 'ENTREGADO' && sp.cliente_confirmo_en && <p className="mt-3 text-xs font-medium text-brand">✓ Confirmaste que recibiste este pedido.</p>}
               {sp.estado === 'ENTREGADO' && !sp.cliente_confirmo_en && <ConfirmarEntrega subPedidoId={sp.id} yaFinalizado />}
               </div>

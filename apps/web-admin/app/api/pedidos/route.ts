@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const driverId = driverIdRaw && /^[0-9a-f-]{36}$/i.test(driverIdRaw) ? driverIdRaw : null
     const codigo = (searchParams.get('codigo') || '').trim().slice(0, 40)
     const estadoSolicitado = searchParams.get('estado') || 'TODOS'
-    const estadosPermitidos = ['TODOS', 'ACTIVOS', 'PENDIENTE', 'ACEPTADO', 'LISTO', 'EN_CAMINO', 'ENTREGADO', 'RECHAZADO', 'CANCELADO']
+    const estadosPermitidos = ['TODOS', 'ACTIVOS', 'PENDIENTE', 'ACEPTADO', 'LISTO', 'EN_CAMINO', 'EN_CLIENTE', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO', 'RECHAZADO', 'CANCELADO']
     const estado = estadosPermitidos.includes(estadoSolicitado) ? estadoSolicitado : 'TODOS'
     const fechaDesdeRaw = searchParams.get('desde') || ''
     const fechaHastaRaw = searchParams.get('hasta') || ''
@@ -65,7 +65,9 @@ export async function GET(req: NextRequest) {
               OR (${estado} = 'PENDIENTE' AND (p.estado_global = 'PENDIENTE' OR EXISTS (SELECT 1 FROM sub_pedidos sp WHERE sp.pedido_id = p.id AND sp.estado = 'PENDIENTE')))
               OR (${estado} = 'ACEPTADO' AND (p.estado_global IN ('ACEPTADO', 'PREPARANDO') OR EXISTS (SELECT 1 FROM sub_pedidos sp WHERE sp.pedido_id = p.id AND sp.estado IN ('ACEPTADO', 'PREPARANDO'))))
               OR (${estado} = 'LISTO' AND (p.estado_global = 'LISTO' OR EXISTS (SELECT 1 FROM sub_pedidos sp WHERE sp.pedido_id = p.id AND sp.estado = 'LISTO')))
-              OR (${estado} = 'EN_CAMINO' AND (p.estado_global IN ('ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION') OR EXISTS (SELECT 1 FROM sub_pedidos sp WHERE sp.pedido_id = p.id AND sp.estado IN ('ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION'))))
+              OR (${estado} = 'EN_CAMINO' AND (p.estado_global IN ('ASIGNADO', 'EN_CAMINO') OR EXISTS (SELECT 1 FROM sub_pedidos sp WHERE sp.pedido_id = p.id AND sp.estado IN ('ASIGNADO', 'EN_CAMINO'))))
+              OR (${estado} = 'EN_CLIENTE' AND (p.estado_global = 'EN_CLIENTE' OR EXISTS (SELECT 1 FROM sub_pedidos sp WHERE sp.pedido_id = p.id AND sp.estado = 'EN_CLIENTE')))
+              OR (${estado} = 'ENTREGA_PENDIENTE_CONFIRMACION' AND (p.estado_global = 'ENTREGA_PENDIENTE_CONFIRMACION' OR EXISTS (SELECT 1 FROM sub_pedidos sp WHERE sp.pedido_id = p.id AND sp.estado = 'ENTREGA_PENDIENTE_CONFIRMACION')))
               OR (${estado} = 'ENTREGADO' AND (p.estado_global = 'ENTREGADO' OR EXISTS (SELECT 1 FROM sub_pedidos sp WHERE sp.pedido_id = p.id AND sp.estado = 'ENTREGADO')))
               OR (${estado} = 'RECHAZADO' AND (p.estado_global = 'RECHAZADO' OR EXISTS (SELECT 1 FROM sub_pedidos sp WHERE sp.pedido_id = p.id AND sp.estado = 'RECHAZADO')))
               OR (${estado} = 'CANCELADO' AND (p.estado_global = 'CANCELADO' OR EXISTS (SELECT 1 FROM sub_pedidos sp WHERE sp.pedido_id = p.id AND sp.estado = 'CANCELADO')))

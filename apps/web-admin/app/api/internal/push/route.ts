@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       usuarioId: order.cliente_id,
       titulo: '📍 El repartidor llegó',
       mensaje: `El driver ya llegó con tu pedido de ${order.restaurante_nombre}. Confirma la recepción cuando lo recibas.`,
-      url: '/mis-pedidos', tag: `pedido-llego-${order.id}`,
+      url: `/pedido/${order.pedido_codigo}`, tag: `pedido-llego-${order.id}`,
     })
     if (event === 'DRIVER_DELIVERED') await enviarNotificacion({
       usuarioId: order.cliente_id,

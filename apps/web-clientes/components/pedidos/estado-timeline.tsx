@@ -5,11 +5,12 @@ const PASOS = [
   { key: 'ACEPTADO', label: 'Preparando', icon: '👨‍🍳' },
   { key: 'LISTO', label: 'Listo', icon: '🍽️' },
   { key: 'EN_CAMINO', label: 'En camino', icon: '🛵' },
+  { key: 'EN_CLIENTE', label: 'Llegó', icon: '📍' },
+  { key: 'ENTREGA_PENDIENTE_CONFIRMACION', label: 'Confirma recepción', icon: '📦' },
   { key: 'ENTREGADO', label: 'Entregado', icon: '✅' },
 ]
 
 const ESTADOS_ESPECIALES: Record<string, { label: string; icon: string; color: string }> = {
-  ENTREGA_PENDIENTE_CONFIRMACION: { label: 'Confirma que recibiste tu pedido', icon: '📦', color: 'text-brand' },
   RECHAZADO: { label: 'Rechazado', icon: '❌', color: 'text-danger' },
   CANCELADO: { label: 'Cancelado', icon: '🚫', color: 'text-gray-400' },
 }
@@ -46,7 +47,7 @@ export default function EstadoTimeline({
 
   return (
     <div>
-      <div className="mb-2 grid grid-cols-5" aria-hidden="true">
+      <div className="mb-2 grid grid-cols-7" aria-hidden="true">
         {PASOS.map((paso, i) => (
           <span key={paso.key} className={`flex h-10 items-center justify-center text-[26px] transition-all sm:h-12 sm:text-3xl ${i < indexActual ? 'opacity-100' : i === indexActual ? 'order-step-icon-current' : 'opacity-60 grayscale-[35%]'}`}>
             {paso.icon}
@@ -55,12 +56,12 @@ export default function EstadoTimeline({
       </div>
       {/* Barra de progreso */}
       <div className="relative">
-        <div className="absolute left-[10%] right-[10%] top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-gray-700" />
+        <div className="absolute left-[7.15%] right-[7.15%] top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-gray-700" />
         <div
-          className="absolute left-[10%] top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-brand transition-all duration-500"
-          style={{ width: `${(indexActual / (PASOS.length - 1)) * 80}%` }}
+          className="absolute left-[7.15%] top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-brand transition-all duration-500"
+          style={{ width: `${(indexActual / (PASOS.length - 1)) * 85.7}%` }}
         />
-        <div className="relative z-10 grid grid-cols-5 items-center">
+        <div className="relative z-10 grid grid-cols-7 items-center">
           {PASOS.map((paso, i) => {
             const completado = i <= indexActual
             const esActual = i === indexActual
@@ -86,7 +87,7 @@ export default function EstadoTimeline({
 
       {/* Etiquetas de todas las etapas */}
       {!compact && (
-        <div className="mt-2 grid grid-cols-5 gap-1">
+        <div className="mt-2 grid grid-cols-7 gap-1">
           {PASOS.map((paso, i) => (
             <span key={paso.key} className={`text-center text-[9px] leading-tight sm:text-[10px] ${i === indexActual ? 'font-bold text-brand' : i < indexActual ? 'text-gray-300' : 'text-gray-500'}`}>
               {paso.label}

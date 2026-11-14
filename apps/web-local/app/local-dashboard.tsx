@@ -32,7 +32,7 @@ const boardColumns = [
   { id: 'pending', label: 'Por aceptar', icon: '⏳', states: ['PENDIENTE'] },
   { id: 'preparing', label: 'En preparación', icon: '👨‍🍳', states: ['ACEPTADO', 'PREPARANDO'] },
   { id: 'ready', label: 'Listos', icon: '🍽️', states: ['LISTO'] },
-  { id: 'delivery', label: 'En camino', icon: '🛵', states: ['ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION'] },
+  { id: 'delivery', label: 'En camino', icon: '🛵', states: ['ASIGNADO', 'EN_CAMINO', 'EN_CLIENTE', 'ENTREGA_PENDIENTE_CONFIRMACION'] },
 ] as const
 const historyStates = ['ENTREGADO', 'RECHAZADO', 'CANCELADO']
 const money = (amount: number | string) => `S/ ${Number(amount ?? 0).toFixed(2)}`
@@ -44,12 +44,12 @@ const timeAgo = (value: string) => {
   return `hace ${hours} h${minutes % 60 ? ` ${minutes % 60} min` : ''}`
 }
 const sectionMatches: Record<Section, string[]> = {
-  active: ['PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION'],
+  active: ['PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'EN_CLIENTE', 'ENTREGA_PENDIENTE_CONFIRMACION'],
   history: historyStates,
 }
 const stateLabel: Record<string, string> = {
   PENDIENTE: 'Por aceptar', ACEPTADO: 'Aceptado', PREPARANDO: 'En preparación', LISTO: 'Listo',
-  ASIGNADO: 'Driver asignado', EN_CAMINO: 'En camino', ENTREGA_PENDIENTE_CONFIRMACION: 'Esperando confirmación del cliente', ENTREGADO: 'Entregado', RECHAZADO: 'Rechazado', CANCELADO: 'Cancelado',
+  ASIGNADO: 'Driver asignado', EN_CAMINO: 'En camino', EN_CLIENTE: 'Driver llegó al cliente', ENTREGA_PENDIENTE_CONFIRMACION: 'Esperando confirmación del cliente', ENTREGADO: 'Entregado', RECHAZADO: 'Rechazado', CANCELADO: 'Cancelado',
 }
 
 export default function LocalDashboard({ user }: { user: LocalUser }) {

@@ -48,7 +48,11 @@ export async function recalcularPedido(pedidoId: string) {
   } else if (todosFinalizados || algunRechazadoOCancelado) {
     // Algunos terminaron, otros rechazados → parcial
     nuevoEstado = 'PARCIAL'
-  } else if (estados.some((e: string) => e === 'EN_CAMINO' || e === 'ENTREGA_PENDIENTE_CONFIRMACION')) {
+  } else if (estados.some((e: string) => e === 'ENTREGA_PENDIENTE_CONFIRMACION')) {
+    nuevoEstado = 'ENTREGA_PENDIENTE_CONFIRMACION'
+  } else if (estados.some((e: string) => e === 'EN_CLIENTE')) {
+    nuevoEstado = 'EN_CLIENTE'
+  } else if (estados.some((e: string) => e === 'EN_CAMINO')) {
     nuevoEstado = 'EN_CAMINO'
   } else if (estados.some((e: string) => e === 'LISTO')) {
     nuevoEstado = 'LISTO'

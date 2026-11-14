@@ -48,19 +48,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       state = 'EN_CAMINO'
     } else if (accion === 'LLEGUE_CLIENTE') {
       updated = await sql`
-        INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas)
-        SELECT sp.id, 'EN_CAMINO', ${driver.id}, 'LLEGUE_CLIENTE'
-        FROM sub_pedidos sp
+        UPDATE sub_pedidos sp SET estado = 'EN_CLIENTE', driver_llego_cliente_en = NOW()
         WHERE sp.id = ${id} AND sp.driver_id = ${driver.id}
           AND sp.estado = 'EN_CAMINO' AND sp.recogido_en IS NOT NULL
           AND NOT EXISTS (
             SELECT 1 FROM pedido_estado_historial h
             WHERE h.sub_pedido_id = sp.id AND h.cambiado_por = ${driver.id} AND h.notas = 'LLEGUE_CLIENTE'
           )
-        RETURNING sub_pedido_id AS id
+        RETURNING sp.id
       ` as any[]
-      state = 'EN_CAMINO'
-      historyWritten = true
+      state = 'EN_CLIENTE'
     } else {
       updated = await sql`
         SELECT confirmar_entrega_subpedido(${id}::uuid, ${driver.id}::uuid, 'DRIVER', NULL) AS id
@@ -70,6 +67,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
     if (!updated.length) return Response.json({ ok: false, error: 'La acción no corresponde al estado actual del pedido.' }, { status: 409 })
     if (!historyWritten) await sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${id}, ${state}, ${driver.id}, ${accion})`
+    if (accion === 'ENTREGUE') {
+      const current = await sql`SELECT estado FROM sub_pedidos WHERE id = ${id} AND driver_id = ${driver.id} LIMIT 1` as { estado: string }[]
+      if (current[0]?.estado === 'ENTREGADO') return Response.json({ ok: true })
+    }
     if (accion === 'RECOGI') await notifyInternalPush('DRIVER_ON_THE_WAY', id)
     if (accion === 'LLEGUE_CLIENTE') await notifyInternalPush('DRIVER_ARRIVED', id)
     if (accion === 'ENTREGUE') await notifyInternalPush('DRIVER_DELIVERED', id)
@@ -81,6 +82,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return Response.json({ ok: true })
   } catch (error) {
     console.error('PATCH driver/orders/action error:', error)
+    const message = error instanceof Error ? error.message : ''
+    if (message.includes('debe registrar primero') || message.includes('Registra primero')) {
+      return Response.json({ ok: false, error: 'Registra primero tu llegada al cliente.' }, { status: 409 })
+    }
     return Response.json({ ok: false, error: 'No se pudo actualizar el pedido' }, { status: 500 })
   }
 }

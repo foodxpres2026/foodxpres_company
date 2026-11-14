@@ -30,7 +30,7 @@ async function getDrivers(): Promise<Driver[]> {
       (SELECT COUNT(*)::int FROM sub_pedidos 
        WHERE driver_id = u.id AND estado = 'ENTREGADO') as total_entregas,
       (SELECT COUNT(*)::int FROM sub_pedidos 
-       WHERE driver_id = u.id AND estado IN ('ASIGNADO','EN_CAMINO')) as pedidos_activos
+       WHERE driver_id = u.id AND estado IN ('ASIGNADO','EN_CAMINO','EN_CLIENTE','ENTREGA_PENDIENTE_CONFIRMACION')) as pedidos_activos
     FROM usuarios u
     LEFT JOIN driver_detalles d ON d.usuario_id = u.id
     WHERE u.role = 'DRIVER'

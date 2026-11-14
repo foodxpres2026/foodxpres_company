@@ -46,6 +46,7 @@ const ESTADO_COLORES: Record<string, string> = {
   LISTO: 'bg-cyan-500/15 text-cyan-400',
   ASIGNADO: 'bg-orange-500/15 text-orange-400',
   EN_CAMINO: 'bg-orange-500/15 text-orange-400',
+  EN_CLIENTE: 'bg-emerald-500/15 text-emerald-300',
   ENTREGA_PENDIENTE_CONFIRMACION: 'bg-yellow-500/15 text-yellow-300',
   ENTREGADO: 'bg-brand/15 text-brand',
   RECHAZADO: 'bg-red-500/15 text-red-400',
@@ -59,6 +60,7 @@ const ESTADO_LABELS: Record<string, string> = {
   LISTO: 'Listo',
   ASIGNADO: 'En camino',
   EN_CAMINO: 'En camino',
+  EN_CLIENTE: 'Driver llegó al cliente',
   ENTREGA_PENDIENTE_CONFIRMACION: 'Esperando confirmación',
   ENTREGADO: 'Entregado',
   RECHAZADO: 'Rechazado',
@@ -78,6 +80,7 @@ export default function PedidoCard({
   const dir = pedido.direccion_snapshot || {}
   const esMulti = pedido.num_locales > 1
   const pendientesConfirmacion = pedido.sub_pedidos.filter((sub) => sub.estado === 'ENTREGA_PENDIENTE_CONFIRMACION').length
+  const llegadasCliente = pedido.sub_pedidos.filter((sub) => sub.estado === 'EN_CLIENTE').length
   const liberadosAdmin = pedido.sub_pedidos.filter((sub) => sub.estado === 'ENTREGADO' && sub.entrega_cerrada_admin_en).length
   const confirmadosCliente = pedido.sub_pedidos.filter((sub) => sub.estado === 'ENTREGADO' && sub.cliente_confirmo_en).length
 
@@ -108,6 +111,7 @@ export default function PedidoCard({
               </span>
             )}
             {pendientesConfirmacion > 0 && <span className="text-[9px] bg-yellow-500/15 text-yellow-300 px-1.5 py-0.5 rounded font-bold">📦 {pendientesConfirmacion > 1 ? `${pendientesConfirmacion} por confirmar` : 'Por confirmar · driver en espera'}</span>}
+            {llegadasCliente > 0 && <span className="text-[9px] bg-emerald-500/15 text-emerald-300 px-1.5 py-0.5 rounded font-bold">📍 {llegadasCliente > 1 ? `${llegadasCliente} drivers llegaron` : 'Driver llegó · cliente debe confirmar'}</span>}
             {liberadosAdmin > 0 && <span className="text-[9px] bg-orange-500/15 text-orange-300 px-1.5 py-0.5 rounded font-bold">Liberado por admin{liberadosAdmin > 1 ? ` · ${liberadosAdmin}` : ''}</span>}
             {confirmadosCliente > 0 && <span className="text-[9px] bg-brand/15 text-brand px-1.5 py-0.5 rounded font-bold">Confirmado por cliente{confirmadosCliente > 1 ? ` · ${confirmadosCliente}` : ''}</span>}
           </div>

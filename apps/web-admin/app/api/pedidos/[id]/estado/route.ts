@@ -67,8 +67,21 @@ export async function PATCH(
     }
 
     const pedidoId = exists[0].pedido_id
+    const transiciones: Record<string, string[]> = {
+      PENDIENTE: ['ACEPTADO', 'RECHAZADO', 'CANCELADO'],
+      ACEPTADO: ['LISTO', 'CANCELADO'],
+      PREPARANDO: ['LISTO', 'CANCELADO'],
+      LISTO: ['EN_CAMINO', 'CANCELADO'],
+      ASIGNADO: ['EN_CAMINO', 'CANCELADO'],
+      EN_CAMINO: ['CANCELADO'],
+      EN_CLIENTE: ['CANCELADO'],
+      ENTREGA_PENDIENTE_CONFIRMACION: ['ENTREGADO', 'CANCELADO'],
+    }
+    if (!transiciones[exists[0].estado]?.includes(estado)) {
+      return Response.json({ ok: false, error: `No se puede cambiar de ${exists[0].estado} a ${estado}.` }, { status: 409 })
+    }
 
-    if (estado === 'ENTREGADO' && (exists[0].estado !== 'ENTREGA_PENDIENTE_CONFIRMACION' || !exists[0].entrega_reportada_en)) {
+    if (estado === 'ENTREGADO' && !exists[0].entrega_reportada_en) {
       return Response.json(
         { ok: false, error: 'Solo puedes liberar el pedido después de que el driver reporte la entrega.' },
         { status: 409 }
@@ -77,27 +90,31 @@ export async function PATCH(
 
     const now = new Date()
 
-    // Actualizar estado + timestamp
+    // Aplicar el cambio solo si el pedido sigue en el estado que validamos arriba.
+    let cambioAplicado: any[] | null = null
     switch (estado) {
       case 'ACEPTADO':
-        await sql`
+        cambioAplicado = await sql`
           UPDATE sub_pedidos 
           SET estado = ${estado}, aceptado_en = ${now}, tiempo_estimado = ${tiempo_estimado}
-          WHERE id = ${id}
+          WHERE id = ${id} AND estado = ${exists[0].estado}
+          RETURNING id
         `
         break
       case 'LISTO':
-        await sql`
+        cambioAplicado = await sql`
           UPDATE sub_pedidos 
           SET estado = ${estado}, listo_en = ${now}
-          WHERE id = ${id}
+          WHERE id = ${id} AND estado = ${exists[0].estado}
+          RETURNING id
         `
         break
       case 'EN_CAMINO':
-        await sql`
+        cambioAplicado = await sql`
           UPDATE sub_pedidos 
           SET estado = ${estado}, recogido_en = ${now}
-          WHERE id = ${id}
+          WHERE id = ${id} AND estado = ${exists[0].estado}
+          RETURNING id
         `
         break
       case 'ENTREGADO':
@@ -109,12 +126,16 @@ export async function PATCH(
         `
         break
       default:
-        await sql`
+        cambioAplicado = await sql`
           UPDATE sub_pedidos 
           SET estado = ${estado}
-          WHERE id = ${id}
+          WHERE id = ${id} AND estado = ${exists[0].estado}
+          RETURNING id
         `
     }    // 🔔 Notificar al cliente
+    if (cambioAplicado && cambioAplicado.length === 0) {
+      return Response.json({ ok: false, error: 'El pedido cambió de estado. Actualiza la vista e inténtalo de nuevo.' }, { status: 409 })
+    }
     try {
       // Traer usuario y restaurante
       const info = (await sql`

@@ -30,7 +30,7 @@ export async function GET() {
       INNER JOIN restaurantes r ON r.id = sp.restaurante_id
       LEFT JOIN usuarios d ON d.id = sp.driver_id
       WHERE sp.restaurante_id = ${staff.restauranteId}
-        AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO', 'RECHAZADO', 'CANCELADO')
+        AND sp.estado IN ('PENDIENTE', 'ACEPTADO', 'PREPARANDO', 'LISTO', 'ASIGNADO', 'EN_CAMINO', 'EN_CLIENTE', 'ENTREGA_PENDIENTE_CONFIRMACION', 'ENTREGADO', 'RECHAZADO', 'CANCELADO')
       ORDER BY CASE WHEN sp.estado = 'PENDIENTE' THEN 0 WHEN sp.estado IN ('ACEPTADO', 'PREPARANDO') THEN 1 WHEN sp.estado = 'LISTO' THEN 2 ELSE 3 END,
                sp.creado_en DESC
       LIMIT ${PAGE_LIMIT}
