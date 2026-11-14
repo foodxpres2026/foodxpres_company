@@ -67,10 +67,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
     if (!updated.length) return Response.json({ ok: false, error: 'La acción no corresponde al estado actual del pedido.' }, { status: 409 })
     if (!historyWritten) await sql`INSERT INTO pedido_estado_historial (sub_pedido_id, estado, cambiado_por, notas) VALUES (${id}, ${state}, ${driver.id}, ${accion})`
-    if (accion === 'ENTREGUE') {
-      const current = await sql`SELECT estado FROM sub_pedidos WHERE id = ${id} AND driver_id = ${driver.id} LIMIT 1` as { estado: string }[]
-      if (current[0]?.estado === 'ENTREGADO') return Response.json({ ok: true })
-    }
     if (accion === 'RECOGI') await notifyInternalPush('DRIVER_ON_THE_WAY', id)
     if (accion === 'LLEGUE_CLIENTE') await notifyInternalPush('DRIVER_ARRIVED', id)
     if (accion === 'ENTREGUE') await notifyInternalPush('DRIVER_DELIVERED', id)

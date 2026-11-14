@@ -150,11 +150,11 @@ export function RestauranteGrid({
       </div>
 
       <div className="p-3">
-        <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">
+        <h3 className="h-9 text-sm font-bold text-white leading-tight line-clamp-2">
           {restaurante.nombre}
         </h3>
-        <div className="mt-1 grid min-h-[76px] md:min-h-[88px] grid-cols-[minmax(0,1fr)_56px] md:grid-cols-[minmax(0,1fr)_72px] items-start gap-2">
-          <div className="min-w-0 self-stretch flex flex-col justify-start gap-1" aria-label="Categorías del local">
+        <div className="mt-2 grid min-h-[76px] md:min-h-[88px] grid-cols-[minmax(0,1fr)_56px] md:grid-cols-[minmax(0,1fr)_72px] items-center gap-2">
+          <div className="min-w-0 self-center flex flex-col justify-center gap-1" aria-label="Categorías del local">
             {restaurante.categorias?.length ? restaurante.categorias.slice(0, 3).map((categoria) => (
               <span key={categoria.id} className="max-w-full truncate rounded-md bg-surface-dark px-1.5 py-1 text-[10px] leading-3 text-gray-400">
                 {categoria.emoji ? `${categoria.emoji} ` : ''}{categoria.nombre}
@@ -165,7 +165,7 @@ export function RestauranteGrid({
               </p>
             )}
           </div>
-          <div className="w-14 md:w-[72px] flex flex-col items-center justify-start gap-1">
+          <div className="w-14 md:w-[72px] min-h-[72px] flex flex-col items-center justify-center gap-1">
             <div className="w-12 h-12 md:w-16 md:h-16 shrink-0 overflow-hidden rounded-xl border border-white/20 bg-white p-1 shadow-md flex items-center justify-center">
               {restaurante.logo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element

@@ -70,7 +70,7 @@ export default function CuentaLocalForm({
       <div>
         <h3 className="text-base font-bold text-white">Acceso del local</h3>
         <p className="text-xs text-gray-500 mt-1">
-          Crea la cuenta o restablece su contraseña. Por seguridad, la contraseña anterior no se puede consultar.
+          El correo guardado siempre aparece aquí. La nueva contraseña se muestra una sola vez al guardarla; si se pierde, restablécela para generar otra. La contraseña anterior no se puede consultar.
         </p>
       </div>
 
@@ -108,7 +108,7 @@ export default function CuentaLocalForm({
             Generar contraseña
           </button>
           <button type="submit" disabled={guardando} className="bg-brand hover:bg-brand-dark disabled:opacity-50 text-black font-bold px-4 py-2.5 rounded-xl text-sm">
-            {guardando ? 'Guardando…' : emailInicial ? 'Guardar / restablecer acceso' : 'Crear acceso'}
+            {guardando ? 'Guardando…' : emailInicial ? 'Guardar y mostrar nueva contraseña' : 'Crear acceso y mostrar contraseña'}
           </button>
         </div>
       </form>
@@ -118,7 +118,7 @@ export default function CuentaLocalForm({
 
       {credencial && (
         <div className="rounded-xl border border-brand/30 bg-brand/5 p-4 space-y-2">
-          <p className="text-sm font-bold text-white">Credenciales nuevas</p>
+          <p className="text-sm font-bold text-white">Nueva contraseña · guárdala ahora</p>
           <p className="text-sm text-gray-300 break-all">Correo: <strong>{credencial.email}</strong></p>
           <p className="text-sm text-gray-300 break-all">Contraseña: <strong>{credencial.password}</strong></p>
           <button type="button" onClick={copiarCredenciales} className="text-sm font-bold text-brand underline underline-offset-2">

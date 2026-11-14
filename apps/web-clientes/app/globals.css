@@ -52,7 +52,8 @@ html[data-theme='light'] .text-gray-500 { color: #697266; }
 html[data-theme='light'] .text-gray-600 { color: #737b70; }
 html[data-theme='light'] .theme-toggle-client { color: #22271e; }
 html[data-theme='light'] .foodxpres-logo-mark { background: #7ed321; }
-html[data-theme='light'] .foodxpres-logo-mark .logo-mark-image { mix-blend-mode: screen; }
+html[data-theme='light'] .foodxpres-logo-mark .logo-mark-dark { display: none; }
+html[data-theme='light'] .foodxpres-logo-mark .logo-mark-light { display: block; mix-blend-mode: normal; }
 html[data-theme='light'] .foodxpres-wordmark { color: #191b16; }
 html[data-theme='light'] .home-section-title,
 html[data-theme='light'] .order-page-title { color: #20231d; }
@@ -109,6 +110,7 @@ body {
   height: 100%;
   object-fit: cover;
 }
+.foodxpres-logo-mark .logo-mark-light { display: none; }
 
 /* Scrollbar sutil */
 ::-webkit-scrollbar {

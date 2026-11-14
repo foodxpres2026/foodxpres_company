@@ -60,14 +60,13 @@ async function getData() {
     categorias: Array.isArray(r.categorias) ? r.categorias : [],
     horarios: r.horarios || [],
     abierto: estaAbierto(r.horarios || []),
+    orden_aleatorio: Math.random(),
   }))
 
   restaurantes.sort((a, b) => {
     if (a.abierto && !b.abierto) return -1
     if (!a.abierto && b.abierto) return 1
-    const orden = Number(a.orden_inicio ?? 0) - Number(b.orden_inicio ?? 0)
-    if (orden !== 0) return orden
-    return new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime()
+    return a.orden_aleatorio - b.orden_aleatorio
   })
 
   return { restaurantes, categorias, promos }
