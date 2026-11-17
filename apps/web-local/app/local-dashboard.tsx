@@ -245,7 +245,7 @@ function LocalOrderCard({ order, busy, onAccept, onReject, onReady, onConfirm }:
     {order.notas_pedido && order.notas_local && order.notas_pedido !== order.notas_local && <div className="local-order-note"><strong>Nota del local</strong><span>{order.notas_local}</span></div>}
     {order.motivo_rechazo && <div className="local-order-note"><strong>Motivo de rechazo</strong><span>{order.motivo_rechazo}</span></div>}
     <div className="local-order-amount"><span>Total de productos</span><strong>{money(order.subtotal)}</strong></div></div>}
-    {isAutopedido && <div className="local-order-amount delivery-pay"><span>Pago del delivery</span><strong>{money(order.costo_envio)}</strong></div>}
+    {isAutopedido && <div className="local-order-amount delivery-pay"><span>Pago del delivery</span><strong>{order.costo_envio == null ? 'No disponible' : money(order.costo_envio)}</strong></div>}
     {(order.driver_nombre || order.driver_celular) && <div className="local-order-driver"><strong>🛵 Driver asignado</strong><span>{order.driver_nombre || 'Nombre no disponible'}</span>{order.driver_celular ? <a href={`tel:${order.driver_celular}`}>☎ {order.driver_celular}</a> : <small>Celular no disponible</small>}</div>}
     {order.estado === 'PENDIENTE' && onAccept && onReject && <div className="local-order-actions">
       <label>Tiempo de preparación<select value={prepMinutes} onChange={(event) => setPrepMinutes(Number(event.target.value))}><option value={15}>15 min</option><option value={20}>20 min</option><option value={30}>30 min</option><option value={45}>45 min</option><option value={60}>60 min</option></select></label>
