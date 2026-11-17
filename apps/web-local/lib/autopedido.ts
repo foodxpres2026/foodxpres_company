@@ -25,6 +25,7 @@ export async function calculateLocalShipping(restaurantId: string, clientLat: nu
     if (cached[0]) { km = Number(cached[0].distancia_km); duration = Number(cached[0].duracion_min); source = 'cache' }
   } catch { /* Route cache is optional; distance fallback still works. */ }
   const apiKey = process.env.ORS_API_KEY
+  const routeFailureReason = apiKey ? 'RUTA_NO_DISPONIBLE' : 'SERVICIO_RUTAS_NO_CONFIGURADO'
   if (apiKey && source !== 'cache') {
     try {
       const res = await fetch('https://api.heigit.org/openrouteservice/v2/directions/driving-car', {
@@ -43,7 +44,7 @@ export async function calculateLocalShipping(restaurantId: string, clientLat: nu
   const routeAvailable = source === 'cache' || source === 'openroute'
   const withinLimit = km <= MAX_DELIVERY_DISTANCE_KM
   const permitido = routeAvailable && withinLimit
-  const razon = !routeAvailable ? 'RUTA_NO_DISPONIBLE' : !withinLimit ? 'SUPERA_DISTANCIA_MAXIMA' : null
+  const razon = !routeAvailable ? routeFailureReason : !withinLimit ? 'SUPERA_DISTANCIA_MAXIMA' : null
   const costoBase = deliveryPriceForDistance(km, tabla)
   const recargoDelivery = Math.round(Number(config.recargo_delivery ?? 0) * 100) / 100
   const costo = costoBase === null ? null : Math.round((costoBase + recargoDelivery) * 100) / 100

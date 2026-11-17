@@ -7,6 +7,29 @@ type Restaurant = { nombre: string; celular: string | null; direccion_fisica: st
 type Shipping = { costo: number | null; distancia_km: number; duracion_min: number; fuente: string; permitido: boolean; razon?: string | null }
 type Data = { restaurant: Restaurant }
 const money = (n: number) => `S/ ${n.toFixed(2)}`
+function normalizePeruvianPhone(value: string) {
+  let digits = value.replace(/\D/g, '')
+  if (digits.startsWith('0051')) digits = digits.slice(4)
+  else if (digits.startsWith('51') && digits.length >= 11) digits = digits.slice(2)
+  return digits.slice(0, 9)
+}
+
+function parseCoordinates(value: string): { lat: number; lng: number } | null {
+  const normalized = value.replace(/[−–—]/g, '-').trim()
+  const decoded = (() => { try { return decodeURIComponent(normalized) } catch { return normalized } })()
+  const mapsPatterns = [
+    /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/i,
+    /@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+    /[?&](?:q|query|ll|center)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/i,
+  ]
+  const pairPattern = /(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)/
+  const match = mapsPatterns.map((pattern) => decoded.match(pattern)).find(Boolean) ?? decoded.match(pairPattern)
+  if (!match) return null
+  const lat = Number(match[1]), lng = Number(match[2])
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null
+  return { lat, lng }
+}
+
 const inputStyle: CSSProperties = { width: '100%', minWidth: 0, padding: '11px 12px', color: 'var(--input-text)', background: 'var(--input-bg)', border: '1px solid var(--line)', borderRadius: 9, outline: 'none' }
 const labelStyle: CSSProperties = { display: 'grid', gap: 6, color: 'var(--muted)', fontSize: 11 }
 
@@ -25,6 +48,7 @@ export default function AutopedidosPanel({ onBack, onCreated, sharedLocation, sh
   }, [sharedLocation])
   useEffect(() => {
     setShipping(null)
+    setShippingBusy(false)
     const clientLat = Number(lat), clientLng = Number(lng)
     if (!Number.isFinite(clientLat) || !Number.isFinite(clientLng) || lat.trim() === '' || lng.trim() === '' || data?.restaurant.lat == null || data?.restaurant.lng == null) return
     let ignore = false; const timer = window.setTimeout(async () => { setShippingBusy(true); try { const res = await fetch('/api/local/autopedidos/shipping', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lat: clientLat, lng: clientLng }) }); const body = await res.json(); if (!ignore && res.ok && body.ok) setShipping(body.data); else if (!ignore && body.error) setError(body.error) } catch { if (!ignore) setError('No se pudo calcular el envío.') } finally { if (!ignore) setShippingBusy(false) } }, 450)
@@ -42,10 +66,9 @@ export default function AutopedidosPanel({ onBack, onCreated, sharedLocation, sh
     } catch { if (!address.trim()) setAddress('Ubicación marcada en el mapa') }
   }
   async function useCoordinates() {
-    const match = coordinateInput.trim().match(/^(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)$/)
-    if (!match) { setError('Escribe las coordenadas como latitud, longitud. Ejemplo: -8.38294, -74.56939'); return }
-    const chosenLat = Number(match[1]), chosenLng = Number(match[2])
-    if (Math.abs(chosenLat) > 90 || Math.abs(chosenLng) > 180) { setError('Las coordenadas están fuera del rango válido.'); return }
+    const coordinates = parseCoordinates(coordinateInput)
+    if (!coordinates) { setError('No reconocí las coordenadas. Pega latitud, longitud (por ejemplo, -8.379257, -74.549225) o un enlace de Google Maps con coordenadas.'); return }
+    const { lat: chosenLat, lng: chosenLng } = coordinates
     setError(''); setLat(String(chosenLat)); setLng(String(chosenLng)); setAddress(`Ubicación ${chosenLat.toFixed(6)}, ${chosenLng.toFixed(6)}`)
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${chosenLat}&lon=${chosenLng}&accept-language=es`)
@@ -63,7 +86,7 @@ export default function AutopedidosPanel({ onBack, onCreated, sharedLocation, sh
       <div className="auto-main">
         <section className="auto-panel"><div className="auto-panel-heading"><div><h2>Entrega del cliente</h2><p>El recojo será en {data.restaurant.nombre}; no necesitas volver a indicar su ubicación.</p></div></div>
           <div className="auto-location-card"><h3>📍 Recojo en {data.restaurant.nombre}</h3><p>{localReady ? data.restaurant.direccion_fisica || 'Ubicación del local guardada' : 'El restaurante todavía no tiene ubicación guardada.'}</p><p>Teléfono del local: {data.restaurant.celular || 'Sin teléfono registrado'}</p></div>
-          <div className="auto-location-card"><h3>🏠 Entrega al cliente</h3><p>{sharedLocation ? 'Ubicación recibida de Google Maps. Confirma el pin e ingresa el celular del cliente.' : 'Pega sus coordenadas o selecciona la ubicación en el mapa; luego ingresa su celular y una referencia si hace falta.'}</p><label style={labelStyle}>Coordenadas copiadas<input style={inputStyle} value={coordinateInput} onChange={e=>setCoordinateInput(e.target.value)} placeholder="-8.38294, -74.56939" inputMode="decimal"/></label><p className="auto-location-help">En Google Maps, mantén presionado el punto y copia las coordenadas que aparecen.</p><button className="local-refresh" type="button" onClick={()=>void useCoordinates()}>Usar coordenadas</button><form action="/api/local/compartir-ubicacion" method="post"><label style={labelStyle}>O pega un enlace de Google Maps<input style={inputStyle} type="url" name="url" placeholder="https://maps.app.goo.gl/..." required/></label><p className="auto-location-help">En Google Maps también puedes pulsar “Compartir” y copiar el enlace.</p><button className="local-refresh" type="submit">Usar ubicación del enlace</button></form><div className="auto-fields"><label style={labelStyle}>Celular del cliente<input style={inputStyle} type="tel" inputMode="numeric" maxLength={9} value={celular} onChange={e=>setCelular(e.target.value.replace(/\D/g,'').slice(0,9))} placeholder="9 dígitos" required/></label><label style={labelStyle}>Referencia<input style={inputStyle} value={reference} onChange={e=>setReference(e.target.value)} placeholder="Piso, referencia (opcional)"/></label></div>{address && <p className="auto-location-help">{address}</p>}<div className="auto-actions"><button className="local-refresh" onClick={()=>setMapTarget('client')}>{lat && lng ? 'Ajustar ubicación en el mapa' : 'Elegir ubicación en el mapa'}</button></div>{shippingBusy?<p className="auto-shipping">Calculando ruta y envío…</p>:shipping?.permitido?<p className="auto-shipping">Delivery {money(shipping.costo!)} · {shipping.distancia_km.toFixed(2)} km</p>:shipping?<p className="auto-shipping">{shipping.razon==='SUPERA_DISTANCIA_MAXIMA'?`El cliente está a ${shipping.distancia_km.toFixed(1)} km. El máximo es 15 km.`:'No se pudo calcular una ruta real por calles. Intenta de nuevo más tarde.'}</p>:lat&&lng?<p className="auto-shipping">Calculando costo de envío…</p>:<p className="auto-location-help">Ingresa coordenadas o elige el punto en el mapa para calcular el precio.</p>}</div>
+          <div className="auto-location-card"><h3>🏠 Entrega al cliente</h3><p>{sharedLocation ? 'Ubicación recibida de Google Maps. Confirma el pin e ingresa el celular del cliente.' : 'Pega sus coordenadas o selecciona la ubicación en el mapa; luego ingresa su celular y una referencia si hace falta.'}</p><label style={labelStyle}>Coordenadas copiadas<input style={inputStyle} value={coordinateInput} onChange={e=>setCoordinateInput(e.target.value)} placeholder="-8.38294, -74.56939" inputMode="decimal"/></label><p className="auto-location-help">En Google Maps, mantén presionado el punto y copia las coordenadas que aparecen.</p><button className="local-refresh" type="button" onClick={()=>void useCoordinates()}>Usar coordenadas</button><form action="/api/local/compartir-ubicacion" method="post"><label style={labelStyle}>O pega un enlace de Google Maps<input style={inputStyle} type="url" name="url" placeholder="https://maps.app.goo.gl/..." required/></label><p className="auto-location-help">En Google Maps también puedes pulsar “Compartir” y copiar el enlace.</p><button className="local-refresh" type="submit">Usar ubicación del enlace</button></form><div className="auto-fields"><label style={labelStyle}>Celular del cliente<input style={inputStyle} type="tel" inputMode="tel" maxLength={20} value={celular} onChange={e=>setCelular(normalizePeruvianPhone(e.target.value))} placeholder="9 dígitos o +51 9 dígitos" required/></label><label style={labelStyle}>Referencia<input style={inputStyle} value={reference} onChange={e=>setReference(e.target.value)} placeholder="Piso, referencia (opcional)"/></label></div>{address && <p className="auto-location-help">{address}</p>}<div className="auto-actions"><button className="local-refresh" onClick={()=>setMapTarget('client')}>{lat && lng ? 'Ajustar ubicación en el mapa' : 'Elegir ubicación en el mapa'}</button></div>{shippingBusy?<p className="auto-shipping">Calculando ruta y envío…</p>:shipping?.permitido?<p className="auto-shipping">Delivery {money(shipping.costo!)} · {shipping.distancia_km.toFixed(2)} km</p>:shipping?<p className="auto-shipping">{shipping.razon==='SUPERA_DISTANCIA_MAXIMA'?`El cliente está a ${shipping.distancia_km.toFixed(1)} km. El máximo es 15 km.`:shipping.razon==='SERVICIO_RUTAS_NO_CONFIGURADO'?'Falta configurar ORS_API_KEY en el entorno de esta app para calcular rutas por calles.':'No se pudo calcular una ruta por calles. Revisa la conexión del servicio de rutas e intenta de nuevo.'}</p>:lat&&lng?<p className="auto-shipping">Calculando costo de envío…</p>:<p className="auto-location-help">Ingresa coordenadas o elige el punto en el mapa para calcular el precio.</p>}</div>
         </section>
       </div>
       <aside className="auto-summary"><h2>Resumen</h2><p className="auto-summary-local">Recojo: {data.restaurant.nombre} · {data.restaurant.celular || 'sin teléfono'}</p><p className="auto-summary-items">Entrega: {address || 'Selecciona el punto en el mapa'}</p><p className="auto-summary-items">Cliente: {celular || 'Ingresa su celular'}</p><p className="auto-summary-items">Referencia: {reference || 'Sin referencia'}</p><div className="auto-total"><span>Delivery</span><strong>{shipping?.costo != null?money(shipping.costo):'No disponible'}</strong></div><button className="local-primary-button auto-submit" disabled={busy||!localReady||!clientReady||!shipping?.permitido} onClick={()=>void submit()}>{busy?'Registrando…':'Crear autopedido'}</button>{!shipping?.permitido&&clientReady&&shipping&&!shippingBusy&&<small className="auto-hint">Se necesita una ruta real de hasta 15 km.</small>}{!localReady&&<small className="auto-hint">El restaurante debe tener ubicación guardada para calcular el delivery.</small>}</aside>
