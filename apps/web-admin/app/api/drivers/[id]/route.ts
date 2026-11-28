@@ -1,11 +1,13 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import bcrypt from 'bcryptjs'
 import { sql } from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
 
 const patchSchema = z.object({
   nombre: z.string().min(2).max(120),
   celular: z.string().regex(/^9\d{8}$/),
+  password: z.string().min(6).optional().or(z.literal('')),
   vehiculo: z.string().max(60).optional().nullable(),
   placa: z.string().max(20).optional().nullable(),
   licencia: z.string().max(40).optional().nullable(),
@@ -51,15 +53,28 @@ export async function PATCH(
       )
     }
 
-    // Actualizar usuario
-    await sql`
-      UPDATE usuarios 
-      SET nombre = ${d.nombre}, 
-          celular = ${d.celular}, 
-          activo = ${d.activo}, 
-          actualizado_en = NOW()
-      WHERE id = ${id} AND role = 'DRIVER'
-    `
+    // Actualizar usuario; cambiar la contraseña solo si se proporcionó una nueva.
+    if (d.password) {
+      const passwordHash = await bcrypt.hash(d.password, 10)
+      await sql`
+        UPDATE usuarios
+        SET nombre = ${d.nombre},
+            celular = ${d.celular},
+            password_hash = ${passwordHash},
+            activo = ${d.activo},
+            actualizado_en = NOW()
+        WHERE id = ${id} AND role = 'DRIVER'
+      `
+    } else {
+      await sql`
+        UPDATE usuarios
+        SET nombre = ${d.nombre},
+            celular = ${d.celular},
+            activo = ${d.activo},
+            actualizado_en = NOW()
+        WHERE id = ${id} AND role = 'DRIVER'
+      `
+    }
 
     // Actualizar detalles
     await sql`

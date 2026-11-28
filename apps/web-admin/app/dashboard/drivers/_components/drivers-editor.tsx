@@ -70,6 +70,9 @@ export default function DriversEditor({
       if (!isEdit && data.password) {
         payload.password = data.password
       }
+      if (isEdit && data.password) {
+        payload.password = data.password
+      }
 
       const res = await fetch(url, {
         method: isEdit ? 'PATCH' : 'POST',

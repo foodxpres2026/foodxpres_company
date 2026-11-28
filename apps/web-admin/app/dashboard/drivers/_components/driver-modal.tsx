@@ -77,6 +77,10 @@ export default function DriverModal({
       setError('La contraseña debe tener al menos 6 caracteres')
       return
     }
+    if (isEdit && form.password && form.password.length < 6) {
+      setError('Si cambias la contraseña, mínimo 6 caracteres')
+      return
+    }
 
     await onSave(form)
   }
@@ -135,25 +139,26 @@ export default function DriverModal({
             />
           </div>
 
-          {!initialData?.id && (
-            <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-                Contraseña <span className="text-brand">*</span>
-              </label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => update('password', e.target.value)}
-                required
-                minLength={6}
-                placeholder="Mínimo 6 caracteres"
-                className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-              />
+          <div>
+            <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
+              {initialData?.id ? 'Nueva contraseña (opcional)' : 'Contraseña'}{' '}
+              {!initialData?.id && <span className="text-brand">*</span>}
+            </label>
+            <input
+              type="password"
+              value={form.password}
+              onChange={(e) => update('password', e.target.value)}
+              required={!initialData?.id}
+              minLength={6}
+              placeholder={initialData?.id ? 'Dejar vacío para no cambiar' : 'Mínimo 6 caracteres'}
+              className="w-full px-4 py-3 bg-surface-dark border border-line-light rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+            />
+            {!initialData?.id && (
               <p className="text-xs text-gray-600 mt-1">
                 El driver usará esto para entrar en su app
               </p>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
